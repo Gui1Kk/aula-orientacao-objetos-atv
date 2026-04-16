@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tutorial – Services e Regras de Negócio em Kotlin</title>
+  <style>
+    :root {
+      --primary: #1e3a5f;
+      --primary-light: #2a5298;
+      --accent: #0ea5e9;
+      --accent-light: #e0f2fe;
+      --success: #10b981;
+      --success-light: #d1fae5;
+      --warning: #f59e0b;
+      --warning-light: #fef3c7;
+      --danger: #ef4444;
+      --purple: #7c3aed;
+      --purple-light: #ede9fe;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-300: #cbd5e1;
+      --gray-400: #94a3b8;
+      --gray-500: #64748b;
+      --gray-600: #475569;
+      --gray-700: #334155;
+      --gray-800: #1e293b;
+      --gray-900: #0f172a;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+      --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: var(--gray-800);
+      background: var(--gray-50);
+      line-height: 1.75;
+    }
+
+    /* ── HEADER ── */
+    .doc-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: #fff;
+      padding: 3rem 2rem 2.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .doc-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--success), var(--purple));
+    }
+    .doc-header h1 { font-size: 2rem; font-weight: 700; margin-bottom: .5rem; color: #fff; }
+    .doc-header .subtitle { font-size: .95rem; opacity: .85; max-width: 700px; margin: 0 auto; }
+    .badges { margin-top: 1rem; display: flex; gap: .6rem; justify-content: center; flex-wrap: wrap; }
+    .badge {
+      display: inline-block;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
+      padding: .25rem .8rem;
+      border-radius: 999px;
+      font-size: .78rem;
+      letter-spacing: .3px;
+    }
+
+    /* ── LAYOUT ── */
+    .wrapper { display: flex; max-width: 1400px; margin: 0 auto; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 290px;
+      min-width: 290px;
+      background: #fff;
+      border-right: 1px solid var(--gray-200);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 1.5rem 0;
+      font-size: .84rem;
+      scrollbar-width: thin;
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 4px; }
+    .toc-title {
+      padding: 0 1.5rem .8rem;
+      font-weight: 700;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--gray-400);
+    }
+    .toc-section {
+      padding: .5rem 1.5rem .2rem;
+      font-weight: 700;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--gray-400);
+      margin-top: .4rem;
+    }
+    .sidebar a {
+      display: block;
+      padding: .35rem 1.5rem;
+      color: var(--gray-600);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: all .15s;
+      line-height: 1.4;
+    }
+    .sidebar a:hover { color: var(--primary); background: var(--gray-50); border-left-color: var(--accent); }
+    .sidebar a.toc-h1 { font-weight: 600; color: var(--gray-800); padding-top: .5rem; }
+    .sidebar a.toc-h2 { padding-left: 2.2rem; font-size: .8rem; }
+    .sidebar a.toc-h3 { padding-left: 3rem; font-size: .77rem; color: var(--gray-500); }
+
+    /* ── CONTENT ── */
+    .content { flex: 1; min-width: 0; padding: 2.5rem 3rem 5rem; max-width: 900px; }
+
+    /* ── HEADINGS ── */
+    h1 {
+      font-size: 1.65rem;
+      color: var(--primary);
+      margin: 3rem 0 1rem;
+      padding-bottom: .6rem;
+      border-bottom: 2px solid var(--gray-200);
+      scroll-margin-top: 1rem;
+    }
+    h1:first-of-type { margin-top: 0; }
+    h2 {
+      font-size: 1.2rem;
+      color: var(--primary-light);
+      margin: 2.2rem 0 .8rem;
+      scroll-margin-top: 1rem;
+    }
+    h3 {
+      font-size: 1.05rem;
+      color: var(--gray-700);
+      margin: 1.8rem 0 .6rem;
+      scroll-margin-top: 1rem;
+    }
+    h4 { font-size: .95rem; font-weight: 700; color: var(--gray-600); margin: 1.4rem 0 .5rem; }
+
+    .section-num {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      font-size: .72rem;
+      padding: .15rem .5rem;
+      border-radius: 4px;
+      margin-right: .5rem;
+      vertical-align: middle;
+    }
+    .step-num {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: .72rem;
+      padding: .15rem .5rem;
+      border-radius: 999px;
+      margin-right: .5rem;
+      vertical-align: middle;
+      min-width: 1.6rem;
+      text-align: center;
+    }
+
+    p { margin: .7rem 0; }
+    ul, ol { margin: .5rem 0 .8rem 1.6rem; }
+    li { margin: .35rem 0; }
+    li::marker { color: var(--accent); }
+
+    /* ── CODE ── */
+    code {
+      font-family: 'SFMono-Regular', 'Consolas', monospace;
+      font-size: .85em;
+      background: var(--gray-100);
+      padding: .15em .45em;
+      border-radius: 4px;
+      color: var(--primary-light);
+    }
+    pre {
+      background: #0d1117;
+      color: #e6edf3;
+      padding: 1.3rem 1.6rem;
+      border-radius: var(--radius);
+      overflow-x: auto;
+      margin: 1rem 0;
+      font-size: .85rem;
+      line-height: 1.7;
+      box-shadow: var(--shadow-md);
+      position: relative;
+    }
+    pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+
+    /* Kotlin syntax highlight colors */
+    .kw  { color: #ff7b72; }   /* keywords */
+    .ty  { color: #79c0ff; }   /* types */
+    .str { color: #a5d6ff; }   /* strings */
+    .ann { color: #f2cc60; }   /* annotations */
+    .cmt { color: #8b949e; font-style: italic; }   /* comments */
+    .fn  { color: #d2a8ff; }   /* function names */
+    .num { color: #ffa657; }   /* numbers */
+    .op  { color: #ff7b72; }   /* operators */
+
+    /* file label */
+    pre .file-label {
+      position: absolute;
+      top: .5rem; right: .8rem;
+      font-size: .72rem;
+      color: var(--gray-500);
+      background: var(--gray-800);
+      padding: .1rem .5rem;
+      border-radius: 3px;
+    }
+
+    /* ── CALLOUTS ── */
+    .callout {
+      border-radius: var(--radius);
+      padding: 1rem 1.3rem;
+      margin: 1.2rem 0;
+      font-size: .92rem;
+      border-left: 4px solid;
+    }
+    .callout-icon { font-size: 1.1em; margin-right: .4rem; }
+    .callout > strong:first-of-type { display: block; margin-bottom: .3rem; }
+    .callout-info    { background: var(--accent-light);   border-color: var(--accent);   color: #0c4a6e; }
+    .callout-success { background: var(--success-light);  border-color: var(--success);  color: #064e3b; }
+    .callout-warn    { background: var(--warning-light);  border-color: var(--warning);  color: #78350f; }
+    .callout-concept { background: var(--purple-light);   border-color: var(--purple);   color: #3b0764; }
+
+    /* ── TABLES ── */
+    .table-wrap { overflow-x: auto; margin: 1rem 0; border-radius: var(--radius); box-shadow: var(--shadow); }
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; background: #fff; }
+    thead { background: var(--primary); color: #fff; }
+    thead th { padding: .7rem .85rem; text-align: left; font-size: .82rem; }
+    tbody tr { border-bottom: 1px solid var(--gray-100); }
+    tbody tr:nth-child(even) { background: var(--gray-50); }
+    tbody tr:hover { background: var(--accent-light); }
+    tbody td { padding: .6rem .85rem; vertical-align: top; }
+
+    /* ── DIAGRAM BOXES ── */
+    .diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: wrap;
+      margin: 1.5rem 0;
+      padding: 1.5rem;
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .diagram-box {
+      border-radius: var(--radius);
+      padding: .8rem 1.4rem;
+      font-weight: 600;
+      font-size: .88rem;
+      text-align: center;
+      min-width: 120px;
+    }
+    .box-blue   { background: #dbeafe; color: #1d4ed8; border: 2px solid #93c5fd; }
+    .box-green  { background: var(--success-light); color: #065f46; border: 2px solid #6ee7b7; }
+    .box-purple { background: var(--purple-light); color: #5b21b6; border: 2px solid #c4b5fd; }
+    .box-orange { background: #ffedd5; color: #9a3412; border: 2px solid #fdba74; }
+    .box-pink   { background: #fce7f3; color: #9d174d; border: 2px solid #f9a8d4; }
+    .diagram-arrow {
+      padding: 0 .7rem;
+      color: var(--gray-400);
+      font-size: 1.4rem;
+      font-weight: 300;
+    }
+
+    /* ── STEP CARD ── */
+    .step-card {
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 1.2rem 1.6rem;
+      margin: 1rem 0;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+    .step-card h3 { margin-top: 0; }
+
+    /* ── QUIZ / EXERCICIO ── */
+    .exercise {
+      background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+      border: 1px solid #7dd3fc;
+      border-radius: var(--radius);
+      padding: 1.2rem 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .exercise h4 { color: #0369a1; margin-top: 0; margin-bottom: .5rem; }
+
+    /* ── COMPARISON ── */
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    .comparison-item { }
+    .comparison-label {
+      font-size: .78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: .3rem;
+      padding: .2rem .6rem;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .label-bad  { background: #fee2e2; color: #b91c1c; }
+    .label-good { background: var(--success-light); color: #065f46; }
+
+    /* ── UML-LIKE CLASS BOX ── */
+    .uml-box {
+      border: 2px solid var(--primary);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin: 1rem auto;
+      max-width: 500px;
+      font-size: .88rem;
+      box-shadow: var(--shadow-md);
+    }
+    .uml-header {
+      background: var(--primary);
+      color: #fff;
+      padding: .5rem 1rem;
+      font-weight: 700;
+      text-align: center;
+    }
+    .uml-header small { font-weight: 400; opacity: .75; display: block; font-size: .78em; }
+    .uml-section { border-top: 1px solid var(--gray-200); }
+    .uml-section-title {
+      background: var(--gray-100);
+      padding: .3rem 1rem;
+      font-size: .78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--gray-500);
+    }
+    .uml-item {
+      padding: .3rem 1.2rem;
+      border-bottom: 1px dotted var(--gray-200);
+    }
+    .uml-item:last-child { border-bottom: none; }
+    .uml-item code { font-size: .82em; }
+
+    /* ── BADGE DE ENTREGA ── */
+    .entrega-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      margin-top: 1.1rem;
+      padding: .35rem 1rem;
+      border-radius: 999px;
+      font-size: .80rem;
+      font-weight: 700;
+      letter-spacing: .3px;
+    }
+    .entrega-repo { background: #dcfce7; color: #14532d; border: 1px solid #86efac; }
+    .entrega-pdf  { background: #fee2e2; color: #7f1d1d; border: 1px solid #fca5a5; }
+    .entrega-note {
+      margin-top: .6rem;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-left: 4px solid #0ea5e9;
+      border-radius: 6px;
+      padding: .7rem 1rem;
+      font-size: .85rem;
+      color: #334155;
+    }
+    .entrega-note ul { margin: .3rem 0 0 1.2rem; }
+    .entrega-note li { margin: .2rem 0; }
+
+    /* ── FOOTER ── */
+    .doc-footer {
+      text-align: center;
+      padding: 2rem;
+      background: var(--gray-100);
+      border-top: 1px solid var(--gray-200);
+      color: var(--gray-500);
+      font-size: .82rem;
+    }
+
+    /* ── BACK TOP ── */
+    .back-top {
+      position: fixed; bottom: 2rem; right: 2rem;
+      width: 42px; height: 42px;
+      border-radius: 50%; background: var(--primary); color: #fff;
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--shadow-md); opacity: 0; transition: opacity .3s; font-size: 1.2rem;
+    }
+    .back-top.visible { opacity: 1; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .sidebar { display: none; }
+      .content { padding: 1.5rem; max-width: 100%; }
+      .comparison { grid-template-columns: 1fr; }
+    }
+    @media print {
+      .sidebar, .back-top { display: none; }
+      .content { max-width: 100%; padding: 0; }
+      pre { white-space: pre-wrap; word-wrap: break-word; }
+    }
+
+    hr { border: none; border-top: 1px solid var(--gray-200); margin: 1.5rem 0; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════ HEADER ═══════════════════ -->
+<header class="doc-header">
+  <h1>Services e Regras de Negócio em Kotlin</h1>
+  <div class="subtitle">
+    Tutorial prático de Orientação a Objetos — Parte 2: Encapsulamento, Composição e DTOs,
+    usando como exemplo o <strong>UsuarioService</strong> do projeto FilaCidadã.
+  </div>
+  <div class="badges">
+    <span class="badge">Kotlin · Orientação a Objetos</span>
+    <span class="badge">Encapsulamento · Composição</span>
+    <span class="badge">Graduação</span>
+    <span class="badge">Março 2026</span>
+  </div>
+</header>
+
+<div class="wrapper">
+
+<!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+<nav class="sidebar">
+  <div class="toc-title">Sumário</div>
+
+  <div class="toc-section">Parte I — O Papel do Service</div>
+  <a href="#sec-1"   class="toc-h1">1. Onde ficam as regras?</a>
+  <a href="#sec-1-1" class="toc-h2">1.1 O problema: regras espalhadas</a>
+  <a href="#sec-1-2" class="toc-h2">1.2 O que é um Service?</a>
+  <a href="#sec-1-3" class="toc-h2">1.3 Fluxo completo</a>
+  <a href="#sec-2"   class="toc-h1">2. Encapsulamento</a>
+  <a href="#sec-2-1" class="toc-h2">2.1 Conceito formal</a>
+  <a href="#sec-2-2" class="toc-h2">2.2 Encapsulamento no Service</a>
+  <a href="#sec-2-3" class="toc-h2">2.3 Modificadores de visibilidade</a>
+  <a href="#sec-3"   class="toc-h1">3. Composição</a>
+  <a href="#sec-3-1" class="toc-h2">3.1 Service usa Repositories</a>
+  <a href="#sec-3-2" class="toc-h2">3.2 Composição vs. Herança</a>
+
+  <div class="toc-section">Parte II — DTOs e Validações</div>
+  <a href="#sec-4"   class="toc-h1">4. DTOs — Entrada e Saída</a>
+  <a href="#sec-4-1" class="toc-h2">4.1 Por que não usar a entidade?</a>
+  <a href="#sec-4-2" class="toc-h2">4.2 Request DTOs</a>
+  <a href="#sec-4-3" class="toc-h2">4.3 Response DTOs</a>
+  <a href="#sec-5"   class="toc-h1">5. Exceções de Negócio</a>
+  <a href="#sec-5-1" class="toc-h2">5.1 A classe ApiException</a>
+  <a href="#sec-5-2" class="toc-h2">5.2 Tratamento centralizado</a>
+
+  <div class="toc-section">Parte III — Código Real</div>
+  <a href="#sec-6"   class="toc-h1">6. UsuarioService completo</a>
+  <a href="#sec-6-1" class="toc-h2">6.1 Código do projeto</a>
+  <a href="#sec-6-2" class="toc-h2">6.2 Método a método</a>
+  <a href="#sec-7"   class="toc-h1">7. Diagrama de composição</a>
+  <a href="#sec-8"   class="toc-h1">8. Registrando no Koin</a>
+
+  <div class="toc-section">Parte IV — Exercícios</div>
+  <a href="#sec-9"  class="toc-h1">9. Exercícios Práticos</a>
+  <a href="#sec-9" class="toc-h2" style="padding-left:2.2rem; font-size:.78rem">Ex 1 — AuditoriaService</a>
+  <a href="#sec-9" class="toc-h2" style="padding-left:2.2rem; font-size:.78rem">Ex 2 — InstituicaoService</a>
+  <a href="#sec-9" class="toc-h2" style="padding-left:2.2rem; font-size:.78rem">Ex 3 — FilaService</a>
+  <a href="#sec-9" class="toc-h2" style="padding-left:2.2rem; font-size:.78rem">Ex 4 — SenhaService</a>
+  <a href="#sec-9" class="toc-h2" style="padding-left:2.2rem; font-size:.78rem">Ex 5 — DTOs de Request</a>
+  <a href="#sec-9" class="toc-h2" style="padding-left:2.2rem; font-size:.78rem">Ex 6 — Desafio: ApiResponse</a>
+  <a href="#sec-9" class="toc-h2" style="padding-left:2.2rem; font-size:.78rem">Ex 7 — Análise crítica</a>
+</nav>
+
+<!-- ═══════════════════ CONTENT ═══════════════════ -->
+<main class="content">
+
+<!-- ══════════════════════════════════════════════════
+     PARTE I – O PAPEL DO SERVICE
+══════════════════════════════════════════════════ -->
+
+<h1 id="sec-1"><span class="section-num">1</span> Onde Ficam as Regras de Negócio?</h1>
+
+<p>Na <a href="parte 1 - Classes_e_Repositorios_Kotlin.html">Parte 1</a>, aprendemos a criar <strong>classes</strong> (modelos de dados) e <strong>repositórios</strong> (acesso ao banco). Agora surge a pergunta: <em>onde colocamos a lógica que decide o que pode ou não acontecer no sistema?</em></p>
+
+<p>Por exemplo: ao criar um usuário, quem valida se o e-mail já existe? Quem faz o hash da senha? Quem dispara o e-mail de boas-vindas? Essas são <strong>regras de negócio</strong>, e elas precisam de uma casa própria.</p>
+
+<h2 id="sec-1-1">1.1 O problema: regras espalhadas pelo código</h2>
+
+<p>Considere duas abordagens erradas para cadastrar um usuário:</p>
+
+<div class="comparison">
+  <div class="comparison-item">
+    <div class="comparison-label label-bad">Regra no Repository</div>
+    <pre style="margin-top:.4rem"><code><span class="cmt">// ❌ ERRADO — Repository não deve validar regras</span>
+<span class="kw">class</span> <span class="ty">UsuarioRepositoryImpl</span>(...) : <span class="ty">UsuarioRepository</span> {
+    <span class="kw">override fun</span> <span class="fn">insert</span>(u: <span class="ty">Usuario</span>): <span class="ty">Usuario</span> {
+        <span class="cmt">// Validação aqui? NÃO deveria!</span>
+        <span class="kw">if</span> (findByEmail(u.email) != <span class="kw">null</span>)
+            <span class="kw">throw</span> Exception(<span class="str">"Email já existe"</span>)
+        collection.insertOne(u)
+        <span class="kw">return</span> u
+    }
+}</code></pre>
+  </div>
+  <div class="comparison-item">
+    <div class="comparison-label label-bad">Regra na Route</div>
+    <pre style="margin-top:.4rem"><code><span class="cmt">// ❌ ERRADO — Route não deve conter lógica</span>
+post(<span class="str">"/usuarios"</span>) {
+    <span class="kw">val</span> req = call.receive&lt;<span class="ty">CreateRequest</span>&gt;()
+    <span class="cmt">// Validação aqui? NÃO deveria!</span>
+    <span class="kw">if</span> (repo.findByEmail(req.email) != <span class="kw">null</span>)
+        <span class="kw">throw</span> ApiException(<span class="num">400</span>, <span class="str">"Já existe"</span>)
+    <span class="kw">val</span> hash = BCrypt.hashpw(req.senha, ...)
+    <span class="kw">val</span> usuario = Usuario(nome = req.nome, ...)
+    repo.insert(usuario)
+}</code></pre>
+  </div>
+</div>
+
+<div class="callout callout-warn">
+  <span class="callout-icon">⚠️</span>
+  <strong>Por que isso é problemático?</strong>
+  <ul>
+    <li><strong>Duplicação:</strong> se duas rotas precisam criar usuário, a validação se duplica.</li>
+    <li><strong>Responsabilidade misturada:</strong> o Repository deveria apenas salvar; a Route deveria apenas receber/devolver HTTP.</li>
+    <li><strong>Dificuldade de teste:</strong> para testar a regra de "e-mail único", você precisa de HTTP ou banco real.</li>
+    <li><strong>Manutenção:</strong> se a regra mudar (ex.: "e-mail único <em>por instituição</em>"), quantos lugares você precisa alterar?</li>
+  </ul>
+</div>
+
+<h2 id="sec-1-2">1.2 O que é um Service?</h2>
+
+<p>Um <strong>Service</strong> é uma classe que <strong>encapsula regras de negócio</strong> e <strong>orquestra operações</strong> entre diferentes componentes (repositórios, outros services, serviços externos). Ele é o "cérebro" da aplicação.</p>
+
+<div class="callout callout-concept">
+  <span class="callout-icon">💡</span>
+  <strong>Analogia: o gerente do restaurante</strong>
+  <ul>
+    <li>O <strong>garçom</strong> (<em>Route</em>) recebe o pedido do cliente e entrega o prato pronto.</li>
+    <li>O <strong>gerente</strong> (<em>Service</em>) confere se o pedido é válido, verifica estoque, coordena a preparação.</li>
+    <li>O <strong>cozinheiro</strong> (<em>Repository</em>) prepara e armazena os ingredientes.</li>
+  </ul>
+  O garçom <strong>nunca</strong> vai à cozinha. O cozinheiro <strong>nunca</strong> fala com o cliente. O gerente é o intermediário que conhece as regras do restaurante.
+</div>
+
+<p>Na prática, o Service:</p>
+<ul>
+  <li><strong>Valida dados</strong> — e-mail único, senha forte, fila ativa</li>
+  <li><strong>Transforma dados</strong> — converte DTO → entidade, faz hash de senha</li>
+  <li><strong>Orquestra</strong> — chama um ou mais Repositories e outros Services</li>
+  <li><strong>Decide</strong> — lança exceção se algo violar as regras</li>
+</ul>
+
+<h2 id="sec-1-3">1.3 O fluxo completo de uma requisição</h2>
+
+<p>Reveja o diagrama de camadas da <a href="parte 1 - Classes_e_Repositorios_Kotlin.html#sec-5-2">Parte 1, §5.2</a>. Na Parte 1, focamos na camada <em>Repository</em>. Agora, o foco é a camada <strong>Service</strong>:</p>
+
+<div class="diagram" style="flex-wrap:wrap; gap:.3rem;">
+  <div class="diagram-box box-blue" style="min-width:120px">
+    <div>🌐 Route</div>
+    <small>Recebe request HTTP</small>
+  </div>
+  <div class="diagram-arrow">→</div>
+  <div class="diagram-box box-orange" style="min-width:160px; border-width:3px;">
+    <div>⚙️ <strong>Service</strong></div>
+    <small>Valida, transforma, orquestra</small>
+  </div>
+  <div class="diagram-arrow">→</div>
+  <div class="diagram-box box-purple" style="min-width:120px">
+    <div>📋 Repository</div>
+    <small>Persiste no banco</small>
+  </div>
+  <div class="diagram-arrow">→</div>
+  <div class="diagram-box box-green" style="min-width:100px">
+    <div>🗄️ MongoDB</div>
+  </div>
+</div>
+
+<p><strong>Fluxo detalhado</strong> de <code>POST /usuarios</code>:</p>
+<ol>
+  <li>A <strong>Route</strong> recebe o JSON, deserializa para um DTO (<code>CreateUsuarioInstituicaoRequest</code>) e chama o Service.</li>
+  <li>O <strong>Service</strong> verifica se o e-mail já está cadastrado, valida os papéis, faz o hash da senha, monta a entidade <code>Usuario</code> e chama o Repository.</li>
+  <li>O <strong>Repository</strong> insere o documento no MongoDB e retorna o objeto persistido.</li>
+  <li>O <strong>Service</strong> registra auditoria, envia e-mail de boas-vindas e retorna o usuário à Route.</li>
+  <li>A <strong>Route</strong> responde com <code>201 Created</code> e o JSON do usuário criado.</li>
+</ol>
+
+<div class="callout callout-info">
+  <span class="callout-icon">ℹ️</span>
+  <strong>Separação de preocupações</strong><br>
+  A Route não sabe <em>como</em> a validação é feita. O Repository não sabe <em>por quê</em> está inserindo. O Service não sabe <em>qual</em> método HTTP disparou a operação. Cada camada tem <strong>uma responsabilidade</strong>, e só depende da camada abaixo por meio de <strong>abstrações</strong> (interfaces).
+</div>
+
+
+<!-- ══════════════════════════════════════════════════ -->
+<h1 id="sec-2"><span class="section-num">2</span> Encapsulamento</h1>
+
+<h2 id="sec-2-1">2.1 Conceito formal</h2>
+
+<p><strong>Encapsulamento</strong> é o princípio de OO que consiste em <strong>esconder os detalhes internos</strong> de uma classe e <strong>expor apenas o necessário</strong>. Quem usa a classe interage por uma interface pública simples, sem conhecer a implementação interna.</p>
+
+<div class="callout callout-concept">
+  <span class="callout-icon">💡</span>
+  <strong>Analogia: o carro</strong><br>
+  Você dirige um carro usando volante, pedais e câmbio (interface pública). Você não precisa saber como funciona a injeção eletrônica, o ABS ou a embreagem por dentro (detalhes internos). O fabricante pode trocar o motor inteiro e, enquanto volante e pedais funcionarem igual, você não percebe diferença.
+</div>
+
+<p>No contexto de OO, encapsulamento implica:</p>
+<ul>
+  <li><strong>Atributos internos são privados</strong> — o mundo externo não acessa diretamente.</li>
+  <li><strong>O acesso acontece por métodos controlados</strong> — garantindo validações e invariantes.</li>
+  <li><strong>Detalhes de implementação podem mudar</strong> — sem afetar quem usa a classe.</li>
+</ul>
+
+<h2 id="sec-2-2">2.2 Encapsulamento na prática: o UsuarioService</h2>
+
+<p>Veja como o <code>UsuarioService</code> encapsula toda a complexidade de criar um usuário vinculado a uma instituição:</p>
+
+<pre><code><span class="file-label">services/UsuarioService.kt (simplificado)</span><span class="kw">class</span> <span class="ty">UsuarioService</span>(
+    <span class="kw">private val</span> usuarioRepository: <span class="ty">UsuarioRepository</span>,   <span class="cmt">// (1) private</span>
+    <span class="kw">private val</span> auditoriaService: <span class="ty">AuditoriaService</span>,     <span class="cmt">// (1) private</span>
+    <span class="kw">private val</span> emailService: <span class="ty">EmailService</span>              <span class="cmt">// (1) private</span>
+) {
+
+    <span class="cmt">// ── Método PÚBLICO — interface limpa ──────────────</span>
+    <span class="kw">fun</span> <span class="fn">criarParaInstituicao</span>(
+        request: <span class="ty">CreateUsuarioInstituicaoRequest</span>,
+        instituicaoId: <span class="ty">String</span>,
+        criadorId: <span class="ty">String</span>
+    ): <span class="ty">Usuario</span> {
+        validarEmailUnico(request.email)          <span class="cmt">// (2) privado</span>
+        <span class="kw">val</span> papeis = validarPapeis(request.papeis)  <span class="cmt">// (2) privado</span>
+        <span class="kw">val</span> usuario = montarEntidade(request, papeis, instituicaoId) <span class="cmt">// (2)</span>
+
+        <span class="kw">val</span> criado = usuarioRepository.insert(usuario)
+        auditoriaService.registrar(AcaoAuditoria.CRIAR, <span class="str">"Usuario"</span>, criado.id, criadorId)
+        enviarEmailBoasVindas(criado)             <span class="cmt">// (2) privado</span>
+
+        <span class="kw">return</span> criado
+    }
+
+    <span class="cmt">// ── Métodos PRIVADOS — detalhes escondidos ────────</span>
+    <span class="kw">private fun</span> <span class="fn">validarEmailUnico</span>(email: <span class="ty">String</span>) {          <span class="cmt">// (3)</span>
+        <span class="kw">if</span> (usuarioRepository.findByEmail(email) != <span class="kw">null</span>)
+            <span class="kw">throw</span> ApiException(<span class="num">400</span>, <span class="str">"E-mail já cadastrado"</span>)
+    }
+
+    <span class="kw">private fun</span> <span class="fn">validarPapeis</span>(papeis: <span class="ty">List</span>&lt;<span class="ty">String</span>&gt;): <span class="ty">Set</span>&lt;<span class="ty">Papel</span>&gt; {
+        <span class="kw">return</span> papeis.map {
+            <span class="kw">try</span> { Papel.valueOf(it) }
+            <span class="kw">catch</span> (_: <span class="ty">Exception</span>) { <span class="kw">throw</span> ApiException(<span class="num">400</span>, <span class="str">"Papel inválido: $it"</span>) }
+        }.toSet()
+    }
+
+    <span class="kw">private fun</span> <span class="fn">montarEntidade</span>(...): <span class="ty">Usuario</span> { ... }
+    <span class="kw">private fun</span> <span class="fn">enviarEmailBoasVindas</span>(u: <span class="ty">Usuario</span>) { ... }
+}</code></pre>
+
+<p><strong>O que o código acima demonstra:</strong></p>
+
+<div class="step-card">
+  <h3><span class="step-num">(1)</span> Dependências são <code>private</code></h3>
+  <p>Ninguém de fora do Service acessa <code>usuarioRepository</code>, <code>auditoriaService</code> ou <code>emailService</code>. A Route não sabe que o Service usa um <code>EmailService</code> — ela só chama <code>criarParaInstituicao()</code>.</p>
+</div>
+
+<div class="step-card">
+  <h3><span class="step-num">(2)</span> Métodos privados escondem a complexidade</h3>
+  <p>O método público <code>criarParaInstituicao()</code> lê como uma receita de alto nível: <em>"valide o e-mail, valide os papéis, monte a entidade, insira, registre auditoria, envie e-mail"</em>. Os detalhes de <em>como</em> cada passo funciona ficam nos métodos privados.</p>
+</div>
+
+<div class="step-card">
+  <h3><span class="step-num">(3)</span> Mudanças internas não afetam o exterior</h3>
+  <p>Se amanhã a regra mudar de "e-mail único global" para "e-mail único por instituição", você altera <strong>apenas</strong> o método <code>validarEmailUnico()</code>. A Route continua chamando <code>criarParaInstituicao()</code> sem saber que algo mudou.</p>
+</div>
+
+<h2 id="sec-2-3">2.3 Modificadores de visibilidade em Kotlin</h2>
+
+<p>Kotlin oferece quatro modificadores de visibilidade:</p>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Modificador</th><th>Visível para</th><th>Uso típico</th></tr></thead>
+  <tbody>
+    <tr><td><code>public</code> <small>(padrão)</small></td><td>Qualquer classe, de qualquer lugar</td><td>Métodos do Service chamados pela Route</td></tr>
+    <tr><td><code>private</code></td><td>Apenas dentro da própria classe</td><td>Dependências do construtor, métodos auxiliares</td></tr>
+    <tr><td><code>protected</code></td><td>Dentro da classe e suas subclasses</td><td>Métodos reutilizáveis em hierarquia de herança</td></tr>
+    <tr><td><code>internal</code></td><td>Dentro do mesmo módulo (projeto)</td><td>Classes auxiliares do mesmo pacote</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout callout-success">
+  <span class="callout-icon">✅</span>
+  <strong>Regra prática</strong><br>
+  Comece tudo como <code>private</code>. Só torne público o que for <em>necessário</em> para o mundo exterior. Isso é encapsulamento aplicado: minimize a superfície de contato entre as classes.
+</div>
+
+
+<!-- ══════════════════════════════════════════════════ -->
+<h1 id="sec-3"><span class="section-num">3</span> Composição</h1>
+
+<h2 id="sec-3-1">3.1 O Service <em>usa</em> Repositories — não <em>é</em> um Repository</h2>
+
+<p><strong>Composição</strong> é o princípio de construir classes complexas combinando objetos mais simples. Em vez de herdar comportamento de outra classe, a classe <em>possui</em> referências a outros objetos e delega a eles.</p>
+
+<p>No <code>UsuarioService</code>, a composição acontece naturalmente:</p>
+
+<pre><code><span class="file-label">composição no construtor</span><span class="kw">class</span> <span class="ty">UsuarioService</span>(
+    <span class="kw">private val</span> usuarioRepository: <span class="ty">UsuarioRepository</span>,    <span class="cmt">// TEM um repo de usuários</span>
+    <span class="kw">private val</span> auditoriaService: <span class="ty">AuditoriaService</span>,      <span class="cmt">// TEM um service de auditoria</span>
+    <span class="kw">private val</span> emailService: <span class="ty">EmailService</span>               <span class="cmt">// TEM um service de email</span>
+)</code></pre>
+
+<p>Compare com uma abordagem incorreta usando herança:</p>
+
+<div class="comparison">
+  <div class="comparison-item">
+    <div class="comparison-label label-bad">❌ Herança (errado)</div>
+    <pre style="margin-top:.4rem"><code><span class="cmt">// UsuarioService É UM UsuarioRepository?</span>
+<span class="cmt">// Não faz sentido lógico!</span>
+<span class="kw">class</span> <span class="ty">UsuarioService</span> : <span class="ty">UsuarioRepositoryImpl</span>() {
+    <span class="cmt">// Herda todas as operações de banco</span>
+    <span class="cmt">// Não pode usar outro repository</span>
+    <span class="cmt">// Acoplamento total</span>
+}</code></pre>
+  </div>
+  <div class="comparison-item">
+    <div class="comparison-label label-good">✅ Composição (correto)</div>
+    <pre style="margin-top:.4rem"><code><span class="cmt">// UsuarioService TEM UM UsuarioRepository</span>
+<span class="cmt">// Faz sentido: o Service usa o Repository</span>
+<span class="kw">class</span> <span class="ty">UsuarioService</span>(
+    <span class="kw">private val</span> repo: <span class="ty">UsuarioRepository</span>
+) {
+    <span class="cmt">// Pode usar QUALQUER implementação</span>
+    <span class="cmt">// Depende da interface, não do impl</span>
+}</code></pre>
+  </div>
+</div>
+
+<h2 id="sec-3-2">3.2 Por que composição em vez de herança?</h2>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Aspecto</th><th>Herança</th><th>Composição</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Relação</strong></td><td>"É um" (is-a)</td><td>"Tem um" (has-a)</td></tr>
+    <tr><td><strong>Acoplamento</strong></td><td>Alto — herda tudo da classe pai</td><td>Baixo — usa apenas a interface</td></tr>
+    <tr><td><strong>Flexibilidade</strong></td><td>Herança única em Kotlin</td><td>Pode compor quantos quiser</td></tr>
+    <tr><td><strong>Testabilidade</strong></td><td>Difícil isolar</td><td>Pode injetar mocks</td></tr>
+    <tr><td><strong>Exemplo</strong></td><td><code>class Dog : Animal()</code></td><td><code>class UsuarioService(val repo: ...)</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Observe como o <code>SenhaService</code> usa composição com <strong>múltiplos</strong> repositórios e services:</p>
+
+<pre><code><span class="file-label">services/SenhaService.kt (construtor)</span><span class="kw">class</span> <span class="ty">SenhaService</span>(
+    <span class="kw">private val</span> senhaRepository: <span class="ty">SenhaRepository</span>,     <span class="cmt">// para persistir senhas</span>
+    <span class="kw">private val</span> filaRepository: <span class="ty">FilaRepository</span>,       <span class="cmt">// para verificar se fila está ativa</span>
+    <span class="kw">private val</span> qrCodeRepository: <span class="ty">QrCodeRepository</span>,   <span class="cmt">// para validar QR Code</span>
+    <span class="kw">private val</span> auditoriaService: <span class="ty">AuditoriaService</span>,   <span class="cmt">// para registrar ações</span>
+    <span class="kw">private val</span> webSocketManager: <span class="ty">WebSocketManager</span>    <span class="cmt">// para notificar em tempo real</span>
+)</code></pre>
+
+<p>Para criar uma senha, o <code>SenhaService</code> precisa: verificar se a fila existe e está ativa (usa <code>FilaRepository</code>), validar o QR Code (usa <code>QrCodeRepository</code>), calcular a posição (usa <code>SenhaRepository</code>), inserir a senha (usa <code>SenhaRepository</code>), registrar auditoria (usa <code>AuditoriaService</code>) e notificar em tempo real (usa <code>WebSocketManager</code>). Seis objetos colaborando — nenhum herdado, todos compostos.</p>
+
+<div class="callout callout-concept">
+  <span class="callout-icon">💡</span>
+  <strong>Princípio clássico de OO</strong><br>
+  <em>"Prefira composição sobre herança"</em> (Favor composition over inheritance — Gang of Four, 1994). Herança é útil quando existe uma relação genuína de "é um" (ex.: <code>Gato</code> é um <code>Animal</code>). Para montar funcionalidade a partir de partes, composição é a escolha certa.
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     PARTE II – DTOs E VALIDAÇÕES
+══════════════════════════════════════════════════ -->
+
+<h1 id="sec-4"><span class="section-num">4</span> DTOs — Separando Entrada e Saída</h1>
+
+<h2 id="sec-4-1">4.1 Por que não usar a entidade diretamente?</h2>
+
+<p>O modelo <code>Usuario</code> tem 16 atributos, incluindo <code>senhaHash</code>, tokens e timestamps internos. Se expusermos a entidade diretamente na API:</p>
+
+<ul>
+  <li>O cliente receberia a <code>senhaHash</code> na resposta — <strong>falha de segurança</strong>.</li>
+  <li>O cliente precisaria enviar <code>id</code>, <code>createdAt</code> e <code>updatedAt</code> — campos que são gerados pelo sistema.</li>
+  <li>Qualquer mudança no modelo quebraria a API — <strong>acoplamento</strong>.</li>
+</ul>
+
+<p>A solução é usar <strong>DTOs</strong> (Data Transfer Objects): classes separadas que definem exatamente o que <em>entra</em> e o que <em>sai</em> da API.</p>
+
+<div class="callout callout-concept">
+  <span class="callout-icon">💡</span>
+  <strong>DTO — Data Transfer Object</strong><br>
+  Um DTO é uma <code>data class</code> cujo único propósito é transportar dados entre camadas. Ele não contém lógica de negócio, apenas atributos. No FilaCidadã, dividimos em:<br>
+  <code>dtos/request/</code> — o que o cliente <strong>envia</strong><br>
+  <code>dtos/response/</code> — o que o cliente <strong>recebe</strong>
+</div>
+
+<h2 id="sec-4-2">4.2 Request DTOs — o que o cliente envia</h2>
+
+<p>Veja os DTOs de requisição para endpoints de usuários:</p>
+
+<pre><code><span class="file-label">dtos/request/UsuarioRequests.kt</span><span class="ann">@Serializable</span>
+<span class="kw">data class</span> <span class="ty">CreateUsuarioInstituicaoRequest</span>(
+    <span class="kw">val</span> nome: <span class="ty">String</span>,               <span class="cmt">// obrigatório</span>
+    <span class="kw">val</span> email: <span class="ty">String</span>,              <span class="cmt">// obrigatório</span>
+    <span class="kw">val</span> papeis: <span class="ty">List</span>&lt;<span class="ty">String</span>&gt;         <span class="cmt">// obrigatório</span>
+)
+
+<span class="ann">@Serializable</span>
+<span class="kw">data class</span> <span class="ty">UpdateUsuarioRequest</span>(
+    <span class="kw">val</span> nome: <span class="ty">String?</span> = <span class="kw">null</span>,       <span class="cmt">// opcional — só atualiza se informado</span>
+    <span class="kw">val</span> papeis: <span class="ty">List</span>&lt;<span class="ty">String</span>&gt;? = <span class="kw">null</span>,
+    <span class="kw">val</span> ativo: <span class="ty">Boolean?</span> = <span class="kw">null</span>,
+    <span class="kw">val</span> instituicaoId: <span class="ty">String?</span> = <span class="kw">null</span>
+)</code></pre>
+
+<p><strong>Pontos importantes:</strong></p>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Aspecto</th><th>CreateRequest</th><th>UpdateRequest</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Campos obrigatórios</strong></td><td>Sim — sem valores padrão</td><td>Todos opcionais (<code>null</code>)</td></tr>
+    <tr><td><strong>Campo <code>id</code></strong></td><td>❌ Não — gerado pelo Service</td><td>❌ Não — vem da URL</td></tr>
+    <tr><td><strong>Campo <code>senhaHash</code></strong></td><td>❌ Não — password-less</td><td>❌ Não — alteração de senha é outro fluxo</td></tr>
+    <tr><td><strong>Campo <code>createdAt</code></strong></td><td>❌ Não — gerado automaticamente</td><td>❌ Não — imutável</td></tr>
+    <tr><td><strong>Por que separar?</strong></td><td colspan="2">Cada operação tem campos diferentes. O DTO garante que o cliente envia <strong>apenas</strong> o que faz sentido.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout callout-info">
+  <span class="callout-icon">ℹ️</span>
+  <strong>Nullable = atualização parcial (PATCH semântico)</strong><br>
+  No <code>UpdateUsuarioRequest</code>, todos os campos são <code>String? = null</code>. O Service verifica quais não são <code>null</code> e <em>só atualiza esses</em>. Se o cliente enviar <code>{ "nome": "Carlos" }</code>, apenas o nome muda — os outros campos permanecem inalterados. Isso é possível graças ao sistema de nullable do Kotlin.
+</div>
+
+<h2 id="sec-4-3">4.3 Response DTOs — o que o cliente recebe</h2>
+
+<p>O projeto FilaCidadã usa um envelope padrão para <strong>todas</strong> as respostas da API:</p>
+
+<pre><code><span class="file-label">dtos/response/ApiResponse.kt</span><span class="ann">@Serializable</span>
+<span class="kw">data class</span> <span class="ty">ApiResponse</span>&lt;<span class="ty">T</span>&gt;(
+    <span class="kw">val</span> success: <span class="ty">Boolean</span>,
+    <span class="kw">val</span> data: <span class="ty">T?</span> = <span class="kw">null</span>,
+    <span class="kw">val</span> message: <span class="ty">String?</span> = <span class="kw">null</span>,
+    <span class="kw">val</span> errors: <span class="ty">List</span>&lt;<span class="ty">String</span>&gt;? = <span class="kw">null</span>
+) {
+    <span class="kw">companion object</span> {
+        <span class="kw">fun</span> &lt;<span class="ty">T</span>&gt; <span class="fn">success</span>(data: <span class="ty">T</span>, message: <span class="ty">String?</span> = <span class="kw">null</span>) = <span class="ty">ApiResponse</span>(
+            success = <span class="kw">true</span>, data = data, message = message
+        )
+
+        <span class="kw">fun</span> &lt;<span class="ty">T</span>&gt; <span class="fn">error</span>(message: <span class="ty">String</span>, errors: <span class="ty">List</span>&lt;<span class="ty">String</span>&gt;? = <span class="kw">null</span>) = <span class="ty">ApiResponse</span>&lt;<span class="ty">T</span>&gt;(
+            success = <span class="kw">false</span>, message = message, errors = errors
+        )
+    }
+}</code></pre>
+
+<p><strong>Análise dos conceitos de OO nesse código:</strong></p>
+
+<div class="step-card">
+  <h3><span class="step-num">T</span> Generics — <code>ApiResponse&lt;T&gt;</code></h3>
+  <p>O <code>&lt;T&gt;</code> é um <strong>parâmetro de tipo genérico</strong>. Ele permite que <code>ApiResponse</code> transporte <em>qualquer tipo de dado</em>: <code>ApiResponse&lt;Usuario&gt;</code>, <code>ApiResponse&lt;List&lt;Fila&gt;&gt;</code>, <code>ApiResponse&lt;SenhaStatsResponse&gt;</code>. Uma única classe para todas as respostas.</p>
+</div>
+
+<div class="step-card">
+  <h3><span class="step-num">CO</span> Companion Object — fábrica de respostas</h3>
+  <p>O <code>companion object</code> em Kotlin é equivalente a métodos estáticos em Java. Os métodos <code>success()</code> e <code>error()</code> são <strong>métodos de fábrica</strong> (factory methods) que criam instâncias padronizadas sem expor o construtor diretamente. Isso garante que toda resposta de sucesso tenha <code>success = true</code> e toda resposta de erro tenha <code>success = false</code>.</p>
+</div>
+
+<p><strong>Exemplo de uso:</strong></p>
+
+<pre><code><span class="cmt">// Na Route, após chamar o Service</span>
+<span class="kw">val</span> usuario = usuarioService.buscarPorId(id)
+call.respond(ApiResponse.success(usuario))
+<span class="cmt">// → { "success": true, "data": { "id": "...", "nome": "Ana", ... } }</span>
+
+<span class="cmt">// Em caso de erro (lançado pelo Service)</span>
+<span class="cmt">// → { "success": false, "message": "Usuário não encontrado" }</span></code></pre>
+
+<p>Para listagens paginadas, o sistema usa outro DTO genérico:</p>
+
+<pre><code><span class="file-label">utils/PaginationUtils.kt</span><span class="ann">@Serializable</span>
+<span class="kw">data class</span> <span class="ty">PaginatedResponse</span>&lt;<span class="ty">T</span>&gt;(
+    <span class="kw">val</span> docs: <span class="ty">List</span>&lt;<span class="ty">T</span>&gt;,
+    <span class="kw">val</span> totalDocs: <span class="ty">Long</span>,
+    <span class="kw">val</span> limit: <span class="ty">Int</span>,
+    <span class="kw">val</span> totalPages: <span class="ty">Int</span>,
+    <span class="kw">val</span> page: <span class="ty">Int</span>,
+    <span class="kw">val</span> hasPrevPage: <span class="ty">Boolean</span>,
+    <span class="kw">val</span> hasNextPage: <span class="ty">Boolean</span>
+)</code></pre>
+
+<div class="callout callout-info">
+  <span class="callout-icon">ℹ️</span>
+  <strong>Generics e reutilização</strong><br>
+  Tanto <code>ApiResponse&lt;T&gt;</code> quanto <code>PaginatedResponse&lt;T&gt;</code> são genéricos. Isso significa que <strong>uma única classe</strong> serve para todos os tipos de dados da API. Sem generics, precisaríamos de <code>ApiResponseUsuario</code>, <code>ApiResponseFila</code>, <code>ApiResponseSenha</code>, etc. — código duplicado para cada entidade.
+</div>
+
+
+<!-- ══════════════════════════════════════════════════ -->
+<h1 id="sec-5"><span class="section-num">5</span> Exceções de Negócio</h1>
+
+<h2 id="sec-5-1">5.1 A classe <code>ApiException</code></h2>
+
+<p>Quando uma regra de negócio é violada (e-mail duplicado, fila inativa, senha inválida), o Service precisa <strong>sinalizar o erro</strong>. Em Kotlin, isso é feito lançando uma exceção:</p>
+
+<pre><code><span class="file-label">plugins/ApiException.kt</span><span class="kw">class</span> <span class="ty">ApiException</span>(
+    <span class="kw">val</span> statusCode: <span class="ty">Int</span>,           <span class="cmt">// código HTTP: 400, 404, 409...</span>
+    <span class="kw">override val</span> message: <span class="ty">String</span>,  <span class="cmt">// mensagem para o cliente</span>
+    <span class="kw">val</span> errors: <span class="ty">List</span>&lt;<span class="ty">String</span>&gt;? = <span class="kw">null</span>
+) : <span class="ty">RuntimeException</span>(message)      <span class="cmt">// ← herança!</span></code></pre>
+
+<p><strong>Conceitos de OO nesse código:</strong></p>
+<ul>
+  <li><strong>Herança:</strong> <code>ApiException</code> <em>herda</em> de <code>RuntimeException</code> — portanto, pode ser lançada com <code>throw</code> e capturada com <code>catch</code>.</li>
+  <li><strong><code>override</code>:</strong> o atributo <code>message</code> sobrescreve o <code>message</code> da classe pai <code>Throwable</code>.</li>
+  <li><strong>Atributo próprio:</strong> <code>statusCode</code> é específico da nossa exceção — a <code>RuntimeException</code> padrão não tem código HTTP.</li>
+</ul>
+
+<p>O Service usa <code>ApiException</code> para sinalizar erros semânticos:</p>
+
+<pre><code><span class="file-label">uso no Service</span><span class="cmt">// 404 — recurso não encontrado</span>
+<span class="kw">fun</span> <span class="fn">buscarPorId</span>(id: <span class="ty">String</span>): <span class="ty">Usuario</span> {
+    <span class="kw">return</span> usuarioRepository.findById(id)
+        ?: <span class="kw">throw</span> <span class="ty">ApiException</span>(<span class="num">404</span>, <span class="str">"Usuário não encontrado"</span>)
+}
+
+<span class="cmt">// 400 — dados inválidos</span>
+<span class="kw">if</span> (usuarioRepository.findByEmail(request.email) != <span class="kw">null</span>)
+    <span class="kw">throw</span> <span class="ty">ApiException</span>(<span class="num">400</span>, <span class="str">"E-mail já cadastrado"</span>)
+
+<span class="cmt">// 409 — conflito de estado</span>
+<span class="kw">if</span> (senha.status != StatusSenha.AGUARDANDO)
+    <span class="kw">throw</span> <span class="ty">ApiException</span>(<span class="num">409</span>, <span class="str">"Senha não está aguardando"</span>)</code></pre>
+
+<h2 id="sec-5-2">5.2 Tratamento centralizado — StatusPages</h2>
+
+<p>As exceções lançadas pelo Service são <strong>capturadas automaticamente</strong> pelo plugin <code>StatusPages</code> do Ktor. Ele converte a exceção em uma resposta HTTP padronizada:</p>
+
+<pre><code><span class="file-label">plugins/StatusPages.kt</span><span class="kw">fun</span> <span class="ty">Application</span>.<span class="fn">configureStatusPages</span>() {
+    install(StatusPages) {
+
+        <span class="cmt">// Captura TODAS as ApiException lançadas por qualquer Service</span>
+        exception&lt;<span class="ty">ApiException</span>&gt; { call, cause ->
+            call.respond(
+                HttpStatusCode.fromValue(cause.statusCode),
+                ApiResponse.error&lt;<span class="ty">Any</span>&gt;(cause.message, cause.errors)
+            )
+        }
+
+        <span class="cmt">// Captura erros inesperados (proteção genérica)</span>
+        exception&lt;<span class="ty">Exception</span>&gt; { call, cause ->
+            call.respond(
+                HttpStatusCode.InternalServerError,
+                ApiResponse.error&lt;<span class="ty">Any</span>&gt;(<span class="str">"Erro interno do servidor"</span>)
+            )
+        }
+    }
+}</code></pre>
+
+<p><strong>O fluxo completo do erro:</strong></p>
+
+<div class="diagram" style="flex-wrap:wrap; gap:.3rem;">
+  <div class="diagram-box box-orange" style="min-width:140px">
+    <div>⚙️ Service</div>
+    <small><code>throw ApiException(404, ...)</code></small>
+  </div>
+  <div class="diagram-arrow">→</div>
+  <div class="diagram-box box-pink" style="min-width:140px">
+    <div>🛡️ StatusPages</div>
+    <small>Captura a exceção</small>
+  </div>
+  <div class="diagram-arrow">→</div>
+  <div class="diagram-box box-blue" style="min-width:180px">
+    <div>📤 Resposta HTTP</div>
+    <small><code>404 { success: false, message: "..." }</code></small>
+  </div>
+</div>
+
+<div class="callout callout-success">
+  <span class="callout-icon">✅</span>
+  <strong>Benefícios desse design</strong>
+  <ul>
+    <li>O Service não precisa saber nada sobre HTTP — só lança exceções com mensagens claras.</li>
+    <li>A Route não precisa de <code>try/catch</code> — o <code>StatusPages</code> cuida de tudo.</li>
+    <li>Toda resposta de erro segue o mesmo formato (<code>ApiResponse</code>) — consistência para o frontend.</li>
+    <li>Basta adicionar um novo tipo de exceção e um handler para expandir o sistema.</li>
+  </ul>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     PARTE III – CÓDIGO REAL
+══════════════════════════════════════════════════ -->
+
+<h1 id="sec-6"><span class="section-num">6</span> O <code>UsuarioService</code> Completo — Código Real</h1>
+
+<h2 id="sec-6-1">6.1 Código do projeto</h2>
+
+<p>Agora vamos analisar o <code>UsuarioService</code> completo, da mesma forma que analisamos o <code>UsuarioRepositoryImpl</code> na Parte 1:</p>
+
+<pre><code><span class="file-label">services/UsuarioService.kt</span><span class="kw">class</span> <span class="ty">UsuarioService</span>(
+    <span class="kw">private val</span> usuarioRepository: <span class="ty">UsuarioRepository</span>,
+    <span class="kw">private val</span> auditoriaService: <span class="ty">AuditoriaService</span>,
+    <span class="kw">private val</span> emailService: <span class="ty">EmailService</span>
+) {
+
+    <span class="kw">fun</span> <span class="fn">listar</span>(
+        pagination: <span class="ty">PaginationParams</span>,
+        filters: <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">Any?</span>&gt;
+    ): <span class="ty">PaginatedResponse</span>&lt;<span class="ty">Usuario</span>&gt; {                              <span class="cmt">// (A)</span>
+        <span class="kw">val</span> (docs, total) = usuarioRepository.findAll(
+            pagination.page, pagination.limit, filters
+        )
+        <span class="kw">return</span> buildPaginatedResponse(docs, total, pagination)
+    }
+
+    <span class="kw">fun</span> <span class="fn">buscarPorId</span>(id: <span class="ty">String</span>): <span class="ty">Usuario</span> {                         <span class="cmt">// (B)</span>
+        <span class="kw">return</span> usuarioRepository.findById(id)
+            ?: <span class="kw">throw</span> ApiException(<span class="num">404</span>, <span class="str">"Usuário não encontrado"</span>)
+    }
+
+    <span class="kw">fun</span> <span class="fn">criarParaInstituicao</span>(                                     <span class="cmt">// (C)</span>
+        request: <span class="ty">CreateUsuarioInstituicaoRequest</span>,
+        instituicaoId: <span class="ty">String</span>,
+        criadorId: <span class="ty">String</span>
+    ): <span class="ty">Usuario</span> {
+        <span class="kw">if</span> (usuarioRepository.findByEmail(request.email) != <span class="kw">null</span>)
+            <span class="kw">throw</span> ApiException(<span class="num">400</span>, <span class="str">"E-mail já cadastrado"</span>)
+
+        <span class="kw">val</span> papeis = request.papeis.map {
+            <span class="kw">try</span> { Papel.valueOf(it) }
+            <span class="kw">catch</span> (_: <span class="ty">Exception</span>) { <span class="kw">throw</span> ApiException(<span class="num">400</span>, <span class="str">"Papel inválido: $it"</span>) }
+        }.toSet()
+
+        <span class="kw">val</span> usuario = Usuario(
+            id = UUID.randomUUID().toString(),
+            nome = request.nome,
+            email = request.email.lowercase(),
+            senhaHash = <span class="str">""</span>,                        <span class="cmt">// password-less</span>
+            papeis = papeis,
+            instituicaoId = instituicaoId
+        )
+
+        <span class="kw">val</span> criado = usuarioRepository.insert(usuario)
+        auditoriaService.registrar(                               <span class="cmt">// (D)</span>
+            AcaoAuditoria.CRIAR, <span class="str">"Usuario"</span>, criado.id, criadorId, instituicaoId
+        )
+        emailService.sendWelcomeEmail(criado.email, criado.nome, ...) <span class="cmt">// (E)</span>
+
+        <span class="kw">return</span> criado
+    }
+
+    <span class="kw">fun</span> <span class="fn">atualizar</span>(                                                 <span class="cmt">// (F)</span>
+        id: <span class="ty">String</span>,
+        request: <span class="ty">UpdateUsuarioRequest</span>,
+        executorId: <span class="ty">String</span>
+    ): <span class="ty">Boolean</span> {
+        buscarPorId(id)                                           <span class="cmt">// verifica existência</span>
+
+        <span class="kw">val</span> updates = mutableMapOf&lt;<span class="ty">String</span>, <span class="ty">Any?</span>&gt;()
+        request.nome?.let { updates[<span class="str">"nome"</span>] = it }              <span class="cmt">// (G)</span>
+        request.ativo?.let { updates[<span class="str">"ativo"</span>] = it }
+        request.instituicaoId?.let { updates[<span class="str">"instituicaoId"</span>] = it }
+        request.papeis?.let { papeisList ->
+            updates[<span class="str">"papeis"</span>] = papeisList.map { Papel.valueOf(it) }.toSet()
+        }
+        updates[<span class="str">"updatedAt"</span>] = java.time.Instant.now()
+
+        <span class="kw">val</span> result = usuarioRepository.update(id, updates)
+        <span class="kw">if</span> (result) auditoriaService.registrar(
+            AcaoAuditoria.ATUALIZAR, <span class="str">"Usuario"</span>, id, executorId
+        )
+        <span class="kw">return</span> result
+    }
+
+    <span class="kw">fun</span> <span class="fn">deletar</span>(id: <span class="ty">String</span>, executorId: <span class="ty">String</span>): <span class="ty">Boolean</span> {       <span class="cmt">// (H)</span>
+        buscarPorId(id)
+        <span class="kw">val</span> result = usuarioRepository.delete(id)
+        <span class="kw">if</span> (result) auditoriaService.registrar(
+            AcaoAuditoria.DELETAR, <span class="str">"Usuario"</span>, id, executorId
+        )
+        <span class="kw">return</span> result
+    }
+}</code></pre>
+
+<h2 id="sec-6-2">6.2 Análise método a método</h2>
+
+<div class="step-card">
+  <h3><span class="step-num">(A)</span> <code>listar()</code> — delegação pura</h3>
+  <p>O Service recebe parâmetros de paginação já extraídos e delega ao Repository. Em seguida, formata o resultado como <code>PaginatedResponse</code>. A <strong>desestruturação</strong> <code>val (docs, total) = ...</code> extrai os dois valores do <code>Pair&lt;List, Long&gt;</code> retornado pelo Repository — recurso da <code>data class</code> que vimos na Parte 1.</p>
+</div>
+
+<div class="step-card">
+  <h3><span class="step-num">(B)</span> <code>buscarPorId()</code> — o operador Elvis <code>?:</code></h3>
+  <p>O Repository retorna <code>Usuario?</code> (pode ser <code>null</code>). O Service <strong>decide o que fazer</strong> se for <code>null</code>: lança uma <code>ApiException(404)</code>. O operador <code>?:</code> (Elvis) é lido como: <em>"retorne o valor à esquerda; se for null, execute a expressão à direita"</em>.</p>
+  <pre><code><span class="kw">return</span> findById(id) ?: <span class="kw">throw</span> ApiException(<span class="num">404</span>, <span class="str">"Não encontrado"</span>)
+<span class="cmt">//     ↑ pode ser null    ↑ se for null, faz isso</span></code></pre>
+  <p>Esse método é <strong>reutilizado internamente</strong> por <code>atualizar()</code> e <code>deletar()</code> para verificar existência antes de agir.</p>
+</div>
+
+<div class="step-card">
+  <h3><span class="step-num">(C)</span> <code>criarParaInstituicao()</code> — o método mais rico</h3>
+  <p>Este método demonstra como o Service <strong>orquestra múltiplas responsabilidades</strong>:</p>
+  <ol>
+    <li><strong>Valida</strong> — e-mail único, papéis válidos</li>
+    <li><strong>Transforma</strong> — DTO → entidade, converte Strings em enums, normaliza e-mail</li>
+    <li><strong>Persiste</strong> — delega ao Repository</li>
+    <li><strong>Efeitos colaterais</strong> — auditoria, envio de e-mail</li>
+  </ol>
+  <p>Repare que o DTO (<code>CreateUsuarioInstituicaoRequest</code>) tem 3 campos, mas a entidade <code>Usuario</code> tem 16. O Service preenche os campos faltantes (<code>id</code>, <code>senhaHash</code>, <code>instituicaoId</code>, etc.).</p>
+</div>
+
+<div class="step-card">
+  <h3><span class="step-num">(D)</span> Orquestrando outros Services</h3>
+  <p><code>auditoriaService.registrar(...)</code> é um exemplo de <strong>composição em ação</strong>: o <code>UsuarioService</code> não sabe como a auditoria é armazenada (pode usar MongoDB, pode usar um serviço externo). Ele apenas chama o método público do <code>AuditoriaService</code>.</p>
+</div>
+
+<div class="step-card">
+  <h3><span class="step-num">(E)</span> Integrando serviços externos</h3>
+  <p><code>emailService.sendWelcomeEmail(...)</code> envia um e-mail de boas-vindas. O <code>UsuarioService</code> não sabe como o e-mail é enviado (SMTP? API externa?). Novamente: composição + encapsulamento.</p>
+</div>
+
+<div class="step-card">
+  <h3><span class="step-num">(F)</span> <code>atualizar()</code> — atualização parcial</h3>
+  <p>O método recebe um <code>UpdateUsuarioRequest</code> onde todos os campos são nullable. Somente os campos não-<code>null</code> são adicionados ao mapa de atualizações.</p>
+</div>
+
+<div class="step-card">
+  <h3><span class="step-num">(G)</span> <code>let { }</code> — operador de escopo</h3>
+  <p><code>request.nome?.let { updates["nome"] = it }</code> é lido como: <em>"se <code>request.nome</code> não for null, execute o bloco usando o valor como <code>it</code>"</em>. É a forma idiomática do Kotlin para lidar com nullables sem <code>if/else</code>.</p>
+  <pre><code><span class="cmt">// Equivalente sem let:</span>
+<span class="kw">if</span> (request.nome != <span class="kw">null</span>) {
+    updates[<span class="str">"nome"</span>] = request.nome
+}
+
+<span class="cmt">// Com let (idiomático Kotlin):</span>
+request.nome?.let { updates[<span class="str">"nome"</span>] = it }</code></pre>
+</div>
+
+<div class="step-card">
+  <h3><span class="step-num">(H)</span> <code>deletar()</code> — verificação + auditoria</h3>
+  <p>Antes de deletar, chama <code>buscarPorId(id)</code> que lança 404 se o usuário não existir. Após a deleção bem-sucedida, registra auditoria. Mesmo o método mais simples segue o padrão: <strong>verifica → executa → registra</strong>.</p>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════ -->
+<h1 id="sec-7"><span class="section-num">7</span> Diagrama de Composição</h1>
+
+<p>Este diagrama mostra como os Services do projeto FilaCidadã se compõem entre si e com os Repositories:</p>
+
+<div style="background:#fff; border-radius:var(--radius); box-shadow:var(--shadow-md); padding:1.5rem; margin:1.5rem 0;">
+
+  <div style="display:flex; gap:1rem; flex-wrap:wrap; justify-content:center;">
+
+    <!-- UsuarioService -->
+    <div class="uml-box" style="max-width:350px; flex:1; min-width:280px;">
+      <div class="uml-header">
+        <strong>UsuarioService</strong>
+        <small>services/UsuarioService.kt</small>
+      </div>
+      <div class="uml-section">
+        <div class="uml-section-title">Dependências (composição)</div>
+        <div class="uml-item"><code>- usuarioRepository: UsuarioRepository</code></div>
+        <div class="uml-item"><code>- auditoriaService: AuditoriaService</code></div>
+        <div class="uml-item"><code>- emailService: EmailService</code></div>
+      </div>
+      <div class="uml-section">
+        <div class="uml-section-title">Métodos públicos</div>
+        <div class="uml-item"><code>+ listar(pagination, filters)</code></div>
+        <div class="uml-item"><code>+ buscarPorId(id): Usuario</code></div>
+        <div class="uml-item"><code>+ criarParaInstituicao(request, ...)</code></div>
+        <div class="uml-item"><code>+ atualizar(id, request, executorId)</code></div>
+        <div class="uml-item"><code>+ deletar(id, executorId)</code></div>
+      </div>
+    </div>
+
+    <!-- SenhaService -->
+    <div class="uml-box" style="max-width:350px; flex:1; min-width:280px;">
+      <div class="uml-header">
+        <strong>SenhaService</strong>
+        <small>services/SenhaService.kt</small>
+      </div>
+      <div class="uml-section">
+        <div class="uml-section-title">Dependências (composição)</div>
+        <div class="uml-item"><code>- senhaRepository: SenhaRepository</code></div>
+        <div class="uml-item"><code>- filaRepository: FilaRepository</code></div>
+        <div class="uml-item"><code>- qrCodeRepository: QrCodeRepository</code></div>
+        <div class="uml-item"><code>- auditoriaService: AuditoriaService</code></div>
+        <div class="uml-item"><code>- webSocketManager: WebSocketManager</code></div>
+      </div>
+      <div class="uml-section">
+        <div class="uml-section-title">Métodos públicos</div>
+        <div class="uml-item"><code>+ listar(pagination, filters)</code></div>
+        <div class="uml-item"><code>+ buscarPorId(id): Senha</code></div>
+        <div class="uml-item"><code>+ criar(filaId, usuarioId, request)</code></div>
+        <div class="uml-item"><code>+ chamar(id, mesa, operadorId)</code></div>
+        <div class="uml-item"><code>+ cancelar(id, executorId)</code></div>
+        <div class="uml-item"><code>+ finalizar(id, executorId)</code></div>
+      </div>
+      <div class="uml-section">
+        <div class="uml-section-title">Métodos privados</div>
+        <div class="uml-item"><code>- validarQrCode(filaId, codigo)</code></div>
+        <div class="uml-item"><code>- calcularPosicao(filaId, prioridade)</code></div>
+        <div class="uml-item"><code>- emitirEvento(fila, evento, senha)</code></div>
+      </div>
+    </div>
+
+  </div>
+
+  <p style="text-align:center; margin-top:1.2rem; color:var(--gray-500); font-size:.85rem;">
+    Cada seta <code>─</code> entre um Service e um Repository ou outro Service representa <strong>composição</strong>: o Service <em>tem</em> a dependência como atributo privado.
+  </p>
+
+</div>
+
+<div class="callout callout-info">
+  <span class="callout-icon">ℹ️</span>
+  <strong>Observe a diferença de complexidade</strong><br>
+  O <code>UsuarioService</code> tem 3 dependências e 5 métodos públicos — é relativamente simples. O <code>SenhaService</code> tem 5 dependências, 6+ métodos públicos e 3 métodos privados — porque a lógica de senhas é a mais complexa do sistema (máquina de estados, validação de QR Code, prioridades, WebSocket). A composição permite que cada Service cresça <strong>independentemente</strong>.
+</div>
+
+
+<!-- ══════════════════════════════════════════════════ -->
+<h1 id="sec-8"><span class="section-num">8</span> Registrando Services no Koin</h1>
+
+<p>Na <a href="parte 1 - Classes_e_Repositorios_Kotlin.html#sec-9">Parte 1, §9</a>, vimos como registrar Repositories no Koin. Agora registramos os Services — que <strong>dependem dos Repositories</strong>:</p>
+
+<pre><code><span class="file-label">config/KoinModules.kt</span><span class="kw">val</span> appModule = module {
+
+    <span class="cmt">// ── Config ──</span>
+    single { MongoConfig() }
+    single { JwtConfig() }
+    single { WebSocketManager() }
+
+    <span class="cmt">// ── Repositories (Parte 1) ──</span>
+    single&lt;<span class="ty">UsuarioRepository</span>&gt; { <span class="ty">UsuarioRepositoryImpl</span>(get&lt;<span class="ty">MongoConfig</span>&gt;().usuarios) }
+    single&lt;<span class="ty">InstituicaoRepository</span>&gt; { <span class="ty">InstituicaoRepositoryImpl</span>(get&lt;<span class="ty">MongoConfig</span>&gt;().instituicoes) }
+    single&lt;<span class="ty">FilaRepository</span>&gt; { <span class="ty">FilaRepositoryImpl</span>(get&lt;<span class="ty">MongoConfig</span>&gt;().filas) }
+    single&lt;<span class="ty">SenhaRepository</span>&gt; { <span class="ty">SenhaRepositoryImpl</span>(get&lt;<span class="ty">MongoConfig</span>&gt;().senhas) }
+    single&lt;<span class="ty">QrCodeRepository</span>&gt; { <span class="ty">QrCodeRepositoryImpl</span>(get&lt;<span class="ty">MongoConfig</span>&gt;().qrcodes) }
+    single&lt;<span class="ty">AuditoriaRepository</span>&gt; { <span class="ty">AuditoriaRepositoryImpl</span>(get&lt;<span class="ty">MongoConfig</span>&gt;().auditorias) }
+
+    <span class="cmt">// ── Serviços auxiliares ──</span>
+    single { FileStorageService() }
+    single { EmailService() }
+
+    <span class="cmt">// ── Services (NOVO — dependem dos Repositories) ──</span>
+    single { <span class="ty">AuditoriaService</span>(get()) }                          <span class="cmt">// (1) get() → AuditoriaRepository</span>
+    single { <span class="ty">UsuarioService</span>(get(), get(), get()) }              <span class="cmt">// (2) get() × 3</span>
+    single { <span class="ty">InstituicaoService</span>(get(), get()) }                 <span class="cmt">// (3)</span>
+    single { <span class="ty">FilaService</span>(get(), get(), get(), get()) }          <span class="cmt">// (4)</span>
+    single { <span class="ty">SenhaService</span>(get(), get(), get(), get(), get()) }  <span class="cmt">// (5) get() × 5</span>
+}</code></pre>
+
+<p><strong>Análise:</strong></p>
+
+<div class="step-card">
+  <h3><span class="step-num">(1)</span> O Koin resolve automaticamente</h3>
+  <p>Quando escrevemos <code>single { AuditoriaService(get()) }</code>, o Koin olha o construtor de <code>AuditoriaService</code>, vê que ele precisa de um <code>AuditoriaRepository</code>, e procura no container uma instância desse tipo. Como registramos <code>single&lt;AuditoriaRepository&gt; { AuditoriaRepositoryImpl(...) }</code>, a implementação correta é injetada automaticamente.</p>
+</div>
+
+<div class="step-card">
+  <h3><span class="step-num">(2)</span> Cadeia de dependências</h3>
+  <p><code>UsuarioService(get(), get(), get())</code> precisa de: <code>UsuarioRepository</code>, <code>AuditoriaService</code> e <code>EmailService</code>. O Koin resolve cada <code>get()</code> pelo tipo do parâmetro no construtor. A ordem de registro no módulo não importa — o Koin monta o grafo de dependências e resolve tudo no momento da primeira utilização.</p>
+</div>
+
+<div class="callout callout-warn">
+  <span class="callout-icon">⚠️</span>
+  <strong>Cuidado com dependências circulares</strong><br>
+  Se <code>ServiceA</code> dependesse de <code>ServiceB</code> e <code>ServiceB</code> dependesse de <code>ServiceA</code>, o Koin entraria em loop infinito. No FilaCidadã, isso não acontece porque a hierarquia é clara: Services dependem de Repositories e de outros Services mais simples (como <code>AuditoriaService</code>), nunca o contrário.
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     PARTE IV – EXERCÍCIOS
+══════════════════════════════════════════════════ -->
+
+<h1 id="sec-9"><span class="section-num">9</span> Exercícios Práticos</h1>
+
+<p>Implemente os Services e DTOs das demais entidades do projeto <strong>FilaCidadã</strong>. Use o <code>UsuarioService</code> (analisado neste tutorial) como referência de estilo e estrutura.</p>
+
+<div class="callout callout-info" style="margin-bottom:1.5rem">
+  <span class="callout-icon">📌</span>
+  <strong>Pré-requisitos</strong><br>
+  Estes exercícios assumem que você completou os exercícios da <a href="parte 1 - Classes_e_Repositorios_Kotlin.html#sec-10">Parte 1</a> — os modelos e repositórios já devem estar implementados.
+  <br><br>
+  <strong>Referências:</strong>
+  <ul style="margin-top:.5rem">
+    <li><a href="Especificacao_Tecnica_API_Kotlin.html" target="_blank">Especificação Técnica da API</a> — regras de negócio e fluxos</li>
+    <li>Código real do <code>UsuarioService</code> — padrão a seguir</li>
+  </ul>
+  <hr style="border:none; border-top:1px solid #7dd3fc; margin:.8rem 0">
+  Convenções obrigatórias:
+  <ul style="margin-top:.5rem">
+    <li>Todos os Services recebem dependências via <strong>construtor</strong> (<code>private val</code>)</li>
+    <li>Validações de existência usam <code>buscarPorId()</code> com <code>?: throw ApiException(404, ...)</code></li>
+    <li>DTOs de Request ficam em <code>dtos/request/</code>, anotados com <code>@Serializable</code></li>
+    <li>Toda ação de escrita (criar, atualizar, deletar) registra <strong>auditoria</strong></li>
+  </ul>
+  <hr style="border:none; border-top:1px solid #7dd3fc; margin:.8rem 0">
+  <strong>Formato de entrega:</strong>
+  <ul style="margin-top:.4rem">
+    <li><span class="entrega-badge entrega-repo" style="display:inline-flex">📦 Exercícios 1 a 6</span> — repositório de código (commit no branch da entrega) <strong>+</strong> envio no <strong>AVA</strong>.</li>
+    <li><span class="entrega-badge entrega-pdf" style="display:inline-flex">📄 Exercício 7</span> — entregue as respostas em <strong>PDF</strong> (também no AVA).</li>
+  </ul>
+</div>
+
+<hr>
+
+<!-- ─── EXERCÍCIO 1 ─── -->
+<div class="exercise">
+  <h4>🏋️ Exercício 1 — <code>AuditoriaService</code></h4>
+  <p>
+    <strong>Especificação de referência:</strong>
+    <a href="Especificacao_Tecnica_API_Kotlin.html#sec-12" target="_blank">§12 Auditoria e Logs</a>.
+  </p>
+  <p>O <code>AuditoriaService</code> é o Service mais simples do projeto — e por isso é ideal para começar. Crie <code>services/AuditoriaService.kt</code> com:</p>
+  <ul>
+    <li><strong>Dependência:</strong> <code>AuditoriaRepository</code> (via construtor).</li>
+    <li><strong>Método <code>registrar()</code></strong> — recebe os dados de auditoria (<code>acao</code>, <code>entidade</code>, <code>entidadeId</code>, <code>usuarioId</code>, <code>instituicaoId</code>, <code>dados</code>) e insere um registro no repositório. Converta o parâmetro <code>dados: Map&lt;String, String&gt;?</code> para <code>Map&lt;String, JsonElement&gt;?</code> usando <code>JsonPrimitive(v)</code>.</li>
+    <li><strong>Método <code>listar()</code></strong> — paginação idêntica ao <code>UsuarioService.listar()</code>.</li>
+  </ul>
+  <p><strong>Reflexão:</strong> por que o <code>AuditoriaService</code> não tem métodos <code>atualizar()</code> nem <code>deletar()</code>? Relacione com o conceito de <strong>imutabilidade</strong> dos registros de auditoria.</p>
+  <p><span class="entrega-badge entrega-repo">📦 Entrega: repositório de código + AVA</span></p>
+  <div class="entrega-note">
+    <strong>📋 Regras de entrega:</strong>
+    <ul>
+      <li>No <strong>repositório</strong>: faça o commit com os arquivos em <code>services/</code> e <code>dtos/</code> no branch da entrega.</li>
+      <li>No <strong>AVA</strong>: envie as pastas <code>services/</code> e <code>dtos/</code> compactadas (<code>.zip</code>), juntamente com o <strong>PDF dos exercícios</strong>.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── EXERCÍCIO 2 ─── -->
+<div class="exercise">
+  <h4>🏋️ Exercício 2 — <code>InstituicaoService</code> + DTOs</h4>
+  <p>
+    <strong>Especificação de referência:</strong>
+    <a href="Especificacao_Tecnica_API_Kotlin.html#sec-9-3" target="_blank">§9.3 Endpoints — Instituições</a>
+    e <a href="Especificacao_Tecnica_API_Kotlin.html#sec-8-6" target="_blank">§8.6 Fluxo de Aprovação</a>.
+  </p>
+
+  <h4 style="margin-top:1rem">2a. DTOs de Request</h4>
+  <p>Crie <code>dtos/request/InstituicaoRequests.kt</code> com:</p>
+  <ul>
+    <li><code>CreateInstituicaoRequest</code> — criação direta (admin plataforma): <code>nome</code>, <code>ativo</code>, <code>configuracoes: Map&lt;String, JsonElement&gt;</code></li>
+    <li><code>SolicitarInstituicaoRequest</code> — solicitação (usuário comum): <code>nome</code>, <code>cnpj?</code>, <code>email?</code>, <code>telefone?</code>, <code>responsavel?</code>, <code>endereco?</code>, <code>descricao?</code></li>
+    <li><code>UpdateInstituicaoRequest</code> — todos os campos nullable (atualização parcial)</li>
+    <li><code>RejeitarInstituicaoRequest</code> — apenas <code>motivoRejeicao: String?</code></li>
+  </ul>
+
+  <h4 style="margin-top:1rem">2b. Service</h4>
+  <p>Crie <code>services/InstituicaoService.kt</code> com:</p>
+  <ul>
+    <li><strong>Dependências:</strong> <code>InstituicaoRepository</code> + <code>AuditoriaService</code></li>
+    <li><strong>Métodos CRUD:</strong> <code>listar</code>, <code>buscarPorId</code>, <code>criar</code>, <code>atualizar</code>, <code>deletar</code></li>
+    <li><strong>Métodos de fluxo de aprovação:</strong>
+      <ul>
+        <li><code>solicitar()</code> — cria com status <code>PENDENTE</code></li>
+        <li><code>aprovar()</code> — valida que está <code>PENDENTE</code>, muda para <code>APROVADA</code></li>
+        <li><code>rejeitar()</code> — valida que está <code>PENDENTE</code>, muda para <code>REJEITADA</code> com motivo</li>
+        <li><code>reconsiderar()</code> — valida que está <code>REJEITADA</code>, volta para <code>PENDENTE</code></li>
+      </ul>
+    </li>
+    <li><strong>Validação em <code>criar()</code>:</strong> nome de instituição deve ser único (use <code>findByNome</code>)</li>
+  </ul>
+  <p><strong>Reflexão:</strong> os métodos <code>aprovar()</code>, <code>rejeitar()</code> e <code>reconsiderar()</code> formam uma <strong>máquina de estados</strong>. Cada método valida o estado atual antes de fazer a transição. Por que essa validação é importante? O que aconteceria se <code>aprovar()</code> não verificasse que o status é <code>PENDENTE</code>?</p>
+  <p><span class="entrega-badge entrega-repo">📦 Entrega: repositório de código + AVA</span></p>
+  <div class="entrega-note">
+    <strong>📋 Regras de entrega:</strong>
+    <ul>
+      <li>No <strong>repositório</strong>: faça o commit com os arquivos em <code>services/</code> e <code>dtos/</code> no branch da entrega.</li>
+      <li>No <strong>AVA</strong>: envie as pastas <code>services/</code> e <code>dtos/</code> compactadas (<code>.zip</code>), juntamente com o <strong>PDF dos exercícios</strong>.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── EXERCÍCIO 3 ─── -->
+<div class="exercise">
+  <h4>🏋️ Exercício 3 — <code>FilaService</code> + DTOs</h4>
+  <p>
+    <strong>Especificação de referência:</strong>
+    <a href="Especificacao_Tecnica_API_Kotlin.html#sec-9-5" target="_blank">§9.5 Endpoints — Filas</a>
+    e <a href="Especificacao_Tecnica_API_Kotlin.html#sec-8-2" target="_blank">§8.2 Filas Presenciais e QR Code</a>.
+  </p>
+
+  <h4 style="margin-top:1rem">3a. DTOs de Request</h4>
+  <p>Crie <code>dtos/request/FilaRequests.kt</code> com:</p>
+  <ul>
+    <li><code>CreateFilaRequest</code> — <code>nome</code>, <code>tipoAtendimento: String</code>, <code>ativa</code>, <code>prioridadesHabilitadas</code>, <code>fidelidadeHabilitada</code>, <code>tempoMaximoAtendimento?</code>, <code>configuracaoQRCode?</code>, <code>mesas</code></li>
+    <li><code>UpdateFilaRequest</code> — todos os campos nullable</li>
+    <li><code>ConfiguracaoQRCodeRequest</code> — DTO auxiliar para a configuração de QR Code</li>
+    <li><code>MesaRequest</code> — DTO auxiliar para os pontos de atendimento</li>
+  </ul>
+
+  <h4 style="margin-top:1rem">3b. Service</h4>
+  <p>Crie <code>services/FilaService.kt</code> com:</p>
+  <ul>
+    <li><strong>Dependências:</strong> <code>FilaRepository</code>, <code>SenhaRepository</code>, <code>AuditoriaService</code>, <code>WebSocketManager</code></li>
+    <li><strong>Métodos:</strong> <code>listar</code>, <code>buscarPorId</code>, <code>criar</code>, <code>atualizar</code>, <code>deletar</code>, <code>contagemSenhas</code></li>
+    <li><strong>No método <code>criar()</code>:</strong> converta <code>tipoAtendimento</code> de String para enum <code>TipoAtendimento</code> (com tratamento de exceção). Converta os DTOs de <code>ConfiguracaoQRCodeRequest</code> e <code>MesaRequest</code> para as classes do modelo.</li>
+    <li><strong>No método <code>contagemSenhas()</code>:</strong> use o <code>SenhaRepository</code> para contar senhas aguardando em uma fila. Isso demonstra como um Service pode usar <strong>múltiplos Repositories</strong>.</li>
+  </ul>
+  <p><strong>Reflexão:</strong> o <code>FilaService</code> depende do <code>SenhaRepository</code> diretamente, em vez de depender do <code>SenhaService</code>. Por que essa escolha faz sentido? Em que situação seria melhor depender do <code>SenhaService</code>?</p>
+  <p><span class="entrega-badge entrega-repo">📦 Entrega: repositório de código + AVA</span></p>
+  <div class="entrega-note">
+    <strong>📋 Regras de entrega:</strong>
+    <ul>
+      <li>No <strong>repositório</strong>: faça o commit com os arquivos em <code>services/</code> e <code>dtos/</code> no branch da entrega.</li>
+      <li>No <strong>AVA</strong>: envie as pastas <code>services/</code> e <code>dtos/</code> compactadas (<code>.zip</code>), juntamente com o <strong>PDF dos exercícios</strong>.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── EXERCÍCIO 4 — DESAFIO ─── -->
+<div class="exercise" style="background: linear-gradient(135deg, #f5f3ff, #ede9fe); border-color: #a78bfa;">
+  <h4 style="color: #5b21b6;">🚀 Exercício 4 — Desafio: <code>SenhaService</code> + DTOs</h4>
+  <p>
+    <strong>Especificação de referência:</strong>
+    <a href="Especificacao_Tecnica_API_Kotlin.html#sec-9-6" target="_blank">§9.6 Endpoints — Senhas</a>,
+    <a href="Especificacao_Tecnica_API_Kotlin.html#sec-8-1" target="_blank">§8.1 Criação de Senhas</a>,
+    <a href="Especificacao_Tecnica_API_Kotlin.html#sec-8-3" target="_blank">§8.3 Prioridades</a>,
+    <a href="Especificacao_Tecnica_API_Kotlin.html#sec-8-4" target="_blank">§8.4 Cancelamento e Encerramento</a>
+    e <a href="Especificacao_Tecnica_API_Kotlin.html#apendice-a" target="_blank">Apêndice A — Máquina de Estados</a>.
+  </p>
+  <p>Este é o Service mais complexo do projeto. Ele implementa uma <strong>máquina de estados</strong> e orquestra <strong>cinco dependências</strong>.</p>
+
+  <h4 style="margin-top:1rem">4a. DTOs de Request</h4>
+  <p>Crie <code>dtos/request/SenhaRequests.kt</code> com:</p>
+  <ul>
+    <li><code>CreateSenhaRequest</code> — <code>qrCode: String?</code>, <code>prioridade: String?</code> (cidadão digital)</li>
+    <li><code>CreateSenhaPresencialRequest</code> — <code>nomeCidadao: String</code>, <code>prioridade: String?</code> (operador presencial)</li>
+  </ul>
+
+  <h4 style="margin-top:1rem">4b. DTOs de Response</h4>
+  <p>Crie <code>dtos/response/SenhaResponses.kt</code> com:</p>
+  <ul>
+    <li><code>SenhaStatsResponse</code> — estatísticas: <code>emAtendimento</code>, <code>aguardando</code>, <code>finalizadasHoje</code>, <code>senhasHoje</code>, <code>porFila: List&lt;SenhaStatsPorFila&gt;</code></li>
+    <li><code>SenhaStatsPorFila</code> — detalhamento por fila individual</li>
+    <li><code>ContagemSenhasResponse</code> — contagem simples de aguardando</li>
+  </ul>
+
+  <h4 style="margin-top:1rem">4c. Service</h4>
+  <p>Crie <code>services/SenhaService.kt</code> com:</p>
+  <ul>
+    <li><strong>Dependências:</strong> <code>SenhaRepository</code>, <code>FilaRepository</code>, <code>QrCodeRepository</code>, <code>AuditoriaService</code>, <code>WebSocketManager</code></li>
+    <li><strong>Métodos de máquina de estados</strong> (cada um valida o status atual):
+      <ul>
+        <li><code>criar()</code> — digital: verifica fila ativa, duplicidade, QR Code, calcula posição</li>
+        <li><code>criarPresencial()</code> — operador: sem QR Code, com <code>nomeCidadao</code></li>
+        <li><code>chamar()</code> — transição <code>AGUARDANDO → EM_ATENDIMENTO</code></li>
+        <li><code>cancelar()</code> — transição <code>AGUARDANDO → CANCELADA</code></li>
+        <li><code>finalizar()</code> — transição <code>EM_ATENDIMENTO → FINALIZADA</code></li>
+      </ul>
+    </li>
+    <li><strong>Métodos privados auxiliares:</strong>
+      <ul>
+        <li><code>validarQrCode()</code> — verifica existência, pertencimento à fila, ativação, expiração</li>
+        <li><code>calcularPosicao()</code> — conta senhas ativas na fila + 1</li>
+        <li><code>emitirEvento()</code> — broadcast WebSocket para a instituição, fila e usuário</li>
+      </ul>
+    </li>
+    <li><strong>Método <code>stats()</code>:</strong> agrega contagens por instituição usando métodos do <code>SenhaRepository</code></li>
+  </ul>
+  <p><strong>Reflexão:</strong> por que as validações de transição de estado estão no Service e não na entidade <code>Senha</code>? Em OO, existe um princípio chamado <em>Tell, Don't Ask</em> que sugere que o objeto deveria controlar suas próprias transições. Qual abordagem você prefere e por quê?</p>
+  <p><span class="entrega-badge entrega-repo">📦 Entrega: repositório de código + AVA</span></p>
+  <div class="entrega-note">
+    <strong>📋 Regras de entrega:</strong>
+    <ul>
+      <li>No <strong>repositório</strong>: faça o commit com os arquivos em <code>services/</code> e <code>dtos/</code> no branch da entrega.</li>
+      <li>No <strong>AVA</strong>: envie as pastas <code>services/</code> e <code>dtos/</code> compactadas (<code>.zip</code>), juntamente com o <strong>PDF dos exercícios</strong>.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── EXERCÍCIO 5 ─── -->
+<div class="exercise">
+  <h4>🏋️ Exercício 5 — DTOs de Request para <code>QrCode</code></h4>
+  <p>
+    <strong>Especificação de referência:</strong>
+    <a href="Especificacao_Tecnica_API_Kotlin.html#sec-9-7" target="_blank">§9.7 Endpoints — QR Codes</a>
+    e <a href="Especificacao_Tecnica_API_Kotlin.html#sec-11" target="_blank">§11 Especificação Técnica de QR Code</a>.
+  </p>
+  <p>Crie <code>dtos/request/QrCodeRequests.kt</code> com os DTOs necessários para as operações de criação de QR Code. Analise a especificação para descobrir quais campos o cliente precisa enviar (dica: muitas propriedades são geradas pelo Service, não enviadas pelo cliente).</p>
+  <p><strong>Reflexão:</strong> o DTO de criação de QR Code tem menos campos que a entidade <code>QrCode</code>. Liste os campos que existem na entidade mas <strong>não</strong> estão no DTO, e explique por quê cada um é responsabilidade do Service (não do cliente).</p>
+  <p><span class="entrega-badge entrega-repo">📦 Entrega: repositório de código + AVA</span></p>
+  <div class="entrega-note">
+    <strong>📋 Regras de entrega:</strong>
+    <ul>
+      <li>No <strong>repositório</strong>: faça o commit com os arquivos em <code>services/</code> e <code>dtos/</code> no branch da entrega.</li>
+      <li>No <strong>AVA</strong>: envie as pastas <code>services/</code> e <code>dtos/</code> compactadas (<code>.zip</code>), juntamente com o <strong>PDF dos exercícios</strong>.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── EXERCÍCIO 6 — DESAFIO ─── -->
+<div class="exercise" style="background: linear-gradient(135deg, #f5f3ff, #ede9fe); border-color: #a78bfa;">
+  <h4 style="color: #5b21b6;">🚀 Exercício 6 — Desafio: <code>ApiResponse&lt;T&gt;</code> e Generics</h4>
+  <p>O <code>ApiResponse&lt;T&gt;</code> (analisado na seção §4.3) usa vários conceitos avançados de OO e Kotlin. Recrie-o a partir do zero:</p>
+  <ul>
+    <li>Crie <code>dtos/response/ApiResponse.kt</code> com a classe genérica <code>ApiResponse&lt;T&gt;</code></li>
+    <li>Implemente o <code>companion object</code> com os métodos de fábrica <code>success()</code> e <code>error()</code></li>
+    <li>Garanta que toda resposta de sucesso tenha <code>success = true</code> e toda de erro tenha <code>success = false</code></li>
+  </ul>
+  <p>Depois crie <code>utils/PaginationUtils.kt</code> com:</p>
+  <ul>
+    <li><code>PaginationParams</code> — data class com <code>page: Int</code> e <code>limit: Int</code>, e uma propriedade computada <code>skip</code></li>
+    <li><code>PaginatedResponse&lt;T&gt;</code> — DTO genérico para listagens paginadas</li>
+    <li>Função <code>buildPaginatedResponse()</code> — calcula <code>totalPages</code>, <code>hasPrevPage</code>, <code>hasNextPage</code></li>
+  </ul>
+  <p><strong>Reflexão:</strong> qual a diferença entre o <code>T</code> em <code>ApiResponse&lt;T&gt;</code> e o <code>T</code> em <code>PaginatedResponse&lt;T&gt;</code>? Ambos são genéricos, mas representam coisas diferentes — o primeiro envolve um objeto único, o segundo envolve uma lista. Como os generics permitem essa flexibilidade?</p>
+  <p><span class="entrega-badge entrega-repo">📦 Entrega: repositório de código + AVA</span></p>
+  <div class="entrega-note">
+    <strong>📋 Regras de entrega:</strong>
+    <ul>
+      <li>No <strong>repositório</strong>: faça o commit com os arquivos em <code>services/</code> e <code>dtos/</code> no branch da entrega.</li>
+      <li>No <strong>AVA</strong>: envie as pastas <code>services/</code> e <code>dtos/</code> compactadas (<code>.zip</code>), juntamente com o <strong>PDF dos exercícios</strong>.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── EXERCÍCIO 7 ─── -->
+<div class="exercise">
+  <h4>🏋️ Exercício 7 — Análise crítica</h4>
+  <p>Responda por escrito (código ou texto), usando os Services do projeto FilaCidadã como referência:</p>
+  <ol>
+    <li><strong>Encapsulamento:</strong> no <code>UsuarioService</code>, o campo <code>usuarioRepository</code> é <code>private</code>. O que aconteceria se fosse <code>public</code>? A Route poderia fazer <code>usuarioService.usuarioRepository.delete(id)</code> — por que isso quebraria a arquitetura?</li>
+    <li><strong>Composição:</strong> o <code>SenhaService</code> tem 5 dependências no construtor. Se precisássemos adicionar uma 6ª (por exemplo, um <code>NotificacaoPushService</code>), o que mudaria no código? Compare com o que aconteceria em um design baseado em herança.</li>
+    <li><strong>DTOs:</strong> o <code>CreateUsuarioInstituicaoRequest</code> tem 3 campos, mas a entidade <code>Usuario</code> tem 16. Liste pelo menos 5 campos da entidade que <strong>não estão no DTO</strong> e explique por que cada um não deveria ser enviado pelo cliente.</li>
+    <li><strong>Exceções:</strong> o que aconteceria se o <code>SenhaService.chamar()</code> não verificasse <code>senha.status != AGUARDANDO</code> antes de mudar o status para <code>EM_ATENDIMENTO</code>? Descreva um cenário real onde a ausência dessa validação causaria um problema.</li>
+    <li><strong>Generics:</strong> sem a classe genérica <code>ApiResponse&lt;T&gt;</code>, quantas classes de resposta precisaríamos criar para cobrir as entidades <code>Usuario</code>, <code>Fila</code>, <code>Senha</code>, <code>Instituicao</code>, <code>QrCode</code>, <code>Auditoria</code> e <code>LandingPage</code>? Por que o generic resolve esse problema?</li>
+    <li><strong>Máquina de estados:</strong> desenhe (texto ou diagrama) a máquina de estados das senhas (<code>AGUARDANDO → EM_ATENDIMENTO → FINALIZADA</code> e <code>AGUARDANDO → CANCELADA</code>). Identifique qual método do <code>SenhaService</code> é responsável por cada transição, e qual validação ele faz antes de permitir a transição.</li>
+  </ol>
+  <p><span class="entrega-badge entrega-pdf">📄 Entrega: documento PDF com as respostas</span></p>
+</div>
+
+<hr>
+
+<div class="callout callout-success">
+  <span class="callout-icon">🎯</span>
+  <strong>Resumo do que você aprendeu</strong>
+  <ul>
+    <li><strong>Service</strong> é a camada que contém regras de negócio — entre Route e Repository.</li>
+    <li><strong>Encapsulamento</strong> esconde detalhes internos (<code>private</code>) e expõe apenas o necessário (<code>public</code>).</li>
+    <li><strong>Composição</strong> constrói funcionalidade combinando objetos — prefira sobre herança.</li>
+    <li><strong>DTOs</strong> separam o formato da API do formato do banco — segurança e desacoplamento.</li>
+    <li><strong>ApiException</strong> herda de <code>RuntimeException</code> — herança usada de forma pontual e correta.</li>
+    <li><strong>Generics</strong> (<code>&lt;T&gt;</code>) permitem reutilizar <code>ApiResponse</code> e <code>PaginatedResponse</code> para qualquer tipo.</li>
+    <li><strong>Companion object</strong> fornece métodos de fábrica — padrão Factory Method.</li>
+    <li>O Koin resolve a <strong>cadeia de dependências</strong>: Repository → Service → Route.</li>
+    <li>O operador Elvis <code>?:</code> combina com <code>throw</code> para validações concisas com nullables.</li>
+    <li><code>?.let { }</code> é a forma idiomática de executar código somente se o valor não for <code>null</code>.</li>
+  </ul>
+</div>
+
+<div class="callout callout-info">
+  <span class="callout-icon">📚</span>
+  <strong>Na próxima parte...</strong><br>
+  Na <strong>Parte 3</strong>, implementaremos as <strong>Routes</strong> — a camada que recebe requisições HTTP e chama os Services. Lá veremos <em>extension functions</em>, <em>lambdas</em>, <em>funções de ordem superior</em> e como o Ktor conecta tudo usando DSLs.
+</div>
+
+</main>
+</div>
+
+<footer class="doc-footer">
+  Tutorial — Services e Regras de Negócio em Kotlin · FilaCidadã · Março 2026
+</footer>
+
+<button class="back-top" onclick="window.scrollTo({top:0})" title="Voltar ao topo">↑</button>
+
+<script>
+  const btn = document.querySelector('.back-top');
+  window.addEventListener('scroll', () => { btn.classList.toggle('visible', window.scrollY > 400); });
+
+  // TOC active highlight
+  const links = document.querySelectorAll('.sidebar a');
+  const sections = [];
+  links.forEach(link => {
+    const id = link.getAttribute('href')?.slice(1);
+    if (id) { const el = document.getElementById(id); if (el) sections.push({ link, el }); }
+  });
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        links.forEach(l => { l.style.borderLeftColor = 'transparent'; l.style.color = ''; });
+        const active = sections.find(s => s.el === entry.target);
+        if (active) { active.link.style.borderLeftColor = 'var(--accent)'; active.link.style.color = 'var(--primary)'; }
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s.el));
+</script>
+
+</body>
+</html>

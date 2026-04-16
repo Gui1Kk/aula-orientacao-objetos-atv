@@ -1,0 +1,1499 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API — Orientação a Objetos",
+    "version": "1.0.0",
+    "description": "API de exemplo para a disciplina de Orientação a Objetos.\n\nAutentique-se com `/auth/login` e use o token no botão **Authorize**.\n\n## Credenciais de Teste\n\n| Papel | E-mail | Senha |\n|---|---|---|\n| ADMIN_PLATAFORMA | admin@example.com | Admin@123 |\n| ADMIN_INSTITUICAO | admin.instituicao@example.com | Admin@123 |\n| OPERADOR | operador@example.com | Admin@123 |\n| USUARIO_FINAL | cidadao@example.com | Admin@123 |",
+    "contact": {
+      "name": "Gilberto Silva",
+      "email": "gilberto.silva@ifro.edu.br"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:7351",
+      "description": "Local"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Autenticação e recuperação de senha"
+    },
+    {
+      "name": "Usuários",
+      "description": "Gestão de usuários"
+    },
+    {
+      "name": "Perfil",
+      "description": "Dados do usuário autenticado"
+    },
+    {
+      "name": "Geral",
+      "description": "Rotas de saúde e utilidades"
+    },
+    {
+      "name": "Examples",
+      "description": "CRUD de examples com controle de status e filtro por enum"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Login — obtém tokens JWT",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              },
+              "examples": {
+                "admin": {
+                  "summary": "Admin Plataforma",
+                  "value": {
+                    "email": "admin@example.com",
+                    "senha": "Admin@123"
+                  }
+                },
+                "adminInstituicao": {
+                  "summary": "Admin Instituição",
+                  "value": {
+                    "email": "admin.instituicao@example.com",
+                    "senha": "Admin@123"
+                  }
+                },
+                "operador": {
+                  "summary": "Operador",
+                  "value": {
+                    "email": "operador@example.com",
+                    "senha": "Admin@123"
+                  }
+                },
+                "cidadao": {
+                  "summary": "Cidadão",
+                  "value": {
+                    "email": "cidadao@example.com",
+                    "senha": "Admin@123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tokens gerados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTokens"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Registro de novo usuário (USUARIO_FINAL)",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuário criado e tokens gerados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTokens"
+                }
+              }
+            }
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Renovar access token via refresh token",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Novos tokens",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTokens"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/auth/introspect": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Verificar validade de um access token",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IntrospectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado da introspecção",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntrospectResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Encerrar sessão",
+        "responses": {
+          "200": {
+            "description": "Logout realizado"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/auth/recover": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Solicitar recuperação de senha por e-mail",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoverRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "E-mail enviado"
+          }
+        }
+      }
+    },
+    "/auth/password/reset/{token}": {
+      "patch": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Redefinir senha via token (link por e-mail)",
+        "security": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetByTokenRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Senha redefinida"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/auth/password/reset/code": {
+      "patch": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Redefinir senha via código",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetByCodeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Senha redefinida"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/usuarios": {
+      "get": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Listar todos os usuários",
+        "description": "Permissão: ADMIN_PLATAFORMA, ADMIN_INSTITUICAO.",
+        "parameters": [
+          {
+            "name": "nome",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ativo",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista paginada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUsuarioPaginado"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/usuarios/{id}": {
+      "get": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Buscar usuário por ID",
+        "description": "Permissão: ADMIN_PLATAFORMA, ADMIN_INSTITUICAO.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dados do usuário",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUsuario"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Atualizar usuário",
+        "description": "Permissão: ADMIN_PLATAFORMA, ADMIN_INSTITUICAO.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUsuarioRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Usuário atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUsuario"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Remover usuário",
+        "description": "Permissão: ADMIN_PLATAFORMA.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuário removido"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/instituicoes/{instituicaoId}/usuarios": {
+      "get": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Listar usuários de uma instituição",
+        "description": "Permissão: ADMIN_PLATAFORMA, ADMIN_INSTITUICAO.",
+        "parameters": [
+          {
+            "name": "instituicaoId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista paginada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUsuarioPaginado"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Criar usuário vinculado à instituição",
+        "description": "Cria o usuário sem senha inicial. Um e-mail é enviado para ele definir sua senha.\nPermissão: ADMIN_PLATAFORMA, ADMIN_INSTITUICAO.",
+        "parameters": [
+          {
+            "name": "instituicaoId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUsuarioInstituicaoRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuário criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUsuario"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/me": {
+      "get": {
+        "tags": [
+          "Perfil"
+        ],
+        "summary": "Obter perfil do usuário autenticado",
+        "responses": {
+          "200": {
+            "description": "Dados do perfil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePerfil"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Perfil"
+        ],
+        "summary": "Atualizar nome, e-mail ou fuso horário",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePerfilRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Perfil atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePerfil"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/me/senha": {
+      "patch": {
+        "tags": [
+          "Perfil"
+        ],
+        "summary": "Alterar senha",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlterarSenhaRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Senha alterada"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/me/avatar": {
+      "post": {
+        "tags": [
+          "Perfil"
+        ],
+        "summary": "Upload de avatar (JPEG/PNG/WebP/GIF — máx. 5 MB)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "avatar"
+                ],
+                "properties": {
+                  "avatar": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Avatar atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePerfil"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Perfil"
+        ],
+        "summary": "Remover avatar",
+        "responses": {
+          "200": {
+            "description": "Avatar removido"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/timezones": {
+      "get": {
+        "tags": [
+          "Perfil"
+        ],
+        "summary": "Listar fusos horários disponíveis",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Lista de fusos horários IANA"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Geral"
+        ],
+        "summary": "Health check",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "API operacional",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/examples": {
+      "get": {
+        "tags": ["Examples"],
+        "summary": "Listar examples",
+        "description": "Lista paginada com filtros opcionais. Permissão: ADMIN_PLATAFORMA, ADMIN_INSTITUICAO.",
+        "parameters": [
+          { "name": "nome",        "in": "query", "schema": { "type": "string" } },
+          { "name": "email",       "in": "query", "schema": { "type": "string" } },
+          { "name": "ativo",       "in": "query", "schema": { "type": "boolean" } },
+          { "name": "enumExample", "in": "query", "schema": { "type": "string", "enum": ["EXAMPLE_ONE","EXAMPLE_TWO","EXAMPLE_THREE","EXAMPLE_FOUR"] } },
+          { "name": "page",        "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit",       "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista paginada de examples",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponseExamplePaginado" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
+      "post": {
+        "tags": ["Examples"],
+        "summary": "Criar example",
+        "description": "Cria um novo example. E-mail deve ser único. Permissão: ADMIN_PLATAFORMA, ADMIN_INSTITUICAO.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateExampleRequest" },
+              "examples": {
+                "exemplo": {
+                  "summary": "Exemplo de criação",
+                  "value": {
+                    "nome": "Empresa Exemplo",
+                    "email": "empresa@example.com",
+                    "enumExample": ["EXAMPLE_ONE", "EXAMPLE_THREE"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Example criado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponseExample" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/examples/enum/{enumValue}": {
+      "get": {
+        "tags": ["Examples"],
+        "summary": "Listar examples por enum",
+        "description": "Retorna todos os examples que contêm o valor de enum informado. Permissão: ADMIN_PLATAFORMA, ADMIN_INSTITUICAO, OPERADOR.",
+        "parameters": [
+          {
+            "name": "enumValue",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["EXAMPLE_ONE","EXAMPLE_TWO","EXAMPLE_THREE","EXAMPLE_FOUR"]
+            },
+            "example": "EXAMPLE_ONE"
+          },
+          { "name": "page",  "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista paginada filtrada pelo enum",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponseExamplePaginado" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/examples/{id}": {
+      "get": {
+        "tags": ["Examples"],
+        "summary": "Buscar example por ID",
+        "description": "Permissão: ADMIN_PLATAFORMA, ADMIN_INSTITUICAO, OPERADOR.",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dados do example",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponseExample" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "patch": {
+        "tags": ["Examples"],
+        "summary": "Atualizar example",
+        "description": "Atualização parcial — todos os campos são opcionais. Permissão: ADMIN_PLATAFORMA, ADMIN_INSTITUICAO.",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateExampleRequest" },
+              "examples": {
+                "atualizarNome": {
+                  "summary": "Atualizar apenas o nome",
+                  "value": { "nome": "Novo Nome da Empresa" }
+                },
+                "atualizarEnum": {
+                  "summary": "Trocar enums",
+                  "value": { "enumExample": ["EXAMPLE_TWO", "EXAMPLE_FOUR"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Example atualizado",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponseExample" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "tags": ["Examples"],
+        "summary": "Deletar example",
+        "description": "Remove o example. Retorna 400 se o example estiver ativo — desative antes. Permissão: ADMIN_PLATAFORMA.",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Example removido com sucesso" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/examples/{id}/ativar": {
+      "patch": {
+        "tags": ["Examples"],
+        "summary": "Ativar example",
+        "description": "Define `ativo = true`. Permissão: ADMIN_PLATAFORMA, ADMIN_INSTITUICAO.",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Example ativado",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponseExample" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/examples/{id}/desativar": {
+      "patch": {
+        "tags": ["Examples"],
+        "summary": "Desativar example",
+        "description": "Define `ativo = false`. Necessário antes de deletar. Permissão: ADMIN_PLATAFORMA, ADMIN_INSTITUICAO.",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Example desativado",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponseExample" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Requisição inválida"
+      },
+      "Unauthorized": {
+        "description": "Não autenticado — token ausente ou inválido"
+      },
+      "Forbidden": {
+        "description": "Sem permissão para este recurso"
+      },
+      "NotFound": {
+        "description": "Recurso não encontrado"
+      },
+      "Conflict": {
+        "description": "Conflito — recurso já existe"
+      }
+    },
+    "schemas": {
+      "LoginRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "senha"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "admin@example.com"
+          },
+          "senha": {
+            "type": "string",
+            "example": "Admin@123"
+          }
+        }
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "required": [
+          "nome",
+          "email",
+          "senha"
+        ],
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "João da Silva"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "joao@email.com"
+          },
+          "senha": {
+            "type": "string",
+            "example": "Joao@123"
+          }
+        }
+      },
+      "RefreshRequest": {
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Refresh token obtido no login"
+          }
+        }
+      },
+      "IntrospectRequest": {
+        "type": "object",
+        "required": [
+          "accessToken"
+        ],
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          }
+        }
+      },
+      "IntrospectResponse": {
+        "type": "object",
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "tokenType": {
+            "type": "string",
+            "example": "Bearer"
+          },
+          "exp": {
+            "type": "integer"
+          },
+          "iat": {
+            "type": "integer"
+          }
+        }
+      },
+      "RecoverRequest": {
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        }
+      },
+      "ResetByTokenRequest": {
+        "type": "object",
+        "required": [
+          "senha"
+        ],
+        "properties": {
+          "senha": {
+            "type": "string",
+            "example": "NovaSenha@123"
+          }
+        }
+      },
+      "ResetByCodeRequest": {
+        "type": "object",
+        "required": [
+          "codigo",
+          "senha"
+        ],
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "example": "ABCD"
+          },
+          "senha": {
+            "type": "string",
+            "example": "NovaSenha@123"
+          }
+        }
+      },
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Access token JWT"
+          },
+          "refresh": {
+            "type": "string",
+            "description": "Refresh token JWT"
+          },
+          "expiraEm": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Usuario": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string",
+            "example": "Admin Plataforma"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "admin@example.com"
+          },
+          "papeis": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ADMIN_PLATAFORMA",
+                "ADMIN_INSTITUICAO",
+                "OPERADOR",
+                "USUARIO_FINAL"
+              ]
+            }
+          },
+          "ativo": {
+            "type": "boolean"
+          },
+          "avatar": {
+            "type": "string",
+            "nullable": true
+          },
+          "fusoHorario": {
+            "type": "string",
+            "example": "America/Manaus"
+          },
+          "instituicaoId": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UpdateUsuarioRequest": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "ativo": {
+            "type": "boolean"
+          },
+          "papeis": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "instituicaoId": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CreateUsuarioInstituicaoRequest": {
+        "type": "object",
+        "required": [
+          "nome",
+          "email",
+          "papeis"
+        ],
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Ana Operadora"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "ana@hospital.com"
+          },
+          "papeis": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ADMIN_INSTITUICAO",
+                "OPERADOR"
+              ]
+            },
+            "example": [
+              "OPERADOR"
+            ]
+          }
+        }
+      },
+      "UpdatePerfilRequest": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "fusoHorario": {
+            "type": "string",
+            "example": "America/Sao_Paulo"
+          }
+        }
+      },
+      "AlterarSenhaRequest": {
+        "type": "object",
+        "required": [
+          "senhaAtual",
+          "novaSenha"
+        ],
+        "properties": {
+          "senhaAtual": {
+            "type": "string"
+          },
+          "novaSenha": {
+            "type": "string",
+            "example": "NovaSenha@123"
+          }
+        }
+      },
+      "PerfilResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "papeis": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ativo": {
+            "type": "boolean"
+          },
+          "avatar": {
+            "type": "string",
+            "nullable": true
+          },
+          "fusoHorario": {
+            "type": "string"
+          },
+          "instituicaoId": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "PaginatedUsuario": {
+        "type": "object",
+        "properties": {
+          "docs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Usuario"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          },
+          "hasNextPage": {
+            "type": "boolean"
+          },
+          "hasPrevPage": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ApiResponseTokens": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TokenResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "array",
+            "items": {}
+          }
+        }
+      },
+      "ApiResponseUsuario": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Usuario"
+          },
+          "message": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "array",
+            "items": {}
+          }
+        }
+      },
+      "ApiResponseUsuarioPaginado": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PaginatedUsuario"
+          },
+          "message": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "array",
+            "items": {}
+          }
+        }
+      },
+      "ApiResponsePerfil": {
+        "type": "object",
+        "properties": {
+          "data": { "$ref": "#/components/schemas/PerfilResponse" },
+          "message": { "type": "string" },
+          "errors": { "type": "array", "items": {} }
+        }
+      },
+      "Example": {
+        "type": "object",
+        "properties": {
+          "id":          { "type": "string", "example": "example-1-abc12345" },
+          "nome":        { "type": "string", "example": "Empresa Exemplo" },
+          "email":       { "type": "string", "format": "email", "example": "empresa@example.com" },
+          "enumExample": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["EXAMPLE_ONE","EXAMPLE_TWO","EXAMPLE_THREE","EXAMPLE_FOUR"]
+            },
+            "example": ["EXAMPLE_ONE","EXAMPLE_THREE"]
+          },
+          "ativo":      { "type": "boolean", "example": true },
+          "createdAt":  { "type": "string", "format": "date-time" },
+          "updatedAt":  { "type": "string", "format": "date-time", "nullable": true }
+        }
+      },
+      "CreateExampleRequest": {
+        "type": "object",
+        "required": ["nome","email","enumExample"],
+        "properties": {
+          "nome":        { "type": "string", "example": "Empresa Exemplo" },
+          "email":       { "type": "string", "format": "email", "example": "empresa@example.com" },
+          "enumExample": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "enum": ["EXAMPLE_ONE","EXAMPLE_TWO","EXAMPLE_THREE","EXAMPLE_FOUR"]
+            },
+            "example": ["EXAMPLE_ONE","EXAMPLE_THREE"]
+          }
+        }
+      },
+      "UpdateExampleRequest": {
+        "type": "object",
+        "properties": {
+          "nome":        { "type": "string" },
+          "email":       { "type": "string", "format": "email" },
+          "enumExample": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "enum": ["EXAMPLE_ONE","EXAMPLE_TWO","EXAMPLE_THREE","EXAMPLE_FOUR"]
+            }
+          },
+          "ativo": { "type": "boolean" }
+        }
+      },
+      "PaginatedExample": {
+        "type": "object",
+        "properties": {
+          "docs":         { "type": "array", "items": { "$ref": "#/components/schemas/Example" } },
+          "totalDocs":    { "type": "integer", "format": "int64" },
+          "limit":        { "type": "integer" },
+          "totalPages":   { "type": "integer" },
+          "page":         { "type": "integer" },
+          "hasPrevPage":  { "type": "boolean" },
+          "hasNextPage":  { "type": "boolean" }
+        }
+      },
+      "ApiResponseExample": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "data":    { "$ref": "#/components/schemas/Example" },
+          "message": { "type": "string", "nullable": true },
+          "errors":  { "type": "array", "items": {}, "nullable": true }
+        }
+      },
+      "ApiResponseExamplePaginado": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "data":    { "$ref": "#/components/schemas/PaginatedExample" },
+          "message": { "type": "string", "nullable": true },
+          "errors":  { "type": "array", "items": {}, "nullable": true }
+        }
+      }
+    }
+  }
+}

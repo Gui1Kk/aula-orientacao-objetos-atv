@@ -1,0 +1,1879 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Especificação Técnica da API – Plataforma FilaCidadã</title>
+  <style>
+    :root {
+      --primary: #1e3a5f;
+      --primary-light: #2a5298;
+      --accent: #0ea5e9;
+      --accent-light: #e0f2fe;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-300: #cbd5e1;
+      --gray-400: #94a3b8;
+      --gray-500: #64748b;
+      --gray-600: #475569;
+      --gray-700: #334155;
+      --gray-800: #1e293b;
+      --gray-900: #0f172a;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+      --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: var(--gray-800);
+      background: var(--gray-50);
+      line-height: 1.7;
+    }
+
+    /* ── HEADER ── */
+    .doc-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: #fff;
+      padding: 3rem 2rem 2.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .doc-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--success), var(--accent));
+    }
+    .doc-header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: .5px;
+      margin-bottom: .5rem;
+      color: #fff;
+    }
+    .doc-header .subtitle {
+      font-size: .95rem;
+      opacity: .85;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .doc-header .badge {
+      display: inline-block;
+      margin-top: 1rem;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
+      padding: .3rem .9rem;
+      border-radius: 999px;
+      font-size: .8rem;
+      letter-spacing: .3px;
+    }
+
+    /* ── LAYOUT ── */
+    .wrapper {
+      display: flex;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* ── SIDEBAR / TOC ── */
+    .sidebar {
+      width: 300px;
+      min-width: 300px;
+      background: #fff;
+      border-right: 1px solid var(--gray-200);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 1.5rem 0;
+      font-size: .85rem;
+      scrollbar-width: thin;
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 4px; }
+    .sidebar .toc-title {
+      padding: 0 1.5rem 1rem;
+      font-weight: 700;
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--gray-400);
+    }
+    .sidebar a {
+      display: block;
+      padding: .4rem 1.5rem;
+      color: var(--gray-600);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: all .15s;
+    }
+    .sidebar a:hover {
+      color: var(--primary);
+      background: var(--gray-50);
+      border-left-color: var(--accent);
+    }
+    .sidebar a.toc-h1 { font-weight: 600; color: var(--gray-800); padding-top: .6rem; }
+    .sidebar a.toc-h2 { padding-left: 2.2rem; font-size: .82rem; }
+    .sidebar a.toc-appendix { font-weight: 600; color: var(--primary-light); margin-top: .4rem; }
+
+    /* ── MAIN CONTENT ── */
+    .content {
+      flex: 1;
+      min-width: 0;
+      padding: 2.5rem 3rem 4rem;
+      max-width: 900px;
+    }
+
+    /* ── HEADINGS ── */
+    h1 {
+      font-size: 1.65rem;
+      color: var(--primary);
+      margin: 3rem 0 1rem;
+      padding-bottom: .5rem;
+      border-bottom: 2px solid var(--gray-200);
+      scroll-margin-top: 1rem;
+    }
+    h1:first-of-type { margin-top: 0; }
+    h2 {
+      font-size: 1.25rem;
+      color: var(--primary-light);
+      margin: 2rem 0 .8rem;
+      scroll-margin-top: 1rem;
+    }
+    h3 {
+      font-size: 1.05rem;
+      color: var(--gray-700);
+      margin: 1.5rem 0 .6rem;
+      scroll-margin-top: 1rem;
+    }
+    h4 {
+      font-size: .95rem;
+      font-weight: 600;
+      color: var(--gray-600);
+      margin: 1.2rem 0 .4rem;
+    }
+
+    /* Section numbers */
+    .section-num {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      font-size: .75rem;
+      padding: .15rem .5rem;
+      border-radius: 4px;
+      margin-right: .5rem;
+      vertical-align: middle;
+    }
+    .section-num.appendix { background: var(--primary-light); }
+
+    p { margin: .6rem 0; }
+
+    /* ── TABLES ── */
+    .table-wrap {
+      overflow-x: auto;
+      margin: 1rem 0;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .88rem;
+      background: #fff;
+    }
+    thead { background: var(--primary); color: #fff; }
+    thead th {
+      padding: .7rem .8rem;
+      text-align: left;
+      font-weight: 600;
+      font-size: .82rem;
+      letter-spacing: .2px;
+      white-space: nowrap;
+    }
+    tbody tr { border-bottom: 1px solid var(--gray-100); }
+    tbody tr:nth-child(even) { background: var(--gray-50); }
+    tbody tr:hover { background: var(--accent-light); }
+    tbody td {
+      padding: .6rem .8rem;
+      vertical-align: top;
+    }
+    /* Permission matrix tables */
+    .perm-table thead { background: var(--gray-700); }
+    .perm-table td:not(:first-child),
+    .perm-table th:not(:first-child) { text-align: center; }
+    .perm-table td:first-child { font-family: 'SFMono-Regular', 'Consolas', monospace; font-size: .82rem; }
+
+    /* ── CODE ── */
+    code {
+      font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+      font-size: .85em;
+      background: var(--gray-100);
+      padding: .15em .4em;
+      border-radius: 4px;
+      color: var(--primary-light);
+    }
+    pre {
+      background: var(--gray-900);
+      color: #e2e8f0;
+      padding: 1.2rem 1.5rem;
+      border-radius: var(--radius);
+      overflow-x: auto;
+      margin: 1rem 0;
+      font-size: .85rem;
+      line-height: 1.6;
+      box-shadow: var(--shadow-md);
+    }
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+    }
+    /* JSON syntax */
+    .json-key { color: #7dd3fc; }
+    .json-str { color: #86efac; }
+    .json-num { color: #fbbf24; }
+    .json-bool { color: #c084fc; }
+
+    /* ── LISTS ── */
+    ul, ol { margin: .5rem 0 .8rem 1.5rem; }
+    li { margin: .3rem 0; }
+    li::marker { color: var(--accent); }
+
+    /* Checklist */
+    .checklist { list-style: none; margin-left: 0; }
+    .checklist li {
+      position: relative;
+      padding-left: 1.8rem;
+      margin: .4rem 0;
+    }
+    .checklist li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: .35rem;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--gray-300);
+      border-radius: 3px;
+      background: #fff;
+    }
+
+    /* ── BLOCKQUOTE ── */
+    blockquote {
+      border-left: 4px solid var(--accent);
+      background: var(--accent-light);
+      padding: .8rem 1.2rem;
+      margin: 1rem 0;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: .9rem;
+      color: var(--gray-700);
+    }
+    blockquote strong { color: var(--primary); }
+
+    /* ── HR ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--gray-200);
+      margin: 1.5rem 0;
+    }
+
+    /* ── ENDPOINT CARDS ── */
+    .endpoint {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 1.2rem 1.5rem;
+      margin: 1rem 0;
+      box-shadow: var(--shadow);
+    }
+    .endpoint-method {
+      display: inline-block;
+      padding: .2rem .6rem;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: .78rem;
+      letter-spacing: .5px;
+      font-family: monospace;
+      margin-right: .5rem;
+      vertical-align: middle;
+    }
+    .method-get { background: #dbeafe; color: #1d4ed8; }
+    .method-post { background: #dcfce7; color: #15803d; }
+    .method-patch { background: #fef3c7; color: #92400e; }
+    .method-delete { background: #fee2e2; color: #b91c1c; }
+    .endpoint-path {
+      font-family: monospace;
+      font-size: .95rem;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+    .endpoint .perm-badge {
+      display: inline-block;
+      font-size: .75rem;
+      padding: .15rem .5rem;
+      border-radius: 999px;
+      background: var(--gray-100);
+      color: var(--gray-600);
+      margin-left: .5rem;
+    }
+
+    /* ── ESTADO BADGES ── */
+    .state-badge {
+      display: inline-block;
+      padding: .25rem .7rem;
+      border-radius: 999px;
+      font-size: .8rem;
+      font-weight: 600;
+    }
+    .state-aguardando { background: #fef3c7; color: #92400e; }
+    .state-em-atendimento { background: #dbeafe; color: #1d4ed8; }
+    .state-cancelada { background: #fee2e2; color: #b91c1c; }
+    .state-finalizada { background: #dcfce7; color: #15803d; }
+
+    /* ── STATE DIAGRAM ── */
+    .state-diagram {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: wrap;
+      margin: 1.5rem 0;
+      padding: 1.5rem;
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .state-node {
+      padding: .6rem 1.2rem;
+      border-radius: var(--radius);
+      font-weight: 600;
+      font-size: .85rem;
+      text-align: center;
+    }
+    .state-arrow {
+      display: flex;
+      align-items: center;
+      padding: 0 .5rem;
+      color: var(--gray-400);
+      font-size: 1.2rem;
+    }
+
+
+    /* ── FOOTER ── */
+    .doc-footer {
+      text-align: center;
+      padding: 2rem;
+      background: var(--gray-100);
+      border-top: 1px solid var(--gray-200);
+      color: var(--gray-500);
+      font-size: .82rem;
+    }
+
+    /* ── BACK TO TOP ── */
+    .back-top {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-md);
+      opacity: 0;
+      transition: opacity .3s;
+      font-size: 1.2rem;
+    }
+    .back-top.visible { opacity: 1; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .sidebar { display: none; }
+      .content { padding: 1.5rem; max-width: 100%; }
+    }
+
+    @media print {
+      .sidebar, .back-top { display: none; }
+      .content { max-width: 100%; padding: 0; }
+      .doc-header { padding: 1.5rem; }
+      h1 { break-before: page; }
+      pre { white-space: pre-wrap; word-wrap: break-word; }
+      table { font-size: .75rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════ HEADER ════════════════════════ -->
+<header class="doc-header">
+  <h1>ESPECIFICAÇÃO TÉCNICA DA API</h1>
+  <div class="subtitle">Plataforma FilaCidadã — Documento técnico destinado a desenvolvedores responsáveis pela implementação do backend e integração com aplicações clientes (web, mobile).</div>
+  <span class="badge">v3.0 — Março 2026 — Kotlin + Ktor</span>
+</header>
+
+<div class="wrapper">
+
+<!-- ════════════════════════ SIDEBAR ════════════════════════ -->
+<nav class="sidebar">
+  <div class="toc-title">Sumário</div>
+  <a href="#sec-1" class="toc-h1">1. Introdução Técnica</a>
+  <a href="#sec-2" class="toc-h1">2. Visão Geral da API</a>
+  <a href="#sec-3" class="toc-h1">3. Arquitetura Técnica da API</a>
+  <a href="#sec-4" class="toc-h1">4. Convenções e Padrões Técnicos</a>
+  <a href="#sec-5" class="toc-h1">5. Autenticação e Sessão</a>
+  <a href="#sec-6" class="toc-h1">6. Autorização e Isolamento</a>
+  <a href="#sec-7" class="toc-h1">7. Modelo de Dados Técnico</a>
+  <a href="#sec-7-1" class="toc-h2">7.1 Usuários</a>
+  <a href="#sec-7-2" class="toc-h2">7.2 Instituições</a>
+  <a href="#sec-7-3" class="toc-h2">7.3 Filas</a>
+  <a href="#sec-7-4" class="toc-h2">7.4 Senhas</a>
+  <a href="#sec-7-5" class="toc-h2">7.5 QR Codes</a>
+  <a href="#sec-7-6" class="toc-h2">7.6 Auditoria</a>
+  <a href="#sec-7-7" class="toc-h2">7.7 Landing Page</a>
+  <a href="#sec-8" class="toc-h1">8. Regras de Negócio</a>
+  <a href="#sec-8-1" class="toc-h2">8.1 Criação de Senhas</a>
+  <a href="#sec-8-2" class="toc-h2">8.2 Filas Presenciais e QR Code</a>
+  <a href="#sec-8-3" class="toc-h2">8.3 Prioridades</a>
+  <a href="#sec-8-4" class="toc-h2">8.4 Cancelamento e Encerramento</a>
+  <a href="#sec-8-5" class="toc-h2">8.5 Criação Password-less</a>
+  <a href="#sec-9" class="toc-h1">9. Contrato de Endpoints</a>
+  <a href="#sec-9-1" class="toc-h2">9.1 Autenticação</a>
+  <a href="#sec-9-2" class="toc-h2">9.2 Recuperação de Senha</a>
+  <a href="#sec-9-3" class="toc-h2">9.3 Instituições</a>
+  <a href="#sec-9-4" class="toc-h2">9.4 Usuários</a>
+  <a href="#sec-9-5" class="toc-h2">9.5 Filas</a>
+  <a href="#sec-9-6" class="toc-h2">9.6 Senhas</a>
+  <a href="#sec-9-7" class="toc-h2">9.7 QR Codes</a>
+  <a href="#sec-9-8" class="toc-h2">9.8 Auditoria</a>
+  <a href="#sec-9-9" class="toc-h2">9.9 Perfil do Usuário</a>
+  <a href="#sec-9-10" class="toc-h2">9.10 Landing Page</a>
+  <a href="#sec-9-11" class="toc-h2">9.11 Rotas Especiais</a>
+  <a href="#sec-10" class="toc-h1">10. WebSocket (Tempo Real)</a>
+  <a href="#sec-11" class="toc-h1">11. Especificação QR Code</a>
+  <a href="#sec-12" class="toc-h1">12. Auditoria e Logs</a>
+  <a href="#sec-13" class="toc-h1">13. Segurança Técnica</a>
+  <a href="#sec-14" class="toc-h1">14. Integração com Clientes</a>
+  <a href="#sec-15" class="toc-h1">15. Checklist de Implementação</a>
+  <a href="#apendice-a" class="toc-appendix">Apêndice A – Estados da Senha</a>
+  <a href="#apendice-b" class="toc-appendix">Apêndice B – Permissões</a>
+  <a href="#apendice-c" class="toc-appendix">Apêndice C – Paginação</a>
+</nav>
+
+<!-- ════════════════════════ CONTENT ════════════════════════ -->
+<main class="content">
+
+<!-- ─── SEÇÃO 1 ─── -->
+<h1 id="sec-1"><span class="section-num">1</span> Introdução Técnica</h1>
+<p>Esta especificação define padrões técnicos, arquitetura, contratos de endpoints, modelos de dados, regras operacionais e mecanismos de comunicação em tempo real da API. A API é implementada em <strong>Kotlin</strong> com o framework <strong>Ktor</strong>. O documento abrange tanto a camada REST quanto a camada WebSocket nativa do Ktor.</p>
+
+<!-- ─── SEÇÃO 2 ─── -->
+<h1 id="sec-2"><span class="section-num">2</span> Visão Geral da API</h1>
+<p>A API FilaCidadã - Em construção segue o padrão REST, utilizando JSON como formato de troca de dados. Todos os recursos são expostos por meio de endpoints acessados via HTTP. Adicionalmente, a API disponibiliza comunicação em tempo real por meio de WebSocket nativo do Ktor para eventos de filas e senhas.</p>
+
+<h4>Tecnologias principais:</h4>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Tecnologia</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Linguagem</strong></td><td>Kotlin (JVM)</td></tr>
+    <tr><td><strong>Framework</strong></td><td>Ktor (Netty engine)</td></tr>
+    <tr><td><strong>Banco de dados</strong></td><td>MongoDB com KMongo (driver Kotlin para MongoDB)</td></tr>
+    <tr><td><strong>Autenticação</strong></td><td>JWT (access token + refresh token) via Ktor Auth</td></tr>
+    <tr><td><strong>Serialização</strong></td><td>Kotlinx.serialization (schemas de entrada/saída)</td></tr>
+    <tr><td><strong>Validação</strong></td><td>Validação manual em data classes</td></tr>
+    <tr><td><strong>Tempo real</strong></td><td>Ktor WebSocket (nativo)</td></tr>
+    <tr><td><strong>Documentação</strong></td><td>Swagger/OpenAPI 3.0 via Ktor OpenAPI plugin em <code>/api-docs</code></td></tr>
+    <tr><td><strong>Injeção de dependência</strong></td><td>Koin</td></tr>
+    <tr><td><strong>Hash de senhas</strong></td><td>BCrypt (jBCrypt)</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ─── SEÇÃO 3 ─── -->
+<h1 id="sec-3"><span class="section-num">3</span> Arquitetura Técnica da API</h1>
+<p>A API adota uma arquitetura em camadas com injeção de dependência via <strong>Koin</strong>, garantindo manutenibilidade, testabilidade e clareza na separação de responsabilidades.</p>
+<ul>
+  <li><strong>Camada de rotas (Routing)</strong> — mapeamento de endpoints HTTP via Ktor Routing DSL, aplicação de plugins (autenticação, autorização, validação) e encaminhamento para os controladores.</li>
+  <li><strong>Camada de controladores</strong> — extração de dados da requisição (<code>call.receive()</code>, <code>call.parameters</code>) e encaminhamento para a camada de serviços.</li>
+  <li><strong>Camada de serviços</strong> — regras de negócio: validações de permissões, prioridades, controle de duplicidade, isolamento institucional e emissão de eventos WebSocket.</li>
+  <li><strong>Camada de repositórios</strong> — acesso aos dados persistidos via KMongo, abstraindo o banco de dados MongoDB.</li>
+  <li><strong>Componentes acessórios</strong> — autenticação JWT (Ktor Auth), autorização por papéis (plugin customizado), auditoria, tratamento centralizado de erros (StatusPages plugin), validação de entrada, upload de arquivos e integração com serviço de e-mail.</li>
+</ul>
+
+<!-- ─── SEÇÃO 4 ─── -->
+<h1 id="sec-4"><span class="section-num">4</span> Convenções e Padrões Técnicos</h1>
+<p>Todos os endpoints seguem convenções consistentes de nomenclatura, utilizando substantivos no plural em português brasileiro. Verbos HTTP são empregados de acordo com sua semântica (GET para leitura, POST para criação, PATCH para atualização parcial, DELETE para remoção).</p>
+<p>As respostas utilizam JSON como formato padrão. Datas são representadas no formato ISO 8601.</p>
+<p>Listagens utilizam paginação padronizada com os parâmetros <code>page</code> e <code>limit</code>, retornando metadados conforme descrito no <a href="#apendice-c"><strong>Apêndice C</strong></a>.</p>
+<p>Erros são retornados com códigos HTTP apropriados e corpo JSON contendo mensagem descritiva.</p>
+
+<!-- ─── SEÇÃO 5 ─── -->
+<h1 id="sec-5"><span class="section-num">5</span> Autenticação e Sessão</h1>
+<p>A autenticação é baseada em <strong>dois tokens JWT</strong>:</p>
+<ul>
+  <li><strong>Access Token</strong> — token de curta duração enviado no cabeçalho <code>Authorization: Bearer {token}</code>. Payload: <code>{ id, papeis, instituicaoId }</code>.</li>
+  <li><strong>Refresh Token</strong> — token de longa duração utilizado para renovar o access token sem nova autenticação.</li>
+</ul>
+
+<h4>Fluxo de autenticação:</h4>
+<ol>
+  <li>O cliente envia credenciais via <code>POST /auth/login</code>.</li>
+  <li>A API valida credenciais e status do usuário, retornando <code>{ token, refresh, expiraEm }</code>.</li>
+  <li>O access token é enviado em todas as requisições protegidas via cabeçalho <code>Authorization: Bearer</code>.</li>
+  <li>Quando o access token expira (resposta 401), o cliente utiliza <code>POST /auth/refresh</code> com o refresh token para obter novos tokens.</li>
+  <li>O logout é realizado via <code>POST /auth/logout</code>, que invalida os tokens no servidor.</li>
+</ol>
+
+<h4>Recuperação de senha:</h4>
+<ol>
+  <li>O cliente solicita recuperação via <code>POST /auth/recover</code> informando o e-mail.</li>
+  <li>A API envia e-mail contendo um link com token único e um código de 4 caracteres.</li>
+  <li>A redefinição pode ser feita por token (<code>PATCH /auth/password/reset/{token}</code>) ou por código (<code>PATCH /auth/password/reset/code</code>).</li>
+</ol>
+
+<p><strong>Introspecção:</strong> O endpoint <code>POST /auth/introspect</code> permite verificar a validade de um access token, retornando informações sobre expiração e tipo.</p>
+
+<!-- ─── SEÇÃO 6 ─── -->
+<h1 id="sec-6"><span class="section-num">6</span> Autorização e Isolamento Institucional</h1>
+<p>A autorização determina se um usuário autenticado possui permissão para executar determinada ação, considerando o papel atribuído e o contexto institucional.</p>
+
+<h4>Papéis do sistema:</h4>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Papel</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td><strong>ADMIN_PLATAFORMA</strong></td><td>Administrador global da plataforma. Gerencia instituições, usuários e tem visão total do sistema. Não atua operacionalmente em filas.</td></tr>
+    <tr><td><strong>ADMIN_INSTITUICAO</strong></td><td>Administrador de uma instituição específica. Gerencia filas, usuários da instituição, auditoria e QR codes. Pode atuar no atendimento.</td></tr>
+    <tr><td><strong>OPERADOR</strong></td><td>Usuário operacional vinculado a uma instituição. Atua no atendimento de filas (chamar, finalizar) e pode gerenciar filas e QR codes.</td></tr>
+    <tr><td><strong>USUARIO_FINAL</strong></td><td>Cidadão que utiliza o sistema. Cria senhas em filas, consulta status, cancela senhas próprias e gerencia perfil.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h4>Regras de isolamento:</h4>
+<ul>
+  <li><code>ADMIN_INSTITUICAO</code> e <code>OPERADOR</code> possuem vínculo obrigatório com uma instituição (<code>instituicaoId</code>). Todas as operações são restritas ao escopo da instituição vinculada.</li>
+  <li><code>USUARIO_FINAL</code> não possui vínculo institucional e interage apenas com recursos públicos ou com dados de suas próprias senhas.</li>
+  <li><code>ADMIN_PLATAFORMA</code> tem visão global mas não opera em filas diretamente.</li>
+  <li>Um usuário pode possuir múltiplos papéis (campo <code>papeis</code> é um array).</li>
+</ul>
+<p>A matriz completa de permissões por endpoint está no <a href="#apendice-b"><strong>Apêndice B</strong></a>.</p>
+
+<!-- ─── SEÇÃO 7 ─── -->
+<h1 id="sec-7"><span class="section-num">7</span> Modelo de Dados Técnico</h1>
+<p>Este capítulo descreve o modelo de dados da API, utilizando MongoDB como banco orientado a documentos com KMongo como driver Kotlin. As coleções possuem timestamps automáticos (<code>createdAt</code>, <code>updatedAt</code>).</p>
+
+<!-- 7.1 -->
+<h2 id="sec-7-1">7.1 Usuários</h2>
+<p>A coleção de usuários armazena todas as pessoas que interagem com a plataforma.</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td><code>_id</code></td><td>ObjectId</td><td>Identificador único</td></tr>
+    <tr><td><code>nome</code></td><td>String (required)</td><td>Nome completo</td></tr>
+    <tr><td><code>email</code></td><td>String (required, unique, lowercase)</td><td>E-mail do usuário</td></tr>
+    <tr><td><code>senhaHash</code></td><td>String (required, excluído da serialização)</td><td>Hash da senha (nunca exposto na API)</td></tr>
+    <tr><td><code>papeis</code></td><td>String[] (required)</td><td>Papéis atribuídos. Enum: <code>ADMIN_PLATAFORMA</code>, <code>ADMIN_INSTITUICAO</code>, <code>OPERADOR</code>, <code>USUARIO_FINAL</code></td></tr>
+    <tr><td><code>instituicaoId</code></td><td>ObjectId | null</td><td>Referência à instituição (obrigatório para ADMIN_INSTITUICAO e OPERADOR)</td></tr>
+    <tr><td><code>ativo</code></td><td>Boolean (default: true)</td><td>Status do usuário</td></tr>
+    <tr><td><code>avatar</code></td><td>String | null</td><td>Caminho do arquivo de avatar</td></tr>
+    <tr><td><code>accesstoken</code></td><td>String (excluído da serialização)</td><td>Access token ativo (armazenado para invalidação)</td></tr>
+    <tr><td><code>refreshtoken</code></td><td>String (excluído da serialização)</td><td>Refresh token ativo</td></tr>
+    <tr><td><code>tokenUnico</code></td><td>String (excluído da serialização)</td><td>Token de recuperação de senha por link</td></tr>
+    <tr><td><code>codigoRecuperaSenha</code></td><td>String</td><td>Código de recuperação de senha (4 caracteres)</td></tr>
+    <tr><td><code>expCodigoRecuperaSenha</code></td><td>Date</td><td>Data de expiração do código de recuperação</td></tr>
+    <tr><td><code>fusoHorario</code></td><td>String (enum, default: America/Manaus)</td><td>Fuso horário preferido do usuário (ex.: America/Sao_Paulo)</td></tr>
+    <tr><td><code>ultimoLoginEm</code></td><td>Date</td><td>Data do último login</td></tr>
+    <tr><td><code>createdAt</code></td><td>Date</td><td>Data de criação (automático)</td></tr>
+    <tr><td><code>updatedAt</code></td><td>Date</td><td>Data de atualização (automático)</td></tr>
+  </tbody>
+</table>
+</div>
+<h4>Restrições:</h4>
+<ul>
+  <li><code>email</code> deve ser único no sistema (índice único)</li>
+  <li>Usuários com papel <code>ADMIN_INSTITUICAO</code> ou <code>OPERADOR</code> devem possuir <code>instituicaoId</code></li>
+  <li><code>USUARIO_FINAL</code> não deve possuir vínculo institucional</li>
+  <li>Campos sensíveis (<code>senhaHash</code>, <code>accesstoken</code>, <code>refreshtoken</code>, <code>tokenUnico</code>) são excluídos da serialização via <code>@Transient</code> ou projeção no repositório</li>
+</ul>
+
+<!-- 7.2 -->
+<h2 id="sec-7-2">7.2 Instituições</h2>
+<p>Cada instituição funciona como um tenant independente, sendo responsável por seus próprios usuários administrativos, filas e regras operacionais. O fluxo de cadastro segue um processo de solicitação/aprovação controlado por status.</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td><code>_id</code></td><td>ObjectId</td><td>Identificador único</td></tr>
+    <tr><td><code>nome</code></td><td>String (required, unique)</td><td>Nome oficial da instituição</td></tr>
+    <tr><td><code>cnpj</code></td><td>String (default: "")</td><td>CNPJ da instituição</td></tr>
+    <tr><td><code>email</code></td><td>String (default: "")</td><td>E-mail de contato</td></tr>
+    <tr><td><code>telefone</code></td><td>String (default: "")</td><td>Telefone de contato</td></tr>
+    <tr><td><code>responsavel</code></td><td>String (default: "")</td><td>Nome do responsável</td></tr>
+    <tr><td><code>endereco</code></td><td>String (default: "")</td><td>Endereço da instituição</td></tr>
+    <tr><td><code>descricao</code></td><td>String (default: "")</td><td>Descrição da instituição</td></tr>
+    <tr><td><code>ativo</code></td><td>Boolean (default: true)</td><td>Status operacional da instituição</td></tr>
+    <tr><td><code>status</code></td><td>String (default: PENDENTE)</td><td>Estado do cadastro. Enum: <code>PENDENTE</code>, <code>APROVADA</code>, <code>REJEITADA</code></td></tr>
+    <tr><td><code>solicitanteId</code></td><td>ObjectId | null (ref: usuarios)</td><td>Usuário que solicitou o cadastro</td></tr>
+    <tr><td><code>contratoUrl</code></td><td>String (default: "")</td><td>Caminho do arquivo PDF do contrato (upload via endpoint dedicado)</td></tr>
+    <tr><td><code>motivoRejeicao</code></td><td>String (default: "")</td><td>Justificativa em caso de rejeição</td></tr>
+    <tr><td><code>aprovadoPor</code></td><td>ObjectId | null (ref: usuarios)</td><td>Admin que aprovou/rejeitou a solicitação</td></tr>
+    <tr><td><code>aprovadoEm</code></td><td>Date | null</td><td>Data da aprovação/rejeição</td></tr>
+    <tr><td><code>configuracoes</code></td><td>Object (default: {})</td><td>Configurações institucionais (horários, fuso, etc.)</td></tr>
+    <tr><td><code>createdAt</code></td><td>Date</td><td>Data de criação (automático)</td></tr>
+    <tr><td><code>updatedAt</code></td><td>Date</td><td>Data de atualização (automático)</td></tr>
+  </tbody>
+</table>
+</div>
+<h4>Restrições:</h4>
+<ul>
+  <li>O nome da instituição deve ser único</li>
+  <li>Instituições inativas não podem criar novas filas</li>
+  <li>O fluxo de solicitação segue: PENDENTE → APROVADA ou REJEITADA</li>
+  <li>Apenas <code>ADMIN_PLATAFORMA</code> pode aprovar ou rejeitar</li>
+</ul>
+<h4>Observações técnicas:</h4>
+<ul>
+  <li>O campo <code>configuracoes</code> é schema-less (Object genérico) e pode conter sub-campos como horários de funcionamento, fuso horário e outros parâmetros definidos pela instituição</li>
+  <li>Todas as entidades administrativas referenciam <code>instituicaoId</code></li>
+  <li>O isolamento institucional é aplicado em nível de consulta</li>
+  <li>O upload de contrato (PDF, máx. 10 MB) é feito via endpoint dedicado <code>POST /instituicoes/{id}/contrato</code></li>
+</ul>
+
+<!-- 7.3 -->
+<h2 id="sec-7-3">7.3 Filas</h2>
+<p>As filas representam os serviços de atendimento disponibilizados pelas instituições.</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td><code>_id</code></td><td>ObjectId</td><td>Identificador único</td></tr>
+    <tr><td><code>instituicaoId</code></td><td>ObjectId (required, indexed)</td><td>Instituição proprietária</td></tr>
+    <tr><td><code>nome</code></td><td>String (required)</td><td>Nome da fila</td></tr>
+    <tr><td><code>tipoAtendimento</code></td><td>String (required)</td><td>Enum: <code>ONLINE</code>, <code>PRESENCIAL</code>, <code>HIBRIDO</code></td></tr>
+    <tr><td><code>ativa</code></td><td>Boolean (default: true)</td><td>Status da fila</td></tr>
+    <tr><td><code>prioridadesHabilitadas</code></td><td>Boolean (default: false)</td><td>Se prioridades estão habilitadas</td></tr>
+    <tr><td><code>fidelidadeHabilitada</code></td><td>Boolean (default: false)</td><td>Se fidelidade está habilitada para a fila</td></tr>
+    <tr><td><code>tempoMaximoAtendimento</code></td><td>Number | null (default: null)</td><td>Tempo máximo de atendimento em minutos (opcional)</td></tr>
+    <tr><td><code>configuracaoQRCode</code></td><td>Object | null (default: null)</td><td>Configurações de QR Code (apenas filas presenciais/híbridas)</td></tr>
+    <tr><td style="padding-left:2rem"><code>↳ modoQRCode</code></td><td>String (default: ROTATIVO)</td><td>Modo de operação. Enum: <code>ROTATIVO</code>, <code>FIXO</code></td></tr>
+    <tr><td style="padding-left:2rem"><code>↳ tempoExibicaoMin</code></td><td>Number | null</td><td>Intervalo de exibição do QR em minutos</td></tr>
+    <tr><td style="padding-left:2rem"><code>↳ tempoExpiracaoMin</code></td><td>Number | null</td><td>Tempo de expiração do QR em minutos</td></tr>
+    <tr><td style="padding-left:2rem"><code>↳ toleranciaMin</code></td><td>Number | null</td><td>Janela de tolerância em minutos</td></tr>
+    <tr><td style="padding-left:2rem"><code>↳ tempoAlertaSegundos</code></td><td>Number | null</td><td>Tempo de alerta antes da expiração em segundos</td></tr>
+    <tr><td><code>mesas</code></td><td>Array de subdocumentos</td><td>Mesas de atendimento da fila</td></tr>
+    <tr><td style="padding-left:2rem"><code>↳ numero</code></td><td>String (required)</td><td>Número identificador da mesa</td></tr>
+    <tr><td style="padding-left:2rem"><code>↳ nome</code></td><td>String | null</td><td>Nome descritivo da mesa</td></tr>
+    <tr><td style="padding-left:2rem"><code>↳ ativa</code></td><td>Boolean (default: true)</td><td>Status da mesa</td></tr>
+    <tr><td><code>createdAt</code></td><td>Date</td><td>Data de criação (automático)</td></tr>
+    <tr><td><code>updatedAt</code></td><td>Date</td><td>Data de atualização (automático)</td></tr>
+  </tbody>
+</table>
+</div>
+<h4>Restrições:</h4>
+<ul>
+  <li>Cada fila pertence a uma única instituição</li>
+  <li>Filas inativas não aceitam novas senhas</li>
+  <li>Configurações de QR Code só se aplicam a filas com <code>tipoAtendimento</code> PRESENCIAL ou HIBRIDO</li>
+</ul>
+<h4>Observações técnicas:</h4>
+<ul>
+  <li>O campo <code>configuracaoQRCode</code> suporta dois modos: <code>ROTATIVO</code> (QR expira e regenera automaticamente) e <code>FIXO</code> (validade de 10 anos)</li>
+  <li>O array <code>mesas</code> permite definir pontos de atendimento nomeados, vinculados ao operador durante chamada de senha</li>
+</ul>
+
+<!-- 7.4 -->
+<h2 id="sec-7-4">7.4 Senhas</h2>
+<p>As senhas representam a posição de um usuário em uma fila. Suportam tanto senhas digitais (criadas pelo cidadão) quanto senhas presenciais (criadas pelo operador).</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td><code>_id</code></td><td>ObjectId</td><td>Identificador único</td></tr>
+    <tr><td><code>filaId</code></td><td>ObjectId (required, indexed)</td><td>Fila associada</td></tr>
+    <tr><td><code>instituicaoId</code></td><td>ObjectId (required, indexed)</td><td>Instituição da fila</td></tr>
+    <tr><td><code>usuarioId</code></td><td>ObjectId | null (default: null, ref: usuarios)</td><td>Usuário que criou a senha (null para senhas presenciais)</td></tr>
+    <tr><td><code>nomeCidadao</code></td><td>String | null (default: null)</td><td>Nome do cidadão (usado em senhas presenciais)</td></tr>
+    <tr><td><code>presencial</code></td><td>Boolean (default: false)</td><td>Indica se a senha foi criada presencialmente pelo operador</td></tr>
+    <tr><td><code>posicao</code></td><td>Number (required)</td><td>Posição na fila</td></tr>
+    <tr><td><code>status</code></td><td>String (required, indexed)</td><td>Enum: <code>AGUARDANDO</code>, <code>EM_ATENDIMENTO</code>, <code>CANCELADA</code>, <code>FINALIZADA</code></td></tr>
+    <tr><td><code>prioridade</code></td><td>String | null</td><td>Tipo de prioridade aplicada</td></tr>
+    <tr><td><code>mesa</code></td><td>String | null (default: null)</td><td>Número da mesa de atendimento atribuída</td></tr>
+    <tr><td><code>mesaNome</code></td><td>String | null (default: null)</td><td>Nome descritivo da mesa de atendimento</td></tr>
+    <tr><td><code>operadorId</code></td><td>ObjectId | null (default: null, ref: usuarios, indexed)</td><td>Operador responsável pelo atendimento</td></tr>
+    <tr><td><code>createdAt</code></td><td>Date</td><td>Data de criação (automático)</td></tr>
+    <tr><td><code>updatedAt</code></td><td>Date</td><td>Data de atualização (automático)</td></tr>
+  </tbody>
+</table>
+</div>
+<h4>Restrições:</h4>
+<ul>
+  <li>Um usuário não pode ter mais de uma senha ativa (AGUARDANDO ou EM_ATENDIMENTO) na mesma fila</li>
+  <li>Toda senha deve estar vinculada à instituição da fila</li>
+  <li>Senhas presenciais (<code>presencial: true</code>) possuem <code>nomeCidadao</code> e podem ter <code>usuarioId</code> nulo</li>
+  <li>Índices compostos: <code>(filaId, status)</code>, <code>(usuarioId, filaId, status)</code></li>
+</ul>
+
+<!-- 7.5 -->
+<h2 id="sec-7-5">7.5 QR Codes</h2>
+<p>QR Codes são utilizados para validação de presença física em filas presenciais.</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td><code>_id</code></td><td>ObjectId</td><td>Identificador único</td></tr>
+    <tr><td><code>filaId</code></td><td>ObjectId (required)</td><td>Fila associada</td></tr>
+    <tr><td><code>codigo</code></td><td>String (required, unique)</td><td>Valor aleatório do QR Code</td></tr>
+    <tr><td><code>validoAte</code></td><td>Date (required)</td><td>Data de expiração principal</td></tr>
+    <tr><td><code>toleranciaAte</code></td><td>Date (required)</td><td>Fim da janela de tolerância</td></tr>
+    <tr><td><code>ativo</code></td><td>Boolean (default: true)</td><td>Status do QR Code</td></tr>
+    <tr><td><code>createdAt</code></td><td>Date</td><td>Data de criação (automático)</td></tr>
+    <tr><td><code>updatedAt</code></td><td>Date</td><td>Data de atualização (automático)</td></tr>
+  </tbody>
+</table>
+</div>
+<h4>Restrições:</h4>
+<ul>
+  <li>QR Codes expirados não podem ser reutilizados</li>
+  <li>A validação ocorre exclusivamente no servidor</li>
+  <li>TTL index em <code>toleranciaAte</code> para expiração automática (remove QR Codes após a janela de tolerância)</li>
+</ul>
+
+<!-- 7.6 -->
+<h2 id="sec-7-6">7.6 Auditoria</h2>
+<p>Registra ações administrativas relevantes, garantindo rastreabilidade.</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td><code>_id</code></td><td>ObjectId</td><td>Identificador único</td></tr>
+    <tr><td><code>instituicaoId</code></td><td>ObjectId | null (default: null, indexed)</td><td>Instituição associada</td></tr>
+    <tr><td><code>usuarioId</code></td><td>ObjectId | null</td><td>Usuário que realizou a ação</td></tr>
+    <tr><td><code>acao</code></td><td>String (required)</td><td>Tipo da ação (ex.: LOGIN, CRIAR, ATUALIZAR, DELETAR)</td></tr>
+    <tr><td><code>entidade</code></td><td>String (required)</td><td>Entidade afetada (ex.: Usuario, Fila, Senha)</td></tr>
+    <tr><td><code>entidadeId</code></td><td>ObjectId | null</td><td>ID da entidade afetada</td></tr>
+    <tr><td><code>dados</code></td><td>Object | null</td><td>Dados complementares da ação</td></tr>
+    <tr><td><code>createdAt</code></td><td>Date (indexed)</td><td>Data do registro (automático)</td></tr>
+  </tbody>
+</table>
+</div>
+<h4>Restrições:</h4>
+<ul>
+  <li>Registros de auditoria não devem ser alterados ou excluídos</li>
+  <li>Escrita assíncrona recomendada</li>
+</ul>
+
+<!-- 7.7 -->
+<h2 id="sec-7-7">7.7 Landing Page</h2>
+<p>A coleção de landing page armazena o conteúdo dinâmico da página inicial da plataforma, operando como singleton (<code>key: "default"</code>).</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td><code>_id</code></td><td>ObjectId</td><td>Identificador único</td></tr>
+    <tr><td><code>key</code></td><td>String (required, unique, default: "default")</td><td>Chave do singleton</td></tr>
+    <tr><td><code>header</code></td><td>Object</td><td>Logo, nome do app, textos de login/cadastro</td></tr>
+    <tr><td><code>hero</code></td><td>Object</td><td>Badge, título, descrição, botões, links de download</td></tr>
+    <tr><td><code>statistics</code></td><td>Array</td><td>Estatísticas exibidas (ícone, valor, label)</td></tr>
+    <tr><td><code>features</code></td><td>Object</td><td>Seção de funcionalidades (título, subtítulo, itens)</td></tr>
+    <tr><td><code>steps</code></td><td>Object</td><td>Seção de passos (como funciona)</td></tr>
+    <tr><td><code>targets</code></td><td>Object</td><td>Seção de público-alvo</td></tr>
+    <tr><td><code>testimonials</code></td><td>Object</td><td>Seção de depoimentos (stats, itens)</td></tr>
+    <tr><td><code>faq</code></td><td>Object</td><td>Seção de perguntas frequentes (question/answer)</td></tr>
+    <tr><td><code>cta</code></td><td>Object</td><td>Seção de call-to-action (título, descrição, botões)</td></tr>
+    <tr><td><code>footer</code></td><td>Object</td><td>Rodapé (logo, nome do app, copyright)</td></tr>
+    <tr><td><code>createdAt</code></td><td>Date</td><td>Data de criação (automático)</td></tr>
+    <tr><td><code>updatedAt</code></td><td>Date</td><td>Data de atualização (automático)</td></tr>
+  </tbody>
+</table>
+</div>
+<h4>Observações técnicas:</h4>
+<ul>
+  <li>Modelo singleton — apenas um documento existe na coleção (chave <code>"default"</code>)</li>
+  <li>Conteúdo CMS-like utilizado pela landing page do frontend e do app mobile</li>
+  <li>Acessível publicamente via <code>GET /landing-page</code> (sem autenticação)</li>
+</ul>
+
+<!-- ─── SEÇÃO 8 ─── -->
+<h1 id="sec-8"><span class="section-num">8</span> Regras de Negócio Operacionais</h1>
+<p>As regras de negócio operacionais definem o comportamento esperado da API. São aplicadas exclusivamente na camada de serviços.</p>
+
+<h2 id="sec-8-1">8.1 Criação de Senhas</h2>
+<p>O fluxo para criação de uma senha segue, obrigatoriamente, a seguinte ordem:</p>
+<ol>
+  <li>Verificar se o usuário está autenticado e ativo no sistema.</li>
+  <li>Verificar se a fila está ativa e apta a receber novas senhas.</li>
+  <li>Verificar se o usuário já possui uma senha ativa (AGUARDANDO ou EM_ATENDIMENTO) para a mesma fila. Caso exista, a criação é negada (409).</li>
+  <li>Avaliar se a fila exige validação de QR Code (filas presenciais/híbridas).</li>
+  <li>Aplicar regras de prioridade, quando configuradas.</li>
+  <li>Calcular a posição da senha na fila, considerando a ordenação vigente.</li>
+  <li>Persistir a nova senha com status <code>AGUARDANDO</code>.</li>
+  <li>Emitir evento WebSocket <code>senha:criada</code> para os rooms relevantes.</li>
+</ol>
+<p>Em caso de falha em qualquer etapa, a criação é interrompida sem efeitos colaterais parciais.</p>
+
+<h2 id="sec-8-2">8.2 Filas Presenciais e QR Code</h2>
+<p>Para filas com <code>tipoAtendimento</code> PRESENCIAL ou HIBRIDO, a criação de senhas requer validação de um QR Code. Um QR Code é considerado válido quando:</p>
+<ol>
+  <li>Está associado à fila correta (<code>filaId</code> corresponde).</li>
+  <li>Encontra-se dentro do período de validade principal (<code>validoAte</code>) <strong>ou</strong> dentro da janela de tolerância (<code>toleranciaAte</code>).</li>
+  <li>Está ativo (<code>ativo: true</code>) — não foi invalidado por expiração ou substituição.</li>
+</ol>
+<p>A janela de tolerância permite que códigos recém-expirados sejam aceitos por um período adicional limitado, evitando prejuízo ao usuário em cenários de troca recente do QR Code.</p>
+<p>A validação ocorre exclusivamente no servidor. Códigos inválidos, expirados ou fora da janela resultam na recusa da criação da senha (409).</p>
+
+<h2 id="sec-8-3">8.3 Prioridades</h2>
+<p>Quando a fila possui <code>prioridadesHabilitadas: true</code>, a API aplica a seguinte hierarquia de pesos para ordenação:</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Peso</th><th>Tipo de Prioridade</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td>1 (maior)</td><td>LEGAL</td><td>Prioridade legal (idoso 60+, PCD, gestante)</td></tr>
+    <tr><td>2</td><td>FIDELIDADE</td><td>Prioridade por critérios institucionais</td></tr>
+    <tr><td>3 (menor)</td><td>CRONOLÓGICA</td><td>Ordem de chegada (padrão)</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Em caso de empate no nível de prioridade, a ordenação é determinada pela data de criação (<code>createdAt</code>). As prioridades influenciam a posição inicial da senha no momento da criação, sem reordenação retroativa.</p>
+
+<h2 id="sec-8-4">8.4 Cancelamento e Encerramento</h2>
+<h4>Cancelamento:</h4>
+<ul>
+  <li>Permitido apenas quando o status é <code>AGUARDANDO</code>. Senhas em <code>EM_ATENDIMENTO</code> não podem ser canceladas.</li>
+  <li>Pode ser realizado pelo próprio usuário (USUARIO_FINAL) ou por usuários administrativos.</li>
+  <li>Altera o status para <code>CANCELADA</code>.</li>
+</ul>
+<h4>Chamar senha:</h4>
+<ul>
+  <li>Altera o status de <code>AGUARDANDO</code> para <code>EM_ATENDIMENTO</code>.</li>
+  <li>Permitido apenas para <code>ADMIN_INSTITUICAO</code> e <code>OPERADOR</code>.</li>
+  <li>Emite evento WebSocket <code>senha:chamada</code>.</li>
+</ul>
+<h4>Finalizar atendimento:</h4>
+<ul>
+  <li>Altera o status de <code>EM_ATENDIMENTO</code> para <code>FINALIZADA</code>.</li>
+  <li>Permitido apenas para <code>ADMIN_INSTITUICAO</code> e <code>OPERADOR</code>.</li>
+  <li>Libera o usuário para nova solicitação na mesma fila.</li>
+  <li>Emite evento WebSocket <code>senha:finalizada</code>.</li>
+</ul>
+<p>Tanto o cancelamento quanto o encerramento geram registros de auditoria. As transições de estado estão detalhadas no <a href="#apendice-a"><strong>Apêndice A</strong></a>.</p>
+
+<h2 id="sec-8-5">8.5 Criação de Usuários (Password-less)</h2>
+<p>Usuários institucionais (ADMIN_INSTITUICAO, OPERADOR) são criados sem senha pelo administrador:</p>
+<ol>
+  <li>O administrador cria o usuário via <code>POST /instituicoes/{id}/usuarios</code> fornecendo apenas <code>nome</code>, <code>email</code> e <code>papeis</code>.</li>
+  <li>A API gera um token único e um código de recuperação.</li>
+  <li>Um e-mail de boas-vindas é enviado ao novo usuário contendo link e código para definir sua senha.</li>
+  <li>O usuário acessa o link ou informa o código para definir sua senha pela primeira vez.</li>
+</ol>
+
+<!-- ─── SEÇÃO 9 ─── -->
+<h1 id="sec-9"><span class="section-num">9</span> Contrato de Endpoints</h1>
+<p>Este capítulo define o contrato técnico entre a API e as aplicações clientes. Todos os <strong>57 endpoints</strong> estão documentados abaixo, organizados por domínio.</p>
+<p>Todos os endpoints protegidos exigem autenticação via <code>Authorization: Bearer {token}</code>. A autorização é avaliada na camada de serviços. Respostas utilizam JSON. Listagens seguem o padrão do <a href="#apendice-c">Apêndice C</a>.</p>
+
+<!-- 9.1 -->
+<h2 id="sec-9-1">9.1 Autenticação</h2>
+
+<div class="endpoint">
+  <span class="endpoint-method method-post">POST</span>
+  <span class="endpoint-path">/auth/login</span>
+  <span class="perm-badge">🔓 público</span>
+  <p>Autentica o usuário e emite access token + refresh token. Valida credenciais, verifica status (ativo), gera tokens JWT com payload <code>{ id, papeis, instituicaoId }</code>, registra <code>ultimoLoginEm</code>.</p>
+  <pre><code><span class="json-key">"email"</span>: <span class="json-str">"string"</span>,
+<span class="json-key">"senha"</span>: <span class="json-str">"string"</span></code></pre>
+  <p>Resposta 200: <code>{ token, refresh, expiraEm }</code></p>
+  <p>Erros: 400 · 401 · 403</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-post">POST</span>
+  <span class="endpoint-path">/auth/register</span>
+  <span class="perm-badge">🔓 público</span>
+  <p>Registra um novo usuário final (auto-cadastro). O usuário é criado com papel <code>USUARIO_FINAL</code>.</p>
+  <pre><code><span class="json-key">"nome"</span>: <span class="json-str">"string (required)"</span>,
+<span class="json-key">"email"</span>: <span class="json-str">"string (required, formato e-mail)"</span>,
+<span class="json-key">"senha"</span>: <span class="json-str">"string (required, mín. 8 caracteres)"</span></code></pre>
+  <p>Resposta 201: <code>{ token, refresh, expiraEm }</code></p>
+  <p>Erros: 400 · 409</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-post">POST</span>
+  <span class="endpoint-path">/auth/refresh</span>
+  <span class="perm-badge">🔓 público</span>
+  <p>Renova access token e refresh token a partir de um refresh token válido.</p>
+  <pre><code><span class="json-key">"token"</span>: <span class="json-str">"string (refresh token)"</span></code></pre>
+  <p>Resposta 200: <code>{ token, refresh, expiraEm }</code></p>
+  <p>Erros: 401</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-post">POST</span>
+  <span class="endpoint-path">/auth/logout</span>
+  <span class="perm-badge">autenticado</span>
+  <p>Encerra a sessão, invalidando os tokens no servidor.</p>
+  <p>Resposta 200: <code>{ message: "Logout realizado" }</code></p>
+  <p>Erros: 401</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-post">POST</span>
+  <span class="endpoint-path">/auth/introspect</span>
+  <span class="perm-badge">🔓 público</span>
+  <p>Verifica a validade de um access token, retornando informações sobre expiração e tipo.</p>
+  <pre><code><span class="json-key">"accessToken"</span>: <span class="json-str">"string"</span></code></pre>
+  <p>Resposta 200: <code>{ active, tokenType, exp, iat }</code></p>
+  <p>Erros: 400</p>
+</div>
+
+<!-- 9.2 -->
+<h2 id="sec-9-2">9.2 Recuperação de Senha</h2>
+
+<div class="endpoint">
+  <span class="endpoint-method method-post">POST</span>
+  <span class="endpoint-path">/auth/recover</span>
+  <span class="perm-badge">🔓 público</span>
+  <p>Solicita recuperação de senha por e-mail. Gera token único (link) e código de 4 caracteres.</p>
+  <pre><code><span class="json-key">"email"</span>: <span class="json-str">"string (formato e-mail)"</span></code></pre>
+  <blockquote><strong>Nota:</strong> Em ambiente de desenvolvimento (<code>ktor.environment = development</code>), a resposta inclui <code>token</code> e <code>codigo</code> para facilitar testes.</blockquote>
+  <p>Erros: 400</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-patch">PATCH</span>
+  <span class="endpoint-path">/auth/password/reset/{token}</span>
+  <span class="perm-badge">🔓 público</span>
+  <p>Redefine a senha utilizando o token recebido por e-mail (via link). O <code>token</code> é informado diretamente na URL como parâmetro de rota.</p>
+  <pre><code><span class="json-key">"senha"</span>: <span class="json-str">"string (nova senha)"</span></code></pre>
+  <p>Erros: 400 · 401</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-patch">PATCH</span>
+  <span class="endpoint-path">/auth/password/reset/code</span>
+  <span class="perm-badge">🔓 público</span>
+  <p>Redefine a senha utilizando o código de 4 caracteres recebido por e-mail.</p>
+  <pre><code><span class="json-key">"codigo"</span>: <span class="json-str">"string (4 chars)"</span>,
+<span class="json-key">"senha"</span>: <span class="json-str">"string (nova senha)"</span></code></pre>
+  <p>Erros: 400 · 401</p>
+</div>
+
+<!-- 9.3 -->
+<h2 id="sec-9-3">9.3 Instituições</h2>
+
+<div class="endpoint">
+  <span class="endpoint-method method-get">GET</span>
+  <span class="endpoint-path">/instituicoes</span>
+  <span class="perm-badge">AP · AI (própria)</span>
+  <p>Lista instituições com paginação e filtros. Query: <code>nome</code>, <code>ativo</code>, <code>page</code>, <code>limit</code>.</p>
+  <p>Resposta 200: Objeto paginado com array de instituições.</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-post">POST</span>
+  <span class="endpoint-path">/instituicoes</span>
+  <span class="perm-badge">AP</span>
+  <p>Cria uma nova instituição.</p>
+  <pre><code><span class="json-key">"nome"</span>: <span class="json-str">"string (required)"</span>,
+<span class="json-key">"ativo"</span>: <span class="json-bool">true</span>,
+<span class="json-key">"configuracoes"</span>: {}</code></pre>
+  <p>Resposta 201: Objeto da instituição criada.</p>
+  <p>Erros: 400 · 401 · 403</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-get">GET</span>
+  <span class="endpoint-path">/instituicoes/{id}</span>
+  <span class="perm-badge">AP · AI (própria)</span>
+  <p>Retorna os dados de uma instituição específica.</p>
+  <p>Erros: 401 · 403 · 404</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-patch">PATCH</span>
+  <span class="endpoint-path">/instituicoes/{id}</span>
+  <span class="perm-badge">AP · AI (própria)</span>
+  <p>Atualiza dados de uma instituição (<code>nome</code>, <code>cnpj</code>, <code>email</code>, <code>telefone</code>, <code>responsavel</code>, <code>endereco</code>, <code>descricao</code>, <code>ativo</code>, <code>configuracoes</code>).</p>
+  <p>Erros: 400 · 401 · 403 · 404</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-delete">DELETE</span>
+  <span class="endpoint-path">/instituicoes/{id}</span>
+  <span class="perm-badge">AP</span>
+  <p>Remove uma instituição.</p>
+  <p>Resposta 200. Erros: 401 · 403 · 404</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-post">POST</span>
+  <span class="endpoint-path">/instituicoes/solicitar</span>
+  <span class="perm-badge">autenticado</span>
+  <p>Solicita o cadastro de uma nova instituição. Cria uma instituição com status <code>PENDENTE</code> aguardando aprovação do administrador da plataforma.</p>
+  <pre><code><span class="json-key">"nome"</span>: <span class="json-str">"string (required)"</span>,
+<span class="json-key">"cnpj"</span>: <span class="json-str">"string"</span>,
+<span class="json-key">"email"</span>: <span class="json-str">"string"</span>,
+<span class="json-key">"telefone"</span>: <span class="json-str">"string"</span>,
+<span class="json-key">"responsavel"</span>: <span class="json-str">"string"</span>,
+<span class="json-key">"endereco"</span>: <span class="json-str">"string"</span>,
+<span class="json-key">"descricao"</span>: <span class="json-str">"string"</span></code></pre>
+  <p>Resposta 201: Objeto da instituição com <code>status: "PENDENTE"</code>.</p>
+  <p>Erros: 400 · 401</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-patch">PATCH</span>
+  <span class="endpoint-path">/instituicoes/{id}/aprovar</span>
+  <span class="perm-badge">AP</span>
+  <p>Aprova uma solicitação de instituição pendente, alterando o status para <code>APROVADA</code>.</p>
+  <p>Resposta 200. Erros: 401 · 403 · 404 · 409</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-patch">PATCH</span>
+  <span class="endpoint-path">/instituicoes/{id}/rejeitar</span>
+  <span class="perm-badge">AP</span>
+  <p>Rejeita uma solicitação de instituição pendente.</p>
+  <pre><code><span class="json-key">"motivoRejeicao"</span>: <span class="json-str">"string (opcional)"</span></code></pre>
+  <p>Resposta 200. Erros: 401 · 403 · 404 · 409</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-patch">PATCH</span>
+  <span class="endpoint-path">/instituicoes/{id}/reconsiderar</span>
+  <span class="perm-badge">AP</span>
+  <p>Reconsiderar uma instituição rejeitada, retornando o status para <code>PENDENTE</code>.</p>
+  <p>Resposta 200. Erros: 401 · 403 · 404</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-post">POST</span>
+  <span class="endpoint-path">/instituicoes/{id}/contrato</span>
+  <span class="perm-badge">AP</span>
+  <p>Upload do contrato da instituição em formato PDF. <code>multipart/form-data</code> com campo <code>contrato</code>. Máx. 10 MB, tipo: PDF.</p>
+  <p>Resposta 200. Erros: 400 · 401 · 403 · 404</p>
+</div>
+
+<!-- 9.4 -->
+<h2 id="sec-9-4">9.4 Usuários</h2>
+
+<div class="endpoint">
+  <span class="endpoint-method method-get">GET</span>
+  <span class="endpoint-path">/usuarios</span>
+  <span class="perm-badge">AP · AI</span>
+  <p>Lista todos os usuários do sistema com paginação e filtros. Permite busca global, independente de instituição. Query: <code>nome</code>, <code>email</code>, <code>ativo</code>, <code>page</code>, <code>limit</code>.</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-get">GET</span>
+  <span class="endpoint-path">/instituicoes/{instituicaoId}/usuarios</span>
+  <span class="perm-badge">AP · AI (própria)</span>
+  <p>Lista os usuários vinculados a uma instituição com paginação. Query: <code>nome</code>, <code>email</code>, <code>ativo</code>, <code>page</code>, <code>limit</code>.</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-post">POST</span>
+  <span class="endpoint-path">/instituicoes/{instituicaoId}/usuarios</span>
+  <span class="perm-badge">AP · AI (própria)</span>
+  <p>Cria um usuário vinculado a uma instituição (<strong>criação password-less</strong> — ver §8.5).</p>
+  <pre><code><span class="json-key">"nome"</span>: <span class="json-str">"string (required)"</span>,
+<span class="json-key">"email"</span>: <span class="json-str">"string (required)"</span>,
+<span class="json-key">"papeis"</span>: [<span class="json-str">"ADMIN_INSTITUICAO"</span>]</code></pre>
+  <p>Resposta 201. Erros: 400 · 401 · 403</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-get">GET</span>
+  <span class="endpoint-path">/usuarios/{id}</span>
+  <span class="perm-badge">AP · AI</span>
+  <p>Busca um usuário por ID.</p>
+  <p>Erros: 401 · 403 · 404</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-patch">PATCH</span>
+  <span class="endpoint-path">/usuarios/{id}</span>
+  <span class="perm-badge">AP · AI</span>
+  <p>Atualiza dados de um usuário (<code>nome</code>, <code>papeis</code>, <code>ativo</code>, <code>instituicaoId</code>).</p>
+  <p>Erros: 400 · 401 · 403 · 404</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-delete">DELETE</span>
+  <span class="endpoint-path">/usuarios/{id}</span>
+  <span class="perm-badge">AP</span>
+  <p>Remove um usuário.</p>
+  <p>Resposta 200. Erros: 401 · 403 · 404</p>
+</div>
+
+<!-- 9.5 -->
+<h2 id="sec-9-5">9.5 Filas</h2>
+
+<div class="endpoint">
+  <span class="endpoint-method method-get">GET</span>
+  <span class="endpoint-path">/filas</span>
+  <span class="perm-badge">AP · AI · OP</span>
+  <p>Lista filas de atendimento com paginação. Query: <code>instituicaoId</code>, <code>tipoAtendimento</code>, <code>ativa</code>, <code>page</code>, <code>limit</code>.</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-post">POST</span>
+  <span class="endpoint-path">/filas</span>
+  <span class="perm-badge">AI</span>
+  <p>Cria uma nova fila de atendimento. <code>instituicaoId</code> é inferido do usuário autenticado.</p>
+  <pre><code><span class="json-key">"nome"</span>: <span class="json-str">"string (required)"</span>,
+<span class="json-key">"tipoAtendimento"</span>: <span class="json-str">"PRESENCIAL"</span>,
+<span class="json-key">"ativa"</span>: <span class="json-bool">true</span>,
+<span class="json-key">"prioridadesHabilitadas"</span>: <span class="json-bool">false</span>,
+<span class="json-key">"fidelidadeHabilitada"</span>: <span class="json-bool">false</span>,
+<span class="json-key">"tempoMaximoAtendimento"</span>: <span class="json-num">30</span>,
+<span class="json-key">"configuracaoQRCode"</span>: {
+  <span class="json-key">"modoQRCode"</span>: <span class="json-str">"ROTATIVO"</span>,
+  <span class="json-key">"tempoExibicaoMin"</span>: <span class="json-num">5</span>,
+  <span class="json-key">"tempoExpiracaoMin"</span>: <span class="json-num">10</span>,
+  <span class="json-key">"toleranciaMin"</span>: <span class="json-num">2</span>,
+  <span class="json-key">"tempoAlertaSegundos"</span>: <span class="json-num">30</span>
+},
+<span class="json-key">"mesas"</span>: [
+  { <span class="json-key">"numero"</span>: <span class="json-str">"1"</span>, <span class="json-key">"nome"</span>: <span class="json-str">"Mesa Principal"</span>, <span class="json-key">"ativa"</span>: <span class="json-bool">true</span> }
+]</code></pre>
+  <p>Resposta 201. Emite <code>fila:criada</code>. Erros: 400 · 401 · 403</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-get">GET</span>
+  <span class="endpoint-path">/filas/{id}</span>
+  <span class="perm-badge">autenticado</span>
+  <p>Busca uma fila por ID.</p>
+  <p>Erros: 401 · 404</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-patch">PATCH</span>
+  <span class="endpoint-path">/filas/{id}</span>
+  <span class="perm-badge">AI</span>
+  <p>Atualiza uma fila existente (<code>nome</code>, <code>ativa</code>, <code>prioridadesHabilitadas</code>, <code>fidelidadeHabilitada</code>, <code>tempoMaximoAtendimento</code>, <code>tipoAtendimento</code>, <code>configuracaoQRCode</code>, <code>mesas</code>). Emite <code>fila:atualizada</code>.</p>
+  <p>Erros: 400 · 401 · 403 · 404</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-delete">DELETE</span>
+  <span class="endpoint-path">/filas/{id}</span>
+  <span class="perm-badge">AI</span>
+  <p>Remove uma fila. Emite <code>fila:removida</code>.</p>
+  <p>Resposta 200: <code>{ message: "Fila removida" }</code>. Erros: 401 · 403 · 404</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-get">GET</span>
+  <span class="endpoint-path">/filas/{id}/contagem</span>
+  <span class="perm-badge">AP · AI · OP</span>
+  <p>Retorna a contagem de senhas aguardando atendimento em uma fila específica.</p>
+  <pre><code>{ <span class="json-key">"data"</span>: { <span class="json-key">"aguardando"</span>: <span class="json-num">12</span> } }</code></pre>
+  <p>Erros: 401 · 404</p>
+</div>
+
+<!-- 9.6 -->
+<h2 id="sec-9-6">9.6 Senhas</h2>
+
+<div class="endpoint">
+  <span class="endpoint-method method-get">GET</span>
+  <span class="endpoint-path">/senhas/stats</span>
+  <span class="perm-badge">AI · OP</span>
+  <p>Retorna estatísticas agregadas de senhas (dashboards). Query: <code>timezone</code> (IANA, padrão: America/Manaus).</p>
+  <pre><code>{
+  <span class="json-key">"emAtendimento"</span>: <span class="json-num">3</span>,
+  <span class="json-key">"aguardando"</span>: <span class="json-num">12</span>,
+  <span class="json-key">"finalizadasHoje"</span>: <span class="json-num">25</span>,
+  <span class="json-key">"senhasHoje"</span>: <span class="json-num">40</span>,
+  <span class="json-key">"porFila"</span>: [{ <span class="json-key">"filaId"</span>: <span class="json-str">"..."</span>, <span class="json-key">"aguardando"</span>: <span class="json-num">5</span>, ... }]
+}</code></pre>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-get">GET</span>
+  <span class="endpoint-path">/senhas</span>
+  <span class="perm-badge">AP · AI · OP</span>
+  <p>Lista senhas com paginação e filtros. Query: <code>filaId</code>, <code>status</code>, <code>page</code>, <code>limit</code>.</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-get">GET</span>
+  <span class="endpoint-path">/senhas/{id}</span>
+  <span class="perm-badge">AP · AI · OP · UF (própria)</span>
+  <p>Consulta o estado atual de uma senha específica.</p>
+  <p>Erros: 401 · 403 · 404</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-get">GET</span>
+  <span class="endpoint-path">/filas/{filaId}/senhas</span>
+  <span class="perm-badge">AP · AI · OP</span>
+  <p>Lista senhas de uma fila específica com paginação e filtros. Query: <code>status</code>, <code>page</code>, <code>limit</code>.</p>
+  <p>Resposta 200: <code>PaginatedResponse&lt;Senha&gt;</code>. Erros: 401 · 403 · 404</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-post">POST</span>
+  <span class="endpoint-path">/filas/{filaId}/senhas</span>
+  <span class="perm-badge">UF</span>
+  <p>Cria uma senha (entra na fila). Aplica todas as regras do §8.1.</p>
+  <pre><code><span class="json-key">"qrCode"</span>: <span class="json-str">"string (obrigatório para presenciais/híbridas)"</span>,
+<span class="json-key">"prioridade"</span>: <span class="json-str">"string (opcional — LEGAL, FIDELIDADE)"</span></code></pre>
+  <p>Resposta 201: <code>{ id, posicao, status: "AGUARDANDO" }</code>. Emite <code>senha:criada</code>.</p>
+  <p>Erros: 400 · 401 · 403 · 409</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-post">POST</span>
+  <span class="endpoint-path">/filas/{filaId}/senhas/presencial</span>
+  <span class="perm-badge">AI · OP</span>
+  <p>Cria uma senha presencial (operador cria para cidadão sem celular). A senha é criada com <code>presencial: true</code>.</p>
+  <pre><code><span class="json-key">"nomeCidadao"</span>: <span class="json-str">"string (required)"</span>,
+<span class="json-key">"prioridade"</span>: <span class="json-str">"string (opcional — LEGAL, FIDELIDADE)"</span></code></pre>
+  <p>Resposta 201: <code>{ id, posicao, status: "AGUARDANDO", presencial: true, nomeCidadao }</code>. Emite <code>senha:criada</code>.</p>
+  <p>Erros: 400 · 401 · 403 · 409</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-post">POST</span>
+  <span class="endpoint-path">/senhas/{id}/cancelar</span>
+  <span class="perm-badge">AP · AI · OP · UF (própria)</span>
+  <p>Cancela uma senha ativa conforme regras do §8.4.</p>
+  <p>Resposta 200: <code>{ status: "CANCELADA" }</code>. Erros: 401 · 403 · 409</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-post">POST</span>
+  <span class="endpoint-path">/senhas/{id}/chamar</span>
+  <span class="perm-badge">AI · OP</span>
+  <p>Chama a próxima senha da fila, alterando para <code>EM_ATENDIMENTO</code>. Emite <code>senha:chamada</code>. Query: <code>mesa</code> (número da mesa, opcional), <code>mesaNome</code> (nome descritivo da mesa, opcional).</p>
+  <p>Erros: 401 · 403 · 409</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-post">POST</span>
+  <span class="endpoint-path">/senhas/{id}/finalizar</span>
+  <span class="perm-badge">AI · OP</span>
+  <p>Finaliza o atendimento de uma senha em <code>EM_ATENDIMENTO</code>. Emite <code>senha:finalizada</code>.</p>
+  <p>Erros: 401 · 403 · 404 · 409</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-post">POST</span>
+  <span class="endpoint-path">/senhas/{id}/assumir</span>
+  <span class="perm-badge">AI</span>
+  <p>Permite que um <code>ADMIN_INSTITUICAO</code> assuma o atendimento de uma senha em <code>EM_ATENDIMENTO</code> por outro operador. Emite evento WebSocket <code>senha:atualizada</code>.</p>
+  <p>Erros: 401 · 403 · 404 · 409</p>
+</div>
+
+<!-- 9.7 -->
+<h2 id="sec-9-7">9.7 QR Codes</h2>
+
+<div class="endpoint">
+  <span class="endpoint-method method-get">GET</span>
+  <span class="endpoint-path">/qrcodes/codigo/{codigo}</span>
+  <span class="perm-badge">autenticado</span>
+  <p>Busca os dados de uma fila a partir do código do QR Code. Utilizado pelo app mobile para obter informações da fila ao escanear um QR Code.</p>
+  <p>Resposta 200: Objeto contendo dados da fila associada ao QR Code.</p>
+  <p>Erros: 401 · 404</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-get">GET</span>
+  <span class="endpoint-path">/qrcodes</span>
+  <span class="perm-badge">AI · OP</span>
+  <p>Lista QR Codes com paginação. Query: <code>filaId</code>, <code>ativo</code>, <code>page</code>, <code>limit</code>.</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-post">POST</span>
+  <span class="endpoint-path">/qrcodes</span>
+  <span class="perm-badge">AI</span>
+  <p>Cria um novo QR Code para uma fila.</p>
+  <pre><code><span class="json-key">"filaId"</span>: <span class="json-str">"string (required)"</span>,
+<span class="json-key">"codigo"</span>: <span class="json-str">"string (required)"</span>,
+<span class="json-key">"validoAte"</span>: <span class="json-str">"datetime (required)"</span>,
+<span class="json-key">"toleranciaAte"</span>: <span class="json-str">"datetime (required)"</span></code></pre>
+  <p>Resposta 201. Erros: 400 · 401 · 403</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-get">GET</span>
+  <span class="endpoint-path">/qrcodes/{id}</span>
+  <span class="perm-badge">AI · OP</span>
+  <p>Busca um QR Code por ID.</p>
+  <p>Erros: 401 · 403 · 404</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-patch">PATCH</span>
+  <span class="endpoint-path">/qrcodes/{id}/desativar</span>
+  <span class="perm-badge">AI</span>
+  <p>Desativa um QR Code.</p>
+  <p>Resposta 200: <code>ativo: false</code>. Erros: 401 · 403 · 404</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-post">POST</span>
+  <span class="endpoint-path">/qrcodes/regenerar</span>
+  <span class="perm-badge">AI</span>
+  <p>Regenera o QR Code de uma fila, desativando o anterior e criando um novo. Utilizado para rotação manual do QR Code.</p>
+  <pre><code><span class="json-key">"filaId"</span>: <span class="json-str">"string (required)"</span></code></pre>
+  <p>Resposta 201: Objeto do novo QR Code. Emite <code>qrcode:regenerado</code>.</p>
+  <p>Erros: 400 · 401 · 403 · 404</p>
+</div>
+
+<!-- 9.8 -->
+<h2 id="sec-9-8">9.8 Auditoria</h2>
+
+<div class="endpoint">
+  <span class="endpoint-method method-get">GET</span>
+  <span class="endpoint-path">/auditorias</span>
+  <span class="perm-badge">AP · AI (própria inst.)</span>
+  <p>Lista registros de auditoria com paginação. Query: <code>instituicaoId</code>, <code>usuarioId</code>, <code>acao</code>, <code>page</code>, <code>limit</code> (default: 20).</p>
+</div>
+
+<!-- 9.9 -->
+<h2 id="sec-9-9">9.9 Perfil do Usuário</h2>
+
+<div class="endpoint">
+  <span class="endpoint-method method-get">GET</span>
+  <span class="endpoint-path">/me</span>
+  <span class="perm-badge">autenticado</span>
+  <p>Retorna o perfil completo do usuário logado.</p>
+  <pre><code>{
+  <span class="json-key">"_id"</span>: <span class="json-str">"string"</span>,
+  <span class="json-key">"nome"</span>: <span class="json-str">"string"</span>,
+  <span class="json-key">"email"</span>: <span class="json-str">"string"</span>,
+  <span class="json-key">"papeis"</span>: [<span class="json-str">"USUARIO_FINAL"</span>],
+  <span class="json-key">"ativo"</span>: <span class="json-bool">true</span>,
+  <span class="json-key">"avatar"</span>: <span class="json-str">"/uploads/avatar-123.jpg"</span>,
+  <span class="json-key">"fusoHorario"</span>: <span class="json-str">"America/Manaus"</span>,
+  <span class="json-key">"instituicaoId"</span>: <span class="json-str">"string | null"</span>
+}</code></pre>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-patch">PATCH</span>
+  <span class="endpoint-path">/me</span>
+  <span class="perm-badge">autenticado</span>
+  <p>Atualiza dados do perfil (<code>nome</code>, <code>email</code>, <code>fusoHorario</code>).</p>
+  <p>Erros: 400 · 401 · 409 – E-mail já em uso</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-patch">PATCH</span>
+  <span class="endpoint-path">/me/senha</span>
+  <span class="perm-badge">autenticado</span>
+  <p>Altera a senha do usuário logado. Requisitos: maiúscula, minúscula, número e caractere especial, mín. 8 chars.</p>
+  <pre><code><span class="json-key">"senhaAtual"</span>: <span class="json-str">"string (required)"</span>,
+<span class="json-key">"novaSenha"</span>: <span class="json-str">"string (required)"</span></code></pre>
+  <p>Erros: 400 · 401</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-post">POST</span>
+  <span class="endpoint-path">/me/avatar</span>
+  <span class="perm-badge">autenticado</span>
+  <p>Upload de foto de perfil (avatar). <code>multipart/form-data</code> com campo <code>avatar</code>. Máx. 50 MB, tipos: JPEG, PNG, WebP, GIF.</p>
+  <p>Erros: 400 · 401</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-delete">DELETE</span>
+  <span class="endpoint-path">/me/avatar</span>
+  <span class="perm-badge">autenticado</span>
+  <p>Remove o avatar do usuário logado.</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-get">GET</span>
+  <span class="endpoint-path">/timezones</span>
+  <span class="perm-badge">🔓 público</span>
+  <p>Retorna a lista de fusos horários suportados pelo sistema.</p>
+  <pre><code>{ <span class="json-key">"data"</span>: { <span class="json-key">"fusos"</span>: [<span class="json-str">"America/Manaus"</span>, <span class="json-str">"America/Sao_Paulo"</span>, ...], <span class="json-key">"padrao"</span>: <span class="json-str">"America/Manaus"</span> } }</code></pre>
+</div>
+
+<!-- 9.10 -->
+<h2 id="sec-9-10">9.10 Landing Page</h2>
+
+<div class="endpoint">
+  <span class="endpoint-method method-get">GET</span>
+  <span class="endpoint-path">/landing-page</span>
+  <span class="perm-badge">🔓 público</span>
+  <p>Retorna o conteúdo da landing page da plataforma. Endpoint público utilizado pelo frontend web e app mobile para renderizar a página inicial.</p>
+  <p>Resposta 200: Objeto completo da landing page contendo seções <code>header</code>, <code>hero</code>, <code>statistics</code>, <code>features</code>, <code>steps</code>, <code>targets</code>, <code>testimonials</code>, <code>faq</code>, <code>cta</code>, <code>footer</code>.</p>
+  <p>Erros: 404</p>
+</div>
+
+<!-- 9.11 -->
+<h2 id="sec-9-11">9.11 Rotas Especiais</h2>
+
+<div class="endpoint">
+  <span class="endpoint-method method-get">GET</span>
+  <span class="endpoint-path">/.well-known/assetlinks.json</span>
+  <span class="perm-badge">🔓 público</span>
+  <p>Retorna o arquivo de Android App Links (Digital Asset Links) para permitir deep linking nativo no app Android (<code>br.com.filacidada</code>).</p>
+</div>
+
+<div class="endpoint">
+  <span class="endpoint-method method-get">GET</span>
+  <span class="endpoint-path">/r/{codigo}</span>
+  <span class="perm-badge">🔓 público</span>
+  <p>Rota de redirect para deep link. Redireciona para <code>{FRONTEND_URL}/fila/{codigo}</code> (configurado via variável de ambiente <code>FRONTEND_URL</code>). O frontend pode tratar o acesso em dispositivos mobile para abrir o app via Universal Links ou App Links.</p>
+  <p>Resposta: Redirect 302. Erros: 400</p>
+</div>
+
+
+<!-- ─── SEÇÃO 10 ─── -->
+<h1 id="sec-10"><span class="section-num">10</span> Comunicação em Tempo Real (WebSocket)</h1>
+<p>A API utiliza <strong>Ktor WebSocket</strong> (nativo) para comunicação em tempo real, notificando clientes sobre eventos de filas e senhas sem necessidade de polling.</p>
+
+<h3>10.1 Conexão</h3>
+<p>Clientes se conectam ao endpoint WebSocket utilizando autenticação via token JWT como query parameter <code>token</code>:</p>
+<pre><code><span style="color:var(--gray-400)">// Endpoint WebSocket</span>
+ws://SERVER_HOST:PORT/ws?token=JWT_ACCESS_TOKEN
+
+<span style="color:var(--gray-400)">// Mensagens trocadas via JSON frames</span>
+<span style="color:var(--gray-400)">// Reconnection deve ser implementada pelo cliente</span></code></pre>
+
+<h3>10.2 Rooms (Salas)</h3>
+<p>Os clientes enviam mensagens de <code>join</code> em rooms para receber eventos relevantes:</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Room</th><th>Formato</th><th>Quem se inscreve</th><th>Eventos recebidos</th></tr></thead>
+  <tbody>
+    <tr><td><code>user:{userId}</code></td><td><code>user:665a1f...</code></td><td>Cada usuário (eventos pessoais)</td><td><code>senha:chamada</code></td></tr>
+    <tr><td><code>instituicao:{id}</code></td><td><code>instituicao:665b2e...</code></td><td>AI, OP, Dashboard</td><td>Todos os eventos de filas e senhas da instituição</td></tr>
+    <tr><td><code>fila:{filaId}</code></td><td><code>fila:665c3f...</code></td><td>Operadores no painel</td><td>Eventos específicos da fila</td></tr>
+  </tbody>
+</table>
+</div>
+<p>O join é realizado com mensagem JSON <code>{ "action": "join", "room": "roomName" }</code> e o leave com <code>{ "action": "leave", "room": "roomName" }</code>.</p>
+
+<h3>10.3 Eventos Emitidos</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Evento</th><th>Acionado quando</th><th>Dados enviados</th><th>Rooms notificados</th></tr></thead>
+  <tbody>
+    <tr><td><code>senha:criada</code></td><td>Nova senha é criada</td><td>Objeto da senha</td><td><code>instituicao:{id}</code>, <code>fila:{filaId}</code></td></tr>
+    <tr><td><code>senha:chamada</code></td><td>Senha é chamada</td><td>Objeto da senha</td><td><code>instituicao:{id}</code>, <code>fila:{filaId}</code>, <code>user:{usuarioId}</code></td></tr>
+    <tr><td><code>senha:finalizada</code></td><td>Atendimento encerrado</td><td>Objeto da senha</td><td><code>instituicao:{id}</code>, <code>fila:{filaId}</code></td></tr>
+    <tr><td><code>senha:atualizada</code></td><td>Atualização de senha</td><td>Objeto da senha</td><td><code>instituicao:{id}</code>, <code>fila:{filaId}</code></td></tr>
+    <tr><td><code>fila:criada</code></td><td>Nova fila criada</td><td>Objeto da fila</td><td><code>instituicao:{id}</code></td></tr>
+    <tr><td><code>fila:atualizada</code></td><td>Fila atualizada</td><td>Objeto da fila</td><td><code>instituicao:{id}</code></td></tr>
+    <tr><td><code>fila:removida</code></td><td>Fila removida</td><td><code>{ filaId }</code></td><td><code>instituicao:{id}</code></td></tr>
+    <tr><td><code>qrcode:novo</code></td><td>Novo QR Code gerado</td><td>Objeto do QR Code</td><td><code>fila:{filaId}</code></td></tr>
+    <tr><td><code>qrcode:regenerado</code></td><td>QR Code regenerado</td><td>Objeto do novo QR Code</td><td><code>fila:{filaId}</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>10.4 Reconexão</h3>
+<p>O cliente deve implementar reconexão automática com backoff exponencial. Ao reconectar, deve refazer o <code>join</code> nos rooms relevantes.</p>
+
+<!-- ─── SEÇÃO 11 ─── -->
+<h1 id="sec-11"><span class="section-num">11</span> Especificação Técnica de QR Code</h1>
+<p>O mecanismo de QR Code é utilizado como validação de presença física em filas presenciais. Impede reutilização indevida, compartilhamento remoto e tentativas de fraude.</p>
+
+<h4>Regras de geração:</h4>
+<ul>
+  <li>Cada QR Code possui código aleatório, tempo de validade limitado (<code>validoAte</code>) e janela de tolerância (<code>toleranciaAte</code>).</li>
+  <li>Geração e rotação ocorrem em intervalos regulares definidos pela configuração da fila (<code>configuracaoQRCode.tempoExibicaoMin</code>).</li>
+  <li>QR Codes não devem conter informações sensíveis ou identificadores de usuários em formato legível.</li>
+</ul>
+<h4>Regras de validação:</h4>
+<ul>
+  <li>Validação exclusivamente no servidor.</li>
+  <li>Verificação de: associação com a fila correta, período de validade, janela de tolerância e status ativo.</li>
+  <li>Códigos inválidos resultam em erro 409.</li>
+</ul>
+<p><strong>Endpoints CRUD:</strong> Descritos no <a href="#sec-9-7">§9.7</a> (GET, POST, GET/:id, PATCH desativar).</p>
+
+<!-- ─── SEÇÃO 12 ─── -->
+<h1 id="sec-12"><span class="section-num">12</span> Auditoria e Logs</h1>
+<p>O sistema de auditoria registra ações administrativas relevantes, permitindo rastreabilidade completa. Os registros são imutáveis e vinculados à instituição.</p>
+
+<h4>Eventos auditados:</h4>
+<ul>
+  <li>Login de usuários</li>
+  <li>Criação, alteração e remoção de instituições, filas, senhas, usuários e QR codes</li>
+  <li>Cancelamento e finalização de atendimentos</li>
+  <li>Alterações de perfil</li>
+</ul>
+<p><strong>Consulta:</strong> O endpoint <code>GET /auditorias</code> permite filtragem por <code>instituicaoId</code>, <code>usuarioId</code>, <code>acao</code>, com paginação (ver <a href="#sec-9-8">§9.8</a>).</p>
+
+<!-- ─── SEÇÃO 13 ─── -->
+<h1 id="sec-13"><span class="section-num">13</span> Segurança Técnica</h1>
+<ul>
+  <li><strong>Autenticação JWT</strong> com access token + refresh token via Ktor Auth plugin e invalidação no servidor via logout</li>
+  <li><strong>Autorização por papéis</strong> com plugin customizado e isolamento institucional</li>
+  <li><strong>Validação de entrada</strong> com Kotlinx.serialization e validação manual em data classes em todos os endpoints</li>
+  <li><strong>Tokens de recuperação</strong> com expiração (token único + código de 4 caracteres)</li>
+  <li><strong>Senhas hasheadas</strong> com BCrypt (jBCrypt — nunca armazenadas em texto puro)</li>
+  <li><strong>Upload seguro</strong> com validação de tipo MIME e tamanho</li>
+  <li><strong>Campos sensíveis</strong> excluídos da serialização via <code>@Transient</code> ou projeções na camada de repositório</li>
+</ul>
+<p>Todas as decisões de permissões e regras de negócio são realizadas no servidor. O cliente é considerado ambiente não confiável.</p>
+
+<!-- ─── SEÇÃO 14 ─── -->
+<h1 id="sec-14"><span class="section-num">14</span> Integração com Aplicações Cliente</h1>
+<p>As aplicações clientes devem tratar a API como fonte única de verdade. Nenhuma decisão de autorização ou regra de negócio deve ser implementada no cliente.</p>
+
+<h4>Fluxo de integração:</h4>
+<ol>
+  <li><strong>Autenticação:</strong> <code>POST /auth/login</code> → armazenar <code>token</code> e <code>refresh</code> localmente.</li>
+  <li><strong>Requisições protegidas:</strong> enviar <code>Authorization: Bearer {token}</code> em todas as requisições.</li>
+  <li><strong>Refresh automático:</strong> ao receber 401, utilizar <code>POST /auth/refresh</code>. Se falhar, redirecionar para login.</li>
+  <li><strong>WebSocket:</strong> conectar ao endpoint <code>/ws?token={jwt}</code> e fazer join nos rooms relevantes via mensagem JSON.</li>
+  <li><strong>Logout:</strong> <code>POST /auth/logout</code> + limpar tokens locais + desconectar WebSocket.</li>
+</ol>
+
+<!-- ─── SEÇÃO 15 ─── -->
+<h1 id="sec-15"><span class="section-num">15</span> Checklist de Implementação</h1>
+<p>Antes da disponibilização em ambiente de produção, devem ser verificados:</p>
+<ul class="checklist">
+  <li>Autenticação JWT (access + refresh) funcionando com invalidação no logout (Ktor Auth plugin)</li>
+  <li>Recuperação de senha (token + código) com envio de e-mail</li>
+  <li>Autorização por papéis com isolamento institucional (plugin customizado)</li>
+  <li>CRUD completo: Instituições, Usuários, Filas, Senhas, QR Codes</li>
+  <li>Regras de negócio de senhas (duplicidade, QR Code, prioridades)</li>
+  <li>Máquina de estados da senha (Apêndice A)</li>
+  <li>WebSocket nativo do Ktor com rooms e eventos</li>
+  <li>Sistema de auditoria registrando ações administrativas</li>
+  <li>Validação de entrada com Kotlinx.serialization e data classes</li>
+  <li>Upload de avatar com restrições de tipo e tamanho</li>
+  <li>Paginação padronizada em todas as listagens</li>
+  <li>Documentação Swagger/OpenAPI atualizada (Ktor OpenAPI plugin)</li>
+  <li>Testes funcionais dos endpoints</li>
+  <li>Segurança: campos sensíveis excluídos da serialização, senhas hasheadas com BCrypt</li>
+  <li>Injeção de dependência via Koin configurada</li>
+  <li>Repositórios MongoDB via KMongo operacionais</li>
+</ul>
+
+
+<!-- ════════════════════════ APÊNDICES ════════════════════════ -->
+
+<h1 id="apendice-a"><span class="section-num appendix">A</span> APÊNDICE A – Estados da Senha e Transições Permitidas</h1>
+
+<h2>A.1 Estados Possíveis da Senha</h2>
+
+<div class="state-diagram">
+  <div class="state-node state-aguardando">AGUARDANDO</div>
+  <div class="state-arrow">→</div>
+  <div class="state-node state-em-atendimento">EM_ATENDIMENTO</div>
+  <div class="state-arrow">→</div>
+  <div class="state-node state-finalizada">FINALIZADA</div>
+</div>
+<div class="state-diagram" style="margin-top:-.5rem">
+  <div class="state-node state-aguardando">AGUARDANDO</div>
+  <div class="state-arrow">→</div>
+  <div class="state-node state-cancelada">CANCELADA</div>
+</div>
+
+<ul>
+  <li><span class="state-badge state-aguardando">AGUARDANDO</span> — Estado inicial após criação. O usuário aguarda ser chamado.</li>
+  <li><span class="state-badge state-em-atendimento">EM_ATENDIMENTO</span> — Quando a senha é chamada. <strong>Não pode</strong> ser cancelada.</li>
+  <li><span class="state-badge state-cancelada">CANCELADA</span> — Senha cancelada. Estado terminal.</li>
+  <li><span class="state-badge state-finalizada">FINALIZADA</span> — Atendimento concluído. O usuário é liberado para nova senha. Estado terminal.</li>
+</ul>
+
+<h2>A.2 Transições de Estado Permitidas</h2>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Estado Atual</th><th>Próximo Estado</th><th>Ação</th><th>Permissão</th></tr></thead>
+  <tbody>
+    <tr><td><span class="state-badge state-aguardando">AGUARDANDO</span></td><td><span class="state-badge state-em-atendimento">EM_ATENDIMENTO</span></td><td><code>POST /senhas/{id}/chamar</code></td><td>AI, OP</td></tr>
+    <tr><td><span class="state-badge state-aguardando">AGUARDANDO</span></td><td><span class="state-badge state-cancelada">CANCELADA</span></td><td><code>POST /senhas/{id}/cancelar</code></td><td>Todos (UF: própria)</td></tr>
+    <tr><td><span class="state-badge state-em-atendimento">EM_ATENDIMENTO</span></td><td><span class="state-badge state-finalizada">FINALIZADA</span></td><td><code>POST /senhas/{id}/finalizar</code></td><td>AI, OP</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>A.3 Transições Não Permitidas</h2>
+<ul>
+  <li>CANCELADA → qualquer outro estado</li>
+  <li>FINALIZADA → qualquer outro estado</li>
+  <li>EM_ATENDIMENTO → CANCELADA</li>
+  <li>FINALIZADA → AGUARDANDO</li>
+  <li>CANCELADA → AGUARDANDO</li>
+</ul>
+<p>Qualquer tentativa de transição inválida resulta em erro <strong>409</strong>.</p>
+
+<h2>A.4 Regras Complementares</h2>
+<ul>
+  <li>O estado é atualizado exclusivamente no servidor.</li>
+  <li>O cliente não deve inferir ou alterar estados de forma autônoma.</li>
+  <li>Estados devem ser representados por valores controlados (enumeração) — nunca strings livres.</li>
+  <li>Alterações de estado devem ser atômicas para evitar inconsistências.</li>
+  <li>Toda transição gera registro de auditoria.</li>
+  <li>Toda transição emite evento WebSocket correspondente.</li>
+</ul>
+
+<!-- APÊNDICE B -->
+<h1 id="apendice-b"><span class="section-num appendix">B</span> APÊNDICE B – Matriz de Permissões por Endpoint</h1>
+
+<h2>B.1 Papéis Considerados</h2>
+<ul>
+  <li><strong>AP</strong> – ADMIN_PLATAFORMA</li>
+  <li><strong>AI</strong> – ADMIN_INSTITUICAO</li>
+  <li><strong>OP</strong> – OPERADOR</li>
+  <li><strong>UF</strong> – USUARIO_FINAL</li>
+</ul>
+
+<h2>B.2 Convenções</h2>
+<p>✔️ Acesso permitido &nbsp; ❌ Acesso não permitido &nbsp; ⚠️ Acesso com restrições &nbsp; 🔓 Público (sem autenticação)</p>
+
+<h2>B.3 Matriz de Permissões</h2>
+
+<h3>Autenticação</h3>
+<div class="table-wrap">
+<table class="perm-table">
+  <thead><tr><th>Endpoint</th><th>AP</th><th>AI</th><th>OP</th><th>UF</th></tr></thead>
+  <tbody>
+    <tr><td>POST /auth/login</td><td>🔓</td><td>🔓</td><td>🔓</td><td>🔓</td></tr>
+    <tr><td>POST /auth/register</td><td>🔓</td><td>🔓</td><td>🔓</td><td>🔓</td></tr>
+    <tr><td>POST /auth/refresh</td><td>🔓</td><td>🔓</td><td>🔓</td><td>🔓</td></tr>
+    <tr><td>POST /auth/logout</td><td>✔️</td><td>✔️</td><td>✔️</td><td>✔️</td></tr>
+    <tr><td>POST /auth/introspect</td><td>🔓</td><td>🔓</td><td>🔓</td><td>🔓</td></tr>
+    <tr><td>POST /auth/recover</td><td>🔓</td><td>🔓</td><td>🔓</td><td>🔓</td></tr>
+    <tr><td>PATCH /auth/password/reset/{token}</td><td>🔓</td><td>🔓</td><td>🔓</td><td>🔓</td></tr>
+    <tr><td>PATCH /auth/password/reset/code</td><td>🔓</td><td>🔓</td><td>🔓</td><td>🔓</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Instituições</h3>
+<div class="table-wrap">
+<table class="perm-table">
+  <thead><tr><th>Endpoint</th><th>AP</th><th>AI</th><th>OP</th><th>UF</th></tr></thead>
+  <tbody>
+    <tr><td>GET /instituicoes</td><td>✔️</td><td>⚠️</td><td>❌</td><td>❌</td></tr>
+    <tr><td>POST /instituicoes</td><td>✔️</td><td>❌</td><td>❌</td><td>❌</td></tr>
+    <tr><td>GET /instituicoes/{id}</td><td>✔️</td><td>⚠️</td><td>❌</td><td>❌</td></tr>
+    <tr><td>PATCH /instituicoes/{id}</td><td>✔️</td><td>⚠️</td><td>❌</td><td>❌</td></tr>
+    <tr><td>DELETE /instituicoes/{id}</td><td>✔️</td><td>❌</td><td>❌</td><td>❌</td></tr>
+    <tr><td>POST /instituicoes/solicitar</td><td>✔️</td><td>✔️</td><td>✔️</td><td>✔️</td></tr>
+    <tr><td>PATCH /instituicoes/{id}/aprovar</td><td>✔️</td><td>❌</td><td>❌</td><td>❌</td></tr>
+    <tr><td>PATCH /instituicoes/{id}/rejeitar</td><td>✔️</td><td>❌</td><td>❌</td><td>❌</td></tr>
+    <tr><td>PATCH /instituicoes/{id}/reconsiderar</td><td>✔️</td><td>❌</td><td>❌</td><td>❌</td></tr>
+    <tr><td>POST /instituicoes/{id}/contrato</td><td>✔️</td><td>❌</td><td>❌</td><td>❌</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Usuários</h3>
+<div class="table-wrap">
+<table class="perm-table">
+  <thead><tr><th>Endpoint</th><th>AP</th><th>AI</th><th>OP</th><th>UF</th></tr></thead>
+  <tbody>
+    <tr><td>GET /usuarios</td><td>✔️</td><td>✔️</td><td>❌</td><td>❌</td></tr>
+    <tr><td>GET /instituicoes/{id}/usuarios</td><td>✔️</td><td>⚠️</td><td>❌</td><td>❌</td></tr>
+    <tr><td>POST /instituicoes/{id}/usuarios</td><td>✔️</td><td>⚠️</td><td>❌</td><td>❌</td></tr>
+    <tr><td>GET /usuarios/{id}</td><td>✔️</td><td>✔️</td><td>❌</td><td>❌</td></tr>
+    <tr><td>PATCH /usuarios/{id}</td><td>✔️</td><td>✔️</td><td>❌</td><td>❌</td></tr>
+    <tr><td>DELETE /usuarios/{id}</td><td>✔️</td><td>❌</td><td>❌</td><td>❌</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Filas</h3>
+<div class="table-wrap">
+<table class="perm-table">
+  <thead><tr><th>Endpoint</th><th>AP</th><th>AI</th><th>OP</th><th>UF</th></tr></thead>
+  <tbody>
+    <tr><td>GET /filas</td><td>✔️</td><td>✔️</td><td>✔️</td><td>❌</td></tr>
+    <tr><td>POST /filas</td><td>❌</td><td>✔️</td><td>❌</td><td>❌</td></tr>
+    <tr><td>GET /filas/{id}</td><td>✔️</td><td>✔️</td><td>✔️</td><td>✔️</td></tr>
+    <tr><td>PATCH /filas/{id}</td><td>❌</td><td>✔️</td><td>❌</td><td>❌</td></tr>
+    <tr><td>DELETE /filas/{id}</td><td>❌</td><td>✔️</td><td>❌</td><td>❌</td></tr>
+    <tr><td>GET /filas/{id}/contagem</td><td>✔️</td><td>✔️</td><td>✔️</td><td>❌</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Senhas</h3>
+<div class="table-wrap">
+<table class="perm-table">
+  <thead><tr><th>Endpoint</th><th>AP</th><th>AI</th><th>OP</th><th>UF</th></tr></thead>
+  <tbody>
+    <tr><td>GET /senhas/stats</td><td>❌</td><td>⚠️</td><td>⚠️</td><td>❌</td></tr>
+    <tr><td>GET /senhas</td><td>✔️</td><td>✔️</td><td>✔️</td><td>❌</td></tr>
+    <tr><td>GET /senhas/{id}</td><td>✔️</td><td>⚠️</td><td>✔️</td><td>⚠️</td></tr>
+    <tr><td>POST /filas/{id}/senhas</td><td>❌</td><td>❌</td><td>❌</td><td>✔️</td></tr>
+    <tr><td>POST /filas/{id}/senhas/presencial</td><td>❌</td><td>✔️</td><td>✔️</td><td>❌</td></tr>
+    <tr><td>POST /senhas/{id}/cancelar</td><td>✔️</td><td>✔️</td><td>✔️</td><td>⚠️</td></tr>
+    <tr><td>POST /senhas/{id}/chamar</td><td>❌</td><td>✔️</td><td>✔️</td><td>❌</td></tr>
+    <tr><td>POST /senhas/{id}/assumir</td><td>❌</td><td>✔️</td><td>❌</td><td>❌</td></tr>
+    <tr><td>POST /senhas/{id}/finalizar</td><td>❌</td><td>✔️</td><td>✔️</td><td>❌</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>QR Codes</h3>
+<div class="table-wrap">
+<table class="perm-table">
+  <thead><tr><th>Endpoint</th><th>AP</th><th>AI</th><th>OP</th><th>UF</th></tr></thead>
+  <tbody>
+    <tr><td>GET /qrcodes</td><td>❌</td><td>✔️</td><td>✔️</td><td>❌</td></tr>
+    <tr><td>POST /qrcodes</td><td>❌</td><td>✔️</td><td>❌</td><td>❌</td></tr>
+    <tr><td>GET /qrcodes/{id}</td><td>❌</td><td>✔️</td><td>✔️</td><td>❌</td></tr>
+    <tr><td>GET /qrcodes/codigo/{codigo}</td><td>✔️</td><td>✔️</td><td>✔️</td><td>✔️</td></tr>
+    <tr><td>PATCH /qrcodes/{id}/desativar</td><td>❌</td><td>✔️</td><td>❌</td><td>❌</td></tr>
+    <tr><td>POST /qrcodes/regenerar</td><td>❌</td><td>✔️</td><td>❌</td><td>❌</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Auditoria</h3>
+<div class="table-wrap">
+<table class="perm-table">
+  <thead><tr><th>Endpoint</th><th>AP</th><th>AI</th><th>OP</th><th>UF</th></tr></thead>
+  <tbody>
+    <tr><td>GET /auditorias</td><td>✔️</td><td>⚠️</td><td>❌</td><td>❌</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Perfil</h3>
+<div class="table-wrap">
+<table class="perm-table">
+  <thead><tr><th>Endpoint</th><th>AP</th><th>AI</th><th>OP</th><th>UF</th></tr></thead>
+  <tbody>
+    <tr><td>GET /me</td><td>✔️</td><td>✔️</td><td>✔️</td><td>✔️</td></tr>
+    <tr><td>PATCH /me</td><td>✔️</td><td>✔️</td><td>✔️</td><td>✔️</td></tr>
+    <tr><td>PATCH /me/senha</td><td>✔️</td><td>✔️</td><td>✔️</td><td>✔️</td></tr>
+    <tr><td>POST /me/avatar</td><td>✔️</td><td>✔️</td><td>✔️</td><td>✔️</td></tr>
+    <tr><td>DELETE /me/avatar</td><td>✔️</td><td>✔️</td><td>✔️</td><td>✔️</td></tr>
+    <tr><td>GET /timezones</td><td>🔓</td><td>🔓</td><td>🔓</td><td>🔓</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Landing Page e Rotas Especiais</h3>
+<div class="table-wrap">
+<table class="perm-table">
+  <thead><tr><th>Endpoint</th><th>AP</th><th>AI</th><th>OP</th><th>UF</th></tr></thead>
+  <tbody>
+    <tr><td>GET /landing-page</td><td>🔓</td><td>🔓</td><td>🔓</td><td>🔓</td></tr>
+    <tr><td>GET /.well-known/assetlinks.json</td><td>🔓</td><td>🔓</td><td>🔓</td><td>🔓</td></tr>
+    <tr><td>GET /r/{codigo}</td><td>🔓</td><td>🔓</td><td>🔓</td><td>🔓</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>B.4 Regras Gerais de Permissão</h2>
+<ul>
+  <li>Usuários administrativos só atuam dentro do escopo de sua instituição.</li>
+  <li>Usuários finais acessam apenas recursos associados às suas próprias senhas.</li>
+  <li>ADMIN_PLATAFORMA não atua operacionalmente em filas ou senhas (não pode criar, chamar ou finalizar).</li>
+  <li>Qualquer tentativa de acesso fora da matriz resulta em <strong>403</strong>.</li>
+  <li>A validação de permissões ocorre na camada de serviços.</li>
+  <li>A matriz deve ser mantida sincronizada com alterações de endpoints.</li>
+  <li>Logs de auditoria devem registrar tentativas de acesso negadas.</li>
+  <li>O cliente não deve inferir permissões; deve reagir apenas às respostas da API.</li>
+</ul>
+
+<!-- APÊNDICE C -->
+<h1 id="apendice-c"><span class="section-num appendix">C</span> APÊNDICE C – Paginação Padrão</h1>
+<p>Todas as listagens da API utilizam paginação padronizada com os seguintes parâmetros de entrada e formato de resposta:</p>
+
+<h4>Parâmetros de query:</h4>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Parâmetro</th><th>Tipo</th><th>Default</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td><code>page</code></td><td>integer</td><td>1</td><td>Número da página (≥ 1)</td></tr>
+    <tr><td><code>limit</code></td><td>integer</td><td>10 (auditorias: 20)</td><td>Itens por página (1–100)</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h4>Formato de resposta:</h4>
+<pre><code>{
+  <span class="json-key">"docs"</span>: [],
+  <span class="json-key">"totalDocs"</span>: <span class="json-num">150</span>,
+  <span class="json-key">"limit"</span>: <span class="json-num">10</span>,
+  <span class="json-key">"totalPages"</span>: <span class="json-num">15</span>,
+  <span class="json-key">"page"</span>: <span class="json-num">1</span>,
+  <span class="json-key">"hasPrevPage"</span>: <span class="json-bool">false</span>,
+  <span class="json-key">"hasNextPage"</span>: <span class="json-bool">true</span>
+}</code></pre>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td><code>docs</code></td><td>Array</td><td>Array de documentos da página atual</td></tr>
+    <tr><td><code>totalDocs</code></td><td>integer</td><td>Total de documentos que atendem aos filtros</td></tr>
+    <tr><td><code>limit</code></td><td>integer</td><td>Limite utilizado</td></tr>
+    <tr><td><code>totalPages</code></td><td>integer</td><td>Total de páginas</td></tr>
+    <tr><td><code>page</code></td><td>integer</td><td>Página atual</td></tr>
+    <tr><td><code>hasPrevPage</code></td><td>boolean</td><td>Se existe página anterior</td></tr>
+    <tr><td><code>hasNextPage</code></td><td>boolean</td><td>Se existe próxima página</td></tr>
+  </tbody>
+</table>
+</div>
+
+</main>
+</div>
+
+<footer class="doc-footer">
+  Especificação Técnica da API FilaCidadã - Em construção — v3.0 — Kotlin + Ktor — Março 2026
+</footer>
+
+<button class="back-top" onclick="window.scrollTo({top:0})" title="Voltar ao topo">↑</button>
+
+<script>
+  // Back to top button visibility
+  const btn = document.querySelector('.back-top');
+  window.addEventListener('scroll', () => {
+    btn.classList.toggle('visible', window.scrollY > 400);
+  });
+
+  // Active TOC highlight
+  const links = document.querySelectorAll('.sidebar a');
+  const sections = [];
+  links.forEach(link => {
+    const id = link.getAttribute('href')?.slice(1);
+    if (id) {
+      const el = document.getElementById(id);
+      if (el) sections.push({ link, el });
+    }
+  });
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        links.forEach(l => l.style.borderLeftColor = 'transparent');
+        links.forEach(l => l.style.color = '');
+        const active = sections.find(s => s.el === entry.target);
+        if (active) {
+          active.link.style.borderLeftColor = 'var(--accent)';
+          active.link.style.color = 'var(--primary)';
+        }
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s.el));
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║  FilaCidadã API — Dockerfile de deploy                      ║
+# ║                                                              ║
+# ║  Usado apenas no deploy remoto via deploy.sh.               ║
+# ║  Não executa Gradle — copia o fat JAR já compilado          ║
+# ║  localmente e sincronizado via rsync.                       ║
+# ╚══════════════════════════════════════════════════════════════╝
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+
+RUN groupadd --system appgroup && useradd --system --gid appgroup appuser
+USER appuser
+
+# O JAR é copiado de build/libs/ (rsync'ado pelo deploy.sh)
+COPY build/libs/filacidada-api-all.jar app.jar
+
+# Documentação estática servida em /documentacao
+COPY --chown=appuser:appgroup documentacao/ documentacao/
+
+EXPOSE 7351
+
+ENTRYPOINT ["java", \
+  "-XX:+UseContainerSupport", \
+  "-XX:MaxRAMPercentage=75.0", \
+  "-jar", "app.jar"]

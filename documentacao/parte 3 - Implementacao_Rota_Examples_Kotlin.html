@@ -1,0 +1,1467 @@
+    <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tutorial – Implementação Completa da Rota /examples</title>
+  <style>
+    :root {
+      --primary: #1e3a5f;
+      --primary-light: #2a5298;
+      --accent: #0ea5e9;
+      --accent-light: #e0f2fe;
+      --success: #10b981;
+      --success-light: #d1fae5;
+      --warning: #f59e0b;
+      --warning-light: #fef3c7;
+      --danger: #ef4444;
+      --purple: #7c3aed;
+      --purple-light: #ede9fe;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-300: #cbd5e1;
+      --gray-400: #94a3b8;
+      --gray-500: #64748b;
+      --gray-600: #475569;
+      --gray-700: #334155;
+      --gray-800: #1e293b;
+      --gray-900: #0f172a;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+      --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: var(--gray-800);
+      background: var(--gray-50);
+      line-height: 1.75;
+    }
+
+    .doc-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: #fff;
+      padding: 3rem 2rem 2.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .doc-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--success), var(--purple));
+    }
+    .doc-header h1 { font-size: 2rem; font-weight: 700; margin-bottom: .5rem; color: #fff; }
+    .doc-header .subtitle { font-size: .95rem; opacity: .85; max-width: 700px; margin: 0 auto; }
+    .badges { margin-top: 1rem; display: flex; gap: .6rem; justify-content: center; flex-wrap: wrap; }
+    .badge {
+      display: inline-block;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
+      padding: .25rem .8rem;
+      border-radius: 999px;
+      font-size: .78rem;
+      letter-spacing: .3px;
+    }
+
+    .wrapper { display: flex; max-width: 1400px; margin: 0 auto; }
+
+    .sidebar {
+      width: 290px;
+      min-width: 290px;
+      background: #fff;
+      border-right: 1px solid var(--gray-200);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 1.5rem 0;
+      font-size: .84rem;
+      scrollbar-width: thin;
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 4px; }
+    .toc-title {
+      padding: 0 1.5rem .8rem;
+      font-weight: 700;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--gray-400);
+    }
+    .toc-section {
+      padding: .5rem 1.5rem .2rem;
+      font-weight: 700;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--gray-400);
+      margin-top: .4rem;
+    }
+    .sidebar a {
+      display: block;
+      padding: .35rem 1.5rem;
+      color: var(--gray-600);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: all .15s;
+      line-height: 1.4;
+    }
+    .sidebar a:hover { color: var(--primary); background: var(--gray-50); border-left-color: var(--accent); }
+    .sidebar a.toc-h1 { font-weight: 600; color: var(--gray-800); padding-top: .5rem; }
+    .sidebar a.toc-h2 { padding-left: 2.2rem; font-size: .8rem; }
+    .sidebar a.toc-h3 { padding-left: 3rem; font-size: .77rem; color: var(--gray-500); }
+
+    .content { flex: 1; min-width: 0; padding: 2.5rem 3rem 5rem; max-width: 900px; }
+
+    h1 {
+      font-size: 1.65rem;
+      color: var(--primary);
+      margin: 3rem 0 1rem;
+      padding-bottom: .6rem;
+      border-bottom: 2px solid var(--gray-200);
+      scroll-margin-top: 1rem;
+    }
+    h1:first-of-type { margin-top: 0; }
+    h2 {
+      font-size: 1.2rem;
+      color: var(--primary-light);
+      margin: 2.2rem 0 .8rem;
+      scroll-margin-top: 1rem;
+    }
+    h3 {
+      font-size: 1.05rem;
+      color: var(--gray-700);
+      margin: 1.8rem 0 .6rem;
+      scroll-margin-top: 1rem;
+    }
+    h4 { font-size: .95rem; font-weight: 700; color: var(--gray-600); margin: 1.4rem 0 .5rem; }
+
+    .section-num {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      font-size: .72rem;
+      padding: .15rem .5rem;
+      border-radius: 4px;
+      margin-right: .5rem;
+      vertical-align: middle;
+    }
+    .step-num {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: .72rem;
+      padding: .15rem .5rem;
+      border-radius: 999px;
+      margin-right: .5rem;
+      vertical-align: middle;
+      min-width: 1.6rem;
+      text-align: center;
+    }
+
+    p { margin: .7rem 0; }
+    ul, ol { margin: .5rem 0 .8rem 1.6rem; }
+    li { margin: .35rem 0; }
+    li::marker { color: var(--accent); }
+
+    code {
+      font-family: 'SFMono-Regular', 'Consolas', monospace;
+      font-size: .85em;
+      background: var(--gray-100);
+      padding: .15em .45em;
+      border-radius: 4px;
+      color: var(--primary-light);
+    }
+    pre {
+      background: #0d1117;
+      color: #e6edf3;
+      padding: 1.3rem 1.6rem;
+      border-radius: var(--radius);
+      overflow-x: auto;
+      margin: 1rem 0;
+      font-size: .85rem;
+      line-height: 1.7;
+      box-shadow: var(--shadow-md);
+      position: relative;
+    }
+    pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+
+    .kw  { color: #ff7b72; }
+    .ty  { color: #79c0ff; }
+    .str { color: #a5d6ff; }
+    .ann { color: #f2cc60; }
+    .cmt { color: #8b949e; font-style: italic; }
+    .fn  { color: #d2a8ff; }
+    .num { color: #ffa657; }
+    .op  { color: #ff7b72; }
+
+    pre .file-label {
+      position: absolute;
+      top: .5rem; right: .8rem;
+      font-size: .72rem;
+      color: var(--gray-500);
+      background: #161b22;
+      padding: .1rem .5rem;
+      border-radius: 3px;
+    }
+
+    .callout {
+      border-radius: var(--radius);
+      padding: 1rem 1.3rem;
+      margin: 1.2rem 0;
+      font-size: .92rem;
+      border-left: 4px solid;
+    }
+    .callout-icon { font-size: 1.1em; margin-right: .4rem; }
+    .callout > strong:first-of-type { display: block; margin-bottom: .3rem; }
+    .callout-info    { background: var(--accent-light);   border-color: var(--accent);   color: #0c4a6e; }
+    .callout-success { background: var(--success-light);  border-color: var(--success);  color: #064e3b; }
+    .callout-warn    { background: var(--warning-light);  border-color: var(--warning);  color: #78350f; }
+    .callout-concept { background: var(--purple-light);   border-color: var(--purple);   color: #3b0764; }
+
+    .table-wrap { overflow-x: auto; margin: 1rem 0; border-radius: var(--radius); box-shadow: var(--shadow); }
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; background: #fff; }
+    thead { background: var(--primary); color: #fff; }
+    thead th { padding: .7rem .85rem; text-align: left; font-size: .82rem; }
+    tbody tr { border-bottom: 1px solid var(--gray-100); }
+    tbody tr:nth-child(even) { background: var(--gray-50); }
+    tbody tr:hover { background: var(--accent-light); }
+    tbody td { padding: .6rem .85rem; vertical-align: top; }
+
+    .diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: wrap;
+      margin: 1.5rem 0;
+      padding: 1.5rem;
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .diagram-box {
+      border-radius: var(--radius);
+      padding: .8rem 1.4rem;
+      font-weight: 600;
+      font-size: .88rem;
+      text-align: center;
+      min-width: 120px;
+    }
+    .box-blue   { background: #dbeafe; color: #1d4ed8; border: 2px solid #93c5fd; }
+    .box-green  { background: var(--success-light); color: #065f46; border: 2px solid #6ee7b7; }
+    .box-purple { background: var(--purple-light); color: #5b21b6; border: 2px solid #c4b5fd; }
+    .box-orange { background: #ffedd5; color: #9a3412; border: 2px solid #fdba74; }
+    .box-pink   { background: #fce7f3; color: #9d174d; border: 2px solid #f9a8d4; }
+    .diagram-arrow {
+      padding: 0 .7rem;
+      color: var(--gray-400);
+      font-size: 1.4rem;
+      font-weight: 300;
+    }
+
+    .step-card {
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 1.2rem 1.6rem;
+      margin: 1rem 0;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+    .step-card h3 { margin-top: 0; }
+
+    .uml-box {
+      border: 2px solid var(--primary);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin: 1rem auto;
+      max-width: 520px;
+      font-size: .88rem;
+      box-shadow: var(--shadow-md);
+    }
+    .uml-header {
+      background: var(--primary);
+      color: #fff;
+      padding: .5rem 1rem;
+      font-weight: 700;
+      text-align: center;
+    }
+    .uml-header small { font-weight: 400; opacity: .75; display: block; font-size: .78em; }
+    .uml-section { border-top: 1px solid var(--gray-200); }
+    .uml-section-title {
+      background: var(--gray-100);
+      padding: .3rem 1rem;
+      font-size: .78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--gray-500);
+    }
+    .uml-item {
+      padding: .3rem 1.2rem;
+      border-bottom: 1px dotted var(--gray-200);
+    }
+    .uml-item:last-child { border-bottom: none; }
+    .uml-item code { font-size: .82em; }
+
+    .dep-flow {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+      margin: 1.2rem 0;
+    }
+    .dep-row {
+      display: flex;
+      align-items: center;
+      gap: .8rem;
+    }
+    .dep-file {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: .4rem 1rem;
+      font-size: .84rem;
+      font-weight: 600;
+      min-width: 240px;
+      box-shadow: var(--shadow);
+    }
+    .dep-file .path { font-size: .72rem; color: var(--gray-400); font-weight: 400; }
+    .dep-arrow { color: var(--accent); font-size: 1.1rem; }
+    .dep-note { font-size: .80rem; color: var(--gray-500); }
+
+    .rule-badge {
+      display: inline-block;
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+      border-radius: 999px;
+      padding: .1rem .6rem;
+      font-size: .76rem;
+      font-weight: 700;
+      margin-right: .3rem;
+      vertical-align: middle;
+    }
+
+    .endpoint-row {
+      display: flex;
+      align-items: baseline;
+      gap: .6rem;
+      padding: .5rem .8rem;
+      border-radius: var(--radius);
+      margin: .4rem 0;
+      font-size: .88rem;
+      background: #fff;
+      border: 1px solid var(--gray-200);
+    }
+    .method {
+      font-weight: 700;
+      font-size: .80rem;
+      border-radius: 4px;
+      padding: .15rem .5rem;
+      min-width: 58px;
+      text-align: center;
+    }
+    .m-get    { background: #dbeafe; color: #1d4ed8; }
+    .m-post   { background: var(--success-light); color: #065f46; }
+    .m-patch  { background: #fef3c7; color: #92400e; }
+    .m-delete { background: #fee2e2; color: #991b1b; }
+    .ep-path  { font-family: monospace; font-size: .88rem; color: var(--gray-700); }
+    .ep-desc  { color: var(--gray-500); font-size: .82rem; margin-left: auto; }
+    .ep-roles { font-size: .76rem; color: var(--purple); font-weight: 600; }
+
+    .doc-footer {
+      text-align: center;
+      padding: 2rem;
+      background: var(--gray-100);
+      border-top: 1px solid var(--gray-200);
+      color: var(--gray-500);
+      font-size: .82rem;
+    }
+
+    .back-top {
+      position: fixed; bottom: 2rem; right: 2rem;
+      width: 42px; height: 42px;
+      border-radius: 50%; background: var(--primary); color: #fff;
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--shadow-md); opacity: 0; transition: opacity .3s; font-size: 1.2rem;
+    }
+    .back-top.visible { opacity: 1; }
+
+    @media (max-width: 1024px) {
+      .sidebar { display: none; }
+      .content { padding: 1.5rem; max-width: 100%; }
+    }
+    @media print {
+      .sidebar, .back-top { display: none; }
+      .content { max-width: 100%; padding: 0; }
+      pre { white-space: pre-wrap; word-wrap: break-word; }
+    }
+
+    hr { border: none; border-top: 1px solid var(--gray-200); margin: 1.5rem 0; }
+  </style>
+</head>
+<body>
+
+<header class="doc-header">
+  <h1>Implementação Completa da Rota /examples</h1>
+  <div class="subtitle">
+    Passo a passo da criação de uma feature completa em Kotlin + Ktor:
+    Model, Seed, Repository, Service com regras de negócio e Routes.
+  </div>
+  <div class="badges">
+    <span class="badge">Kotlin · Ktor · KMongo</span>
+    <span class="badge">Orientação a Objetos</span>
+    <span class="badge">Repository Pattern</span>
+    <span class="badge">Março 2026</span>
+  </div>
+</header>
+
+<div class="wrapper">
+
+<nav class="sidebar">
+  <div class="toc-title">Sumário</div>
+
+  <div class="toc-section">Visao Geral</div>
+  <a href="#sec-0" class="toc-h1">Dependencias e ordem</a>
+
+  <div class="toc-section">Passo a Passo</div>
+  <a href="#sec-1" class="toc-h1">1. Model — Example.kt</a>
+  <a href="#sec-1-1" class="toc-h2">1.1 data class Example</a>
+  <a href="#sec-1-2" class="toc-h2">1.2 enum class EnumExample</a>
+  <a href="#sec-1-3" class="toc-h2">1.3 Anotacoes de serializacao</a>
+
+  <a href="#sec-2" class="toc-h1">2. Constants</a>
+  <a href="#sec-3" class="toc-h1">3. MongoConfig</a>
+  <a href="#sec-4" class="toc-h1">4. Seed — DatabaseSeed.kt</a>
+  <a href="#sec-4-1" class="toc-h2">4.1 Registros fixos</a>
+  <a href="#sec-4-2" class="toc-h2">4.2 Registros com Faker</a>
+
+  <a href="#sec-5" class="toc-h1">5. Repository Interface</a>
+  <a href="#sec-5-1" class="toc-h2">5.1 O contrato</a>
+  <a href="#sec-5-2" class="toc-h2">5.2 Metodos especializados</a>
+
+  <a href="#sec-6" class="toc-h1">6. Repository Impl</a>
+  <a href="#sec-6-1" class="toc-h2">6.1 findAll com filtros</a>
+  <a href="#sec-6-2" class="toc-h2">6.2 findByEnum</a>
+  <a href="#sec-6-3" class="toc-h2">6.3 buildFilters</a>
+
+  <a href="#sec-7" class="toc-h1">7. DTOs de Requisicao</a>
+
+  <a href="#sec-8" class="toc-h1">8. Service — Regras</a>
+  <a href="#sec-8-1" class="toc-h2">8.1 Email unico</a>
+  <a href="#sec-8-2" class="toc-h2">8.2 Validacao de enum</a>
+  <a href="#sec-8-3" class="toc-h2">8.3 Ativar / Desativar</a>
+  <a href="#sec-8-4" class="toc-h2">8.4 Deletar apenas inativo</a>
+
+  <a href="#sec-9" class="toc-h1">9. Routes</a>
+  <a href="#sec-9-1" class="toc-h2">9.1 Tabela de endpoints</a>
+  <a href="#sec-9-2" class="toc-h2">9.2 Codigo completo</a>
+
+  <a href="#sec-10" class="toc-h1">10. Injecao de Dependencia</a>
+  <a href="#sec-10-1" class="toc-h2">10.1 KoinModules.kt</a>
+  <a href="#sec-10-2" class="toc-h2">10.2 Application.kt</a>
+
+  <a href="#sec-11" class="toc-h1">11. Fluxo completo</a>
+</nav>
+
+<main class="content">
+
+<!-- ================================================
+     VISAO GERAL
+================================================ -->
+
+<h1 id="sec-0">Dependencias e Ordem de Implementacao</h1>
+
+<p>
+  Toda feature em uma API em camadas segue uma <strong>ordem natural de dependencias</strong>.
+  Cada camada depende apenas da camada imediatamente abaixo.
+  Seguir essa ordem evita erros de compilacao e facilita o entendimento do codigo.
+</p>
+
+<div class="dep-flow">
+  <div class="dep-row">
+    <div class="dep-file">
+      <div>1. Model</div>
+      <div class="path">models/Example.kt</div>
+    </div>
+    <span class="dep-note">Define a estrutura de dados. Tudo depende dele.</span>
+  </div>
+  <div class="dep-row"><span class="dep-arrow" style="margin-left:1.5rem">&#8595;</span></div>
+  <div class="dep-row">
+    <div class="dep-file">
+      <div>2. Constants + MongoConfig</div>
+      <div class="path">utils/Constants.kt &amp; config/MongoConfig.kt</div>
+    </div>
+    <span class="dep-note">Registra o nome da colecao e a conexao tipada.</span>
+  </div>
+  <div class="dep-row"><span class="dep-arrow" style="margin-left:1.5rem">&#8595;</span></div>
+  <div class="dep-row">
+    <div class="dep-file">
+      <div>3. Seed</div>
+      <div class="path">DatabaseSeed.kt</div>
+    </div>
+    <span class="dep-note">Popula o banco com dados de exemplo para testes manuais.</span>
+  </div>
+  <div class="dep-row"><span class="dep-arrow" style="margin-left:1.5rem">&#8595;</span></div>
+  <div class="dep-row">
+    <div class="dep-file">
+      <div>4. Repository Interface</div>
+      <div class="path">repositories/ExampleRepository.kt</div>
+    </div>
+    <span class="dep-note">Define o contrato — o que o repositorio deve fazer.</span>
+  </div>
+  <div class="dep-row"><span class="dep-arrow" style="margin-left:1.5rem">&#8595;</span></div>
+  <div class="dep-row">
+    <div class="dep-file">
+      <div>5. Repository Impl</div>
+      <div class="path">repositories/ExampleRepositoryImpl.kt</div>
+    </div>
+    <span class="dep-note">Implementa o contrato usando KMongo.</span>
+  </div>
+  <div class="dep-row"><span class="dep-arrow" style="margin-left:1.5rem">&#8595;</span></div>
+  <div class="dep-row">
+    <div class="dep-file">
+      <div>6. DTOs de Requisicao</div>
+      <div class="path">dtos/request/ExampleRequests.kt</div>
+    </div>
+    <span class="dep-note">Moldes para os dados recebidos via HTTP.</span>
+  </div>
+  <div class="dep-row"><span class="dep-arrow" style="margin-left:1.5rem">&#8595;</span></div>
+  <div class="dep-row">
+    <div class="dep-file">
+      <div>7. Service</div>
+      <div class="path">services/ExampleService.kt</div>
+    </div>
+    <span class="dep-note">Regras de negocio. Depende do Repository (interface).</span>
+  </div>
+  <div class="dep-row"><span class="dep-arrow" style="margin-left:1.5rem">&#8595;</span></div>
+  <div class="dep-row">
+    <div class="dep-file">
+      <div>8. Routes</div>
+      <div class="path">routes/ExampleRoutes.kt</div>
+    </div>
+    <span class="dep-note">Endpoints HTTP. Depende do Service.</span>
+  </div>
+  <div class="dep-row"><span class="dep-arrow" style="margin-left:1.5rem">&#8595;</span></div>
+  <div class="dep-row">
+    <div class="dep-file">
+      <div>9. Koin + Application</div>
+      <div class="path">config/KoinModules.kt &amp; Application.kt</div>
+    </div>
+    <span class="dep-note">Registra as dependencias e as rotas no servidor.</span>
+  </div>
+</div>
+
+<div class="callout callout-concept">
+  <strong>Por que essa ordem importa?</strong>
+  O compilador Kotlin precisa conhecer os tipos antes de usá-los.
+  Se você tentar criar o <code>ExampleService</code> antes de ter <code>ExampleRepository</code>,
+  terá erros de "Unresolved reference". Seguir a ordem das dependencias evita esse problema.
+</div>
+
+<hr>
+
+<!-- ================================================
+     1. MODEL
+================================================ -->
+
+<h1 id="sec-1"><span class="section-num">1</span> Model — Example.kt</h1>
+
+<p>
+  O <strong>Model</strong> e a representacao de um objeto de negocio no sistema.
+  No Kotlin, usamos <code>data class</code> para modelos de dados, pois ela gera
+  automaticamente <code>equals()</code>, <code>hashCode()</code>, <code>toString()</code> e <code>copy()</code>.
+</p>
+
+<h2 id="sec-1-1">1.1 A data class Example</h2>
+
+<pre><code><span class="ann">@Serializable</span>
+<span class="kw">data class</span> <span class="ty">Example</span>(
+    <span class="kw">val</span> id: <span class="ty">String</span>? = <span class="kw">null</span>,           <span class="cmt">// null antes de ser salvo no banco</span>
+    <span class="kw">val</span> nome: <span class="ty">String</span>,
+    <span class="kw">val</span> email: <span class="ty">String</span>,
+    <span class="kw">val</span> enumExample: <span class="ty">Set</span>&lt;<span class="ty">EnumExample</span>&gt;,  <span class="cmt">// conjunto — sem duplicatas</span>
+    <span class="kw">val</span> ativo: <span class="ty">Boolean</span> = <span class="kw">true</span>,
+    <span class="ann">@Contextual</span> <span class="kw">val</span> createdAt: <span class="ty">Instant</span> = Instant.now(),
+    <span class="ann">@Contextual</span> <span class="kw">val</span> updatedAt: <span class="ty">Instant</span>? = <span class="kw">null</span>
+)
+<span class="file-label">models/Example.kt</span></code></pre>
+
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatorio</th><th>Descricao</th></tr></thead>
+    <tbody>
+      <tr><td><code>id</code></td><td><code>String?</code></td><td>Nao</td><td>Gerado pelo Service com UUID antes do insert</td></tr>
+      <tr><td><code>nome</code></td><td><code>String</code></td><td>Sim</td><td>Nome do example</td></tr>
+      <tr><td><code>email</code></td><td><code>String</code></td><td>Sim</td><td>Deve ser unico — validado no Service</td></tr>
+      <tr><td><code>enumExample</code></td><td><code>Set&lt;EnumExample&gt;</code></td><td>Sim</td><td>Um ou mais valores do enum. Set evita duplicatas.</td></tr>
+      <tr><td><code>ativo</code></td><td><code>Boolean</code></td><td>Nao</td><td>Padrao <code>true</code> na criacao</td></tr>
+      <tr><td><code>createdAt</code></td><td><code>Instant</code></td><td>Nao</td><td>Preenchido automaticamente</td></tr>
+      <tr><td><code>updatedAt</code></td><td><code>Instant?</code></td><td>Nao</td><td>Preenchido em toda atualizacao</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="sec-1-2">1.2 O enum class EnumExample</h2>
+
+<p>
+  Um <code>enum class</code> define um conjunto <strong>fechado e seguro</strong> de valores possiveis.
+  Isso e muito melhor do que usar <code>String</code>, pois o compilador garante que valores invalidos
+  sejam detectados em tempo de compilacao.
+</p>
+
+<pre><code><span class="kw">enum class</span> <span class="ty">EnumExample</span> {
+    EXAMPLE_ONE,
+    EXAMPLE_TWO,
+    EXAMPLE_THREE,
+    EXAMPLE_FOUR
+}
+<span class="file-label">models/Example.kt</span></code></pre>
+
+<div class="callout callout-info">
+  <strong>Por que usar Set&lt;EnumExample&gt; e nao List&lt;String&gt;?</strong>
+  <ul>
+    <li><strong>Set</strong> garante que nao haja valores duplicados (ex: <code>[EXAMPLE_ONE, EXAMPLE_ONE]</code> vira <code>[EXAMPLE_ONE]</code>).</li>
+    <li><strong>EnumExample</strong> garante que apenas valores validos sejam aceitos — o compilador rejeita qualquer outro valor.</li>
+    <li>Com <code>List&lt;String&gt;</code>, um erro de digitacao como <code>"EXAMPLE_ONEE"</code> so seria detectado em runtime.</li>
+  </ul>
+</div>
+
+<h2 id="sec-1-3">1.3 Anotacoes de serializacao</h2>
+
+<p>Duas anotacoes sao essenciais para que o Ktor consiga serializar/deserializar o modelo:</p>
+
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Anotacao</th><th>Onde usar</th><th>Para que serve</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>@Serializable</code></td>
+        <td>Na <code>data class</code></td>
+        <td>Habilita a serializacao automatica pelo plugin do Kotlin. Sem ela, o Ktor lanca <code>SerializationException</code>.</td>
+      </tr>
+      <tr>
+        <td><code>@Contextual</code></td>
+        <td>Nos campos <code>Instant</code></td>
+        <td><code>java.time.Instant</code> nao tem um serializador padrao no kotlinx. <code>@Contextual</code> delega para o serializador registrado em <code>AppJson</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<hr>
+
+<!-- ================================================
+     2. CONSTANTS
+================================================ -->
+
+<h1 id="sec-2"><span class="section-num">2</span> Constants — Registrando o nome da colecao</h1>
+
+<p>
+  Nunca use strings literais espalhadas pelo codigo para nomear colecoes MongoDB.
+  Se o nome da colecao mudar, voce precisaria alterar em varios lugares.
+  O padrao correto e centralizar em <code>Constants</code>.
+</p>
+
+<pre><code><span class="kw">object</span> <span class="ty">Constants</span> {
+    <span class="cmt">// ... outras constantes ...</span>
+
+    <span class="cmt">// Colecoes MongoDB</span>
+    <span class="kw">const val</span> COLLECTION_USUARIOS = <span class="str">"usuarios"</span>
+    <span class="kw">const val</span> COLLECTION_EXAMPLES = <span class="str">"examples"</span>  <span class="cmt">// &lt;-- adicionado</span>
+}
+<span class="file-label">utils/Constants.kt</span></code></pre>
+
+<div class="callout callout-success">
+  <strong>Vantagem: refatoracao segura</strong>
+  Se a colecao se chamar <code>"exemplo"</code> no futuro, voce altera apenas
+  <code>Constants.COLLECTION_EXAMPLES</code> — o compilador encontra todos os usos automaticamente.
+</div>
+
+<hr>
+
+<!-- ================================================
+     3. MONGOCONFIG
+================================================ -->
+
+<h1 id="sec-3"><span class="section-num">3</span> MongoConfig — Colecao tipada</h1>
+
+<p>
+  O <code>MongoConfig</code> e a classe que gerencia a conexao com o MongoDB.
+  Para cada colecao, adicionamos uma propriedade que retorna uma
+  <code>MongoCollection</code> tipada com o nosso Model.
+</p>
+
+<pre><code><span class="kw">class</span> <span class="ty">MongoConfig</span>(
+    connectionString: <span class="ty">String</span> = System.getenv(<span class="str">"MONGO_URI"</span>) ?: <span class="str">"..."</span>,
+    databaseName:     <span class="ty">String</span> = System.getenv(<span class="str">"MONGO_DB"</span>) ?: <span class="str">"Aula"</span>
+) {
+    <span class="kw">private val</span> client = KMongo.createClient(connectionString)
+    <span class="kw">val</span> database: <span class="ty">MongoDatabase</span> = client.getDatabase(databaseName)
+
+    <span class="kw">val</span> usuarios <span class="kw">get</span>() = database.getCollection&lt;<span class="ty">Usuario</span>&gt;(Constants.COLLECTION_USUARIOS)
+    <span class="kw">val</span> examples <span class="kw">get</span>() = database.getCollection&lt;<span class="ty">Example</span>&gt;(Constants.COLLECTION_EXAMPLES)  <span class="cmt">// &lt;-- adicionado</span>
+}
+<span class="file-label">config/MongoConfig.kt</span></code></pre>
+
+<div class="callout callout-info">
+  <strong>getCollection&lt;Example&gt;()</strong>
+  O KMongo usa o tipo generico <code>&lt;Example&gt;</code> para serializar e deserializar
+  automaticamente os documentos BSON para objetos Kotlin. Sem o tipo, voces receberiam
+  um <code>Document</code> generico e teriam que fazer o mapeamento manual.
+</div>
+
+<hr>
+
+<!-- ================================================
+     4. SEED
+================================================ -->
+
+<h1 id="sec-4"><span class="section-num">4</span> Seed — DatabaseSeed.kt</h1>
+
+<p>
+  O <strong>Seed</strong> e um script executado separadamente (<code>./gradlew seed</code>) que
+  popula o banco de dados com dados de exemplo. Ele usa o <strong>driver MongoDB Java puro</strong>
+  (sem KMongo) para evitar dependencias circulares, e o <strong>Kotlin-Faker</strong>
+  para gerar dados ficticios de forma automatica e realista.
+</p>
+
+<h2 id="sec-4-1">4.1 Registros fixos para o seed</h2>
+
+<p>Quando precisamos de registros com dados previstos (por exemplo, para usar em testes manuais), criamos documentos fixos:</p>
+
+<pre><code><span class="kw">val</span> examples = db.getCollection(<span class="str">"examples"</span>)
+
+<span class="cmt">// Registro fixo com enum especifico</span>
+Document(mapOf(
+    <span class="str">"_id"</span>         <span class="kw">to</span> <span class="str">"example-fixo-1"</span>,
+    <span class="str">"nome"</span>        <span class="kw">to</span> <span class="str">"Example Fixo"</span>,
+    <span class="str">"email"</span>       <span class="kw">to</span> <span class="str">"fixo@example.com"</span>,
+    <span class="str">"enumExample"</span> <span class="kw">to</span> listOf(<span class="str">"EXAMPLE_ONE"</span>, <span class="str">"EXAMPLE_THREE"</span>),
+    <span class="str">"ativo"</span>       <span class="kw">to</span> <span class="kw">true</span>,
+    <span class="str">"createdAt"</span>   <span class="kw">to</span> now
+))
+<span class="file-label">DatabaseSeed.kt</span></code></pre>
+
+<h2 id="sec-4-2">4.2 Registros gerados com Kotlin-Faker (recursivo)</h2>
+
+<p>
+  O <strong>Kotlin-Faker</strong> gera dados ficticios mas realistas: nomes, emails, nomes de empresas.
+  O loop abaixo cria <code>FAKE_EXAMPLES_COUNT</code> registros de forma <strong>recursiva</strong>
+  usando <code>.map { }</code>, que e a forma funcional de um loop que produz uma lista.
+</p>
+
+<pre><code><span class="kw">val</span> faker = <span class="ty">Faker</span>()
+<span class="kw">val</span> enumExamples = listOf(<span class="str">"EXAMPLE_ONE"</span>, <span class="str">"EXAMPLE_TWO"</span>, <span class="str">"EXAMPLE_THREE"</span>, <span class="str">"EXAMPLE_FOUR"</span>)
+
+<span class="kw">val</span> fakeExamples = (<span class="num">1</span>..FAKE_EXAMPLES_COUNT).<span class="fn">map</span> { i -&gt;
+    <span class="kw">val</span> nome        = faker.company.<span class="fn">name</span>()    <span class="cmt">// ex: "Acme Corp"</span>
+    <span class="kw">val</span> email       = faker.internet.<span class="fn">email</span>()  <span class="cmt">// ex: "john@example.com"</span>
+
+    <span class="cmt">// Seleciona de 1 a 3 enums aleatorios da lista</span>
+    <span class="kw">val</span> selectedEnums = enumExamples
+        .<span class="fn">shuffled</span>()                            <span class="cmt">// embaralha a lista</span>
+        .<span class="fn">take</span>(faker.random.<span class="fn">nextInt</span>(<span class="num">1</span>, enumExamples.size)) <span class="cmt">// pega 1, 2 ou 3</span>
+
+    Document(mapOf(
+        <span class="str">"_id"</span>         <span class="kw">to</span> <span class="str">"example-$i-"</span> + UUID.<span class="fn">randomUUID</span>().toString().<span class="fn">take</span>(<span class="num">8</span>),
+        <span class="str">"nome"</span>        <span class="kw">to</span> nome,
+        <span class="str">"email"</span>       <span class="kw">to</span> email,
+        <span class="str">"enumExample"</span> <span class="kw">to</span> selectedEnums,
+        <span class="str">"ativo"</span>       <span class="kw">to</span> faker.random.<span class="fn">nextBoolean</span>(),
+        <span class="str">"createdAt"</span>   <span class="kw">to</span> now
+    ))
+}
+
+examples.<span class="fn">insertMany</span>(fakeExamples)
+println(<span class="str">"  ${examples.countDocuments()} examples inseridos."</span>)
+<span class="file-label">DatabaseSeed.kt</span></code></pre>
+
+<div class="callout callout-concept">
+  <strong>Por que usar .map em vez de for?</strong>
+  O <code>.map { }</code> e funcional: ele transforma cada elemento de uma sequencia em outro,
+  retornando uma <em>nova lista</em> sem efeitos colaterais. O resultado e <strong>imutavel</strong>
+  e mais facil de raciocinar. O <code>for</code> seria imperativo e exigiria uma lista mutavel
+  (<code>mutableListOf()</code>) para acumular resultados.
+</div>
+
+<hr>
+
+<!-- ================================================
+     5. REPOSITORY INTERFACE
+================================================ -->
+
+<h1 id="sec-5"><span class="section-num">5</span> Repository Interface</h1>
+
+<p>
+  A <strong>interface</strong> define um <em>contrato</em>: quais operacoes o repositorio deve ser
+  capaz de executar, sem dizer <em>como</em>. Isso e o principio da
+  <strong>Inversao de Dependencias</strong> (o "D" do SOLID): o Service depende de uma
+  abstracao, nao de uma implementacao concreta.
+</p>
+
+<h2 id="sec-5-1">5.1 O contrato completo</h2>
+
+<pre><code><span class="cmt">/**
+ * Interface do repositório de Examples.
+ * Contrato para operações CRUD e consultas específicas.
+ */</span>
+<span class="kw">interface</span> <span class="ty">ExampleRepository</span> {
+    <span class="kw">fun</span> <span class="fn">findById</span>(id: <span class="ty">String</span>): <span class="ty">Example</span>?
+    <span class="kw">fun</span> <span class="fn">findByEmail</span>(email: <span class="ty">String</span>): <span class="ty">Example</span>?
+    <span class="kw">fun</span> <span class="fn">findAll</span>(page: <span class="ty">Int</span>, limit: <span class="ty">Int</span>, filters: <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">Any</span>?&gt; = emptyMap()): <span class="ty">Pair</span>&lt;<span class="ty">List</span>&lt;<span class="ty">Example</span>&gt;, <span class="ty">Long</span>&gt;
+    <span class="kw">fun</span> <span class="fn">findByEnum</span>(enumValue: <span class="ty">EnumExample</span>, page: <span class="ty">Int</span>, limit: <span class="ty">Int</span>): <span class="ty">Pair</span>&lt;<span class="ty">List</span>&lt;<span class="ty">Example</span>&gt;, <span class="ty">Long</span>&gt;
+    <span class="kw">fun</span> <span class="fn">insert</span>(example: <span class="ty">Example</span>): <span class="ty">Example</span>
+    <span class="kw">fun</span> <span class="fn">update</span>(id: <span class="ty">String</span>, updates: <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">Any</span>?&gt;): <span class="ty">Boolean</span>
+    <span class="kw">fun</span> <span class="fn">delete</span>(id: <span class="ty">String</span>): <span class="ty">Boolean</span>
+}
+<span class="file-label">repositories/ExampleRepository.kt</span></code></pre>
+
+<h2 id="sec-5-2">5.2 Por que findByEnum existe na interface?</h2>
+
+<p>
+  O metodo <code>findByEnum</code> e uma <strong>consulta especializada</strong> que vai alem do CRUD basico.
+  Ela reflete um requisito de negocio: "preciso listar todos os examples que contem um determinado
+  valor de enum". Incluir isso na interface garante que qualquer implementacao (KMongo, em memoria
+  para testes, etc.) precise suportar essa consulta.
+</p>
+
+<div class="callout callout-info">
+  <strong>Pair&lt;List&lt;Example&gt;, Long&gt;</strong>
+  O retorno em <code>Pair</code> e uma convencao do projeto para paginacao:
+  o primeiro elemento e a lista de documentos da pagina atual, e o segundo e o
+  <strong>total de documentos</strong> que existem no banco (necessario para calcular
+  o numero total de paginas).
+</div>
+
+<hr>
+
+<!-- ================================================
+     6. REPOSITORY IMPL
+================================================ -->
+
+<h1 id="sec-6"><span class="section-num">6</span> Repository Implementation</h1>
+
+<p>
+  A implementacao <strong>concretiza</strong> o contrato da interface usando KMongo.
+  Ela e a unica classe que conhece o MongoDB — todas as outras camadas
+  usam apenas a interface <code>ExampleRepository</code>.
+</p>
+
+<pre><code><span class="kw">class</span> <span class="ty">ExampleRepositoryImpl</span>(
+    <span class="kw">private val</span> collection: <span class="ty">MongoCollection</span>&lt;<span class="ty">Example</span>&gt;
+) : <span class="ty">ExampleRepository</span> {
+    <span class="cmt">// implementacoes ...</span>
+}
+<span class="file-label">repositories/ExampleRepositoryImpl.kt</span></code></pre>
+
+<div class="callout callout-concept">
+  <strong>Como o Koin conecta a interface com a implementacao?</strong>
+  Em <code>KoinModules.kt</code>:
+  <code>single&lt;ExampleRepository&gt; { ExampleRepositoryImpl(get&lt;MongoConfig&gt;().examples) }</code><br>
+  Isso diz: "quando alguem pedir um <code>ExampleRepository</code>, entregue um
+  <code>ExampleRepositoryImpl</code> inicializado com a colecao <code>examples</code>".
+  O Service nao sabe que e uma <code>Impl</code> — ele so ve a interface.
+</div>
+
+<h2 id="sec-6-1">6.1 findAll com filtros dinamicos</h2>
+
+<pre><code><span class="kw">override fun</span> <span class="fn">findAll</span>(page: <span class="ty">Int</span>, limit: <span class="ty">Int</span>, filters: <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">Any</span>?&gt;): <span class="ty">Pair</span>&lt;<span class="ty">List</span>&lt;<span class="ty">Example</span>&gt;, <span class="ty">Long</span>&gt; {
+    <span class="kw">val</span> bsonFilters = <span class="fn">buildFilters</span>(filters)          <span class="cmt">// converte Map para filtros BSON</span>
+    <span class="kw">val</span> total = collection.<span class="fn">countDocuments</span>(<span class="fn">and</span>(bsonFilters))
+    <span class="kw">val</span> docs  = collection.<span class="fn">find</span>(<span class="fn">and</span>(bsonFilters))
+        .<span class="fn">skip</span>((page - <span class="num">1</span>) * limit)                    <span class="cmt">// offset da pagina</span>
+        .<span class="fn">limit</span>(limit)
+        .<span class="fn">toList</span>()
+    <span class="kw">return</span> <span class="ty">Pair</span>(docs, total)
+}
+<span class="file-label">repositories/ExampleRepositoryImpl.kt</span></code></pre>
+
+<h2 id="sec-6-2">6.2 findByEnum — consulta em campo Set</h2>
+
+<p>
+  Para buscar documentos onde um <code>Set</code> <em>contem</em> um valor especifico,
+  o KMongo usa o operador <code>contains</code>, que gera um filtro MongoDB <code>$elemMatch</code>.
+</p>
+
+<pre><code><span class="kw">override fun</span> <span class="fn">findByEnum</span>(enumValue: <span class="ty">EnumExample</span>, page: <span class="ty">Int</span>, limit: <span class="ty">Int</span>): <span class="ty">Pair</span>&lt;<span class="ty">List</span>&lt;<span class="ty">Example</span>&gt;, <span class="ty">Long</span>&gt; {
+    <span class="cmt">// "contains" verifica se o Set enumExample contem o valor</span>
+    <span class="kw">val</span> filter = Example::enumExample <span class="fn">contains</span> enumValue
+    <span class="kw">val</span> total  = collection.<span class="fn">countDocuments</span>(filter)
+    <span class="kw">val</span> docs   = collection.<span class="fn">find</span>(filter)
+        .<span class="fn">skip</span>((page - <span class="num">1</span>) * limit)
+        .<span class="fn">limit</span>(limit)
+        .<span class="fn">toList</span>()
+    <span class="kw">return</span> <span class="ty">Pair</span>(docs, total)
+}
+<span class="file-label">repositories/ExampleRepositoryImpl.kt</span></code></pre>
+
+<h2 id="sec-6-3">6.3 buildFilters — filtragem dinamica</h2>
+
+<p>
+  O metodo <code>buildFilters</code> converte um <code>Map&lt;String, Any?&gt;</code> em uma lista de
+  filtros BSON. Valores <code>null</code> sao ignorados, o que permite que o cliente
+  envie apenas os filtros que deseja aplicar.
+</p>
+
+<pre><code><span class="kw">private fun</span> <span class="fn">buildFilters</span>(filters: <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">Any</span>?&gt;): <span class="ty">List</span>&lt;Bson&gt; {
+    <span class="kw">return</span> filters.<span class="fn">mapNotNull</span> { (key, value) -&gt;
+        <span class="kw">when</span> {
+            value == <span class="kw">null</span>         -&gt; <span class="kw">null</span>             <span class="cmt">// ignora filtros nulos</span>
+            key == <span class="str">"nome"</span>        -&gt; Example::nome <span class="fn">regex</span> Regex(<span class="str">".*$value.*"</span>, RegexOption.IGNORE_CASE)
+            key == <span class="str">"email"</span>       -&gt; Example::email <span class="fn">regex</span> Regex(<span class="str">".*$value.*"</span>, RegexOption.IGNORE_CASE)
+            key == <span class="str">"ativo"</span>       -&gt; Example::ativo <span class="fn">eq</span> (value <span class="kw">as</span> <span class="ty">Boolean</span>)
+            key == <span class="str">"enumExample"</span> -&gt; Example::enumExample <span class="fn">contains</span> EnumExample.<span class="fn">valueOf</span>(value <span class="kw">as</span> <span class="ty">String</span>)
+            <span class="kw">else</span>                  -&gt; <span class="kw">null</span>
+        }
+    }
+}
+<span class="file-label">repositories/ExampleRepositoryImpl.kt</span></code></pre>
+
+<div class="callout callout-info">
+  <strong>mapNotNull</strong>
+  Equivalente a <code>.map { }.filter { it != null }</code> em uma unica operacao.
+  Cada entrada do <code>Map</code> de filtros e avaliada: se o resultado for <code>null</code>
+  (filtro nao reconhecido ou valor ausente), ele e descartado da lista final.
+</div>
+
+<hr>
+
+<!-- ================================================
+     7. DTOS
+================================================ -->
+
+<h1 id="sec-7"><span class="section-num">7</span> DTOs de Requisicao</h1>
+
+<p>
+  DTOs (<em>Data Transfer Objects</em>) sao classes que representam o formato dos dados
+  que chegam via HTTP. Eles <strong>nunca</strong> sao iguais ao Model — o Model pode ter
+  campos como <code>senhaHash</code>, <code>createdAt</code> ou <code>id</code> que nao devem ser
+  expostos nem recebidos diretamente.
+</p>
+
+<pre><code><span class="kw">import</span> kotlinx.serialization.Serializable
+
+<span class="cmt">// DTO para criacao de um novo Example</span>
+<span class="ann">@Serializable</span>
+<span class="kw">data class</span> <span class="ty">CreateExampleRequest</span>(
+    <span class="kw">val</span> nome:        <span class="ty">String</span>,
+    <span class="kw">val</span> email:       <span class="ty">String</span>,
+    <span class="kw">val</span> enumExample: <span class="ty">List</span>&lt;<span class="ty">String</span>&gt;   <span class="cmt">// recebe como String, valida no Service</span>
+)
+
+<span class="cmt">// DTO para atualizacao parcial — todos os campos opcionais</span>
+<span class="ann">@Serializable</span>
+<span class="kw">data class</span> <span class="ty">UpdateExampleRequest</span>(
+    <span class="kw">val</span> nome:        <span class="ty">String</span>?       = <span class="kw">null</span>,
+    <span class="kw">val</span> email:       <span class="ty">String</span>?       = <span class="kw">null</span>,
+    <span class="kw">val</span> enumExample: <span class="ty">List</span>&lt;<span class="ty">String</span>&gt;? = <span class="kw">null</span>,
+    <span class="kw">val</span> ativo:       <span class="ty">Boolean</span>?      = <span class="kw">null</span>
+)
+<span class="file-label">dtos/request/ExampleRequests.kt</span></code></pre>
+
+<div class="callout callout-warn">
+  <strong>Por que enumExample e List&lt;String&gt; no DTO e nao Set&lt;EnumExample&gt;?</strong>
+  <ul>
+    <li>O JSON que chega pelo HTTP e texto: <code>["EXAMPLE_ONE", "EXAMPLE_TWO"]</code></li>
+    <li>Receber como <code>List&lt;String&gt;</code> e mais resiliente — se vier um valor invalido, o Service lanca um erro amigavel (<code>ApiException 400</code>)</li>
+    <li>Se recebessemos direto como <code>EnumExample</code>, um valor invalido causaria um erro de deserializacao generico, difcil de tratar</li>
+  </ul>
+</div>
+
+<hr>
+
+<!-- ================================================
+     8. SERVICE
+================================================ -->
+
+<h1 id="sec-8"><span class="section-num">8</span> Service — Regras de Negocio</h1>
+
+<p>
+  O <code>ExampleService</code> e o <strong>cerebro</strong> da feature. Ele:
+  recebe os DTOs da Route, aplica as regras de negocio, usa o Repository para persistir
+  e retorna as entidades prontas.
+</p>
+
+<div class="uml-box">
+  <div class="uml-header">
+    ExampleService
+    <small>services/ExampleService.kt</small>
+  </div>
+  <div class="uml-section">
+    <div class="uml-section-title">Dependencias (via construtor)</div>
+    <div class="uml-item"><code>exampleRepository: ExampleRepository</code></div>
+  </div>
+  <div class="uml-section">
+    <div class="uml-section-title">Metodos publicos</div>
+    <div class="uml-item"><code>listar(pagination, filters): PaginatedResponse&lt;Example&gt;</code></div>
+    <div class="uml-item"><code>buscarPorId(id): Example</code></div>
+    <div class="uml-item"><code>buscarPorEnum(enumValue, pagination): PaginatedResponse&lt;Example&gt;</code></div>
+    <div class="uml-item"><code>criar(request): Example</code></div>
+    <div class="uml-item"><code>atualizar(id, request): Example</code></div>
+    <div class="uml-item"><code>ativar(id): Example</code></div>
+    <div class="uml-item"><code>desativar(id): Example</code></div>
+    <div class="uml-item"><code>deletar(id)</code></div>
+  </div>
+  <div class="uml-section">
+    <div class="uml-section-title">Metodos privados (helpers)</div>
+    <div class="uml-item"><code>parseEnum(value: String): EnumExample</code></div>
+    <div class="uml-item"><code>parseEnums(values: List&lt;String&gt;): Set&lt;EnumExample&gt;</code></div>
+  </div>
+</div>
+
+<h2 id="sec-8-1">8.1 Regra: Email unico</h2>
+
+<p>
+  <span class="rule-badge">REGRA</span>
+  Nao pode existir dois Examples com o mesmo e-mail.
+</p>
+
+<pre><code><span class="kw">fun</span> <span class="fn">criar</span>(request: <span class="ty">CreateExampleRequest</span>): <span class="ty">Example</span> {
+    <span class="cmt">// Consulta o repositorio para checar se o email ja existe</span>
+    <span class="kw">if</span> (exampleRepository.<span class="fn">findByEmail</span>(request.email) != <span class="kw">null</span>)
+        <span class="kw">throw</span> <span class="ty">ApiException</span>(<span class="num">400</span>, <span class="str">"E-mail já cadastrado para outro example"</span>)
+
+    <span class="kw">val</span> enums = <span class="fn">parseEnums</span>(request.enumExample)
+
+    <span class="kw">val</span> example = <span class="ty">Example</span>(
+        id          = UUID.<span class="fn">randomUUID</span>().toString(),  <span class="cmt">// Service gera o ID</span>
+        nome        = request.nome.<span class="fn">trim</span>(),
+        email       = request.email.<span class="fn">lowercase</span>().<span class="fn">trim</span>(),  <span class="cmt">// normaliza para minusculo</span>
+        enumExample = enums,
+        ativo       = <span class="kw">true</span>,
+        createdAt   = Instant.<span class="fn">now</span>()
+    )
+
+    <span class="kw">return</span> exampleRepository.<span class="fn">insert</span>(example)
+}
+<span class="file-label">services/ExampleService.kt</span></code></pre>
+
+<div class="callout callout-info">
+  <strong>Por que o Service gera o ID e nao o Repository?</strong>
+  O Service tem controle total sobre a criacao da entidade — incluindo o ID.
+  Isso permite que o Service use o ID antes mesmo do insert
+  (por exemplo, para criar relacoes entre entidades).
+  O Repository apenas persiste o que o Service entrega.
+</div>
+
+<h2 id="sec-8-2">8.2 Regra: Validacao de enums</h2>
+
+<p>
+  <span class="rule-badge">REGRA</span>
+  Todos os valores do campo <code>enumExample</code> devem ser validos. Ao menos um deve ser informado.
+</p>
+
+<pre><code><span class="kw">private fun</span> <span class="fn">parseEnum</span>(value: <span class="ty">String</span>): <span class="ty">EnumExample</span> {
+    <span class="kw">return try</span> {
+        EnumExample.<span class="fn">valueOf</span>(value.<span class="fn">uppercase</span>())
+    } <span class="kw">catch</span> (_: <span class="ty">Exception</span>) {
+        <span class="cmt">// Mensagem de erro com os valores validos listados automaticamente</span>
+        <span class="kw">throw</span> <span class="ty">ApiException</span>(<span class="num">400</span>, <span class="str">"Enum inválido: $value. Valores aceitos: ${EnumExample.entries.joinToString()}"</span>)
+    }
+}
+
+<span class="kw">private fun</span> <span class="fn">parseEnums</span>(values: <span class="ty">List</span>&lt;<span class="ty">String</span>&gt;): <span class="ty">Set</span>&lt;<span class="ty">EnumExample</span>&gt; {
+    <span class="kw">if</span> (values.<span class="fn">isEmpty</span>())
+        <span class="kw">throw</span> <span class="ty">ApiException</span>(<span class="num">400</span>, <span class="str">"Ao menos um enumExample deve ser informado"</span>)
+    <span class="kw">return</span> values.<span class="fn">map</span> { <span class="fn">parseEnum</span>(it) }.<span class="fn">toSet</span>()   <span class="cmt">// converte para Set (sem duplicatas)</span>
+}
+<span class="file-label">services/ExampleService.kt</span></code></pre>
+
+<h2 id="sec-8-3">8.3 Regra: Ativar e Desativar separadamente</h2>
+
+<p>
+  <span class="rule-badge">REGRA</span>
+  Ativar e desativar sao operacoes distintas — nao se alterna com PATCH no campo <code>ativo</code>.
+  Isso e uma boa pratica: deixa a intencao explicita e permite logar/auditar cada acao separadamente.
+</p>
+
+<pre><code><span class="kw">fun</span> <span class="fn">ativar</span>(id: <span class="ty">String</span>): <span class="ty">Example</span> {
+    <span class="fn">buscarPorId</span>(id)  <span class="cmt">// verifica existencia — lanca 404 se nao encontrar</span>
+    exampleRepository.<span class="fn">update</span>(id, mapOf(
+        <span class="str">"ativo"</span>     <span class="kw">to</span> <span class="kw">true</span>,
+        <span class="str">"updatedAt"</span> <span class="kw">to</span> Instant.<span class="fn">now</span>()
+    ))
+    <span class="kw">return</span> <span class="fn">buscarPorId</span>(id)   <span class="cmt">// retorna o estado atual do banco</span>
+}
+
+<span class="kw">fun</span> <span class="fn">desativar</span>(id: <span class="ty">String</span>): <span class="ty">Example</span> {
+    <span class="fn">buscarPorId</span>(id)
+    exampleRepository.<span class="fn">update</span>(id, mapOf(
+        <span class="str">"ativo"</span>     <span class="kw">to</span> <span class="kw">false</span>,
+        <span class="str">"updatedAt"</span> <span class="kw">to</span> Instant.<span class="fn">now</span>()
+    ))
+    <span class="kw">return</span> <span class="fn">buscarPorId</span>(id)
+}
+<span class="file-label">services/ExampleService.kt</span></code></pre>
+
+<h2 id="sec-8-4">8.4 Regra: Nao deletar example ativo</h2>
+
+<p>
+  <span class="rule-badge">REGRA</span>
+  Um Example so pode ser deletado se estiver inativo (<code>ativo = false</code>).
+  Isso protege contra remocoes acidentais de dados em uso.
+</p>
+
+<pre><code><span class="kw">fun</span> <span class="fn">deletar</span>(id: <span class="ty">String</span>) {
+    <span class="kw">val</span> example = <span class="fn">buscarPorId</span>(id)   <span class="cmt">// lanca 404 se nao existir</span>
+
+    <span class="cmt">// Guarda de negocio: so deleta se estiver inativo</span>
+    <span class="kw">if</span> (example.ativo)
+        <span class="kw">throw</span> <span class="ty">ApiException</span>(<span class="num">400</span>, <span class="str">"Desative o example antes de deletá-lo"</span>)
+
+    exampleRepository.<span class="fn">delete</span>(id)
+}
+<span class="file-label">services/ExampleService.kt</span></code></pre>
+
+<div class="callout callout-success">
+  <strong>Padrao: verificar existencia primeiro</strong>
+  Todo metodo que opera sobre um ID comeca com <code>buscarPorId(id)</code>.
+  Isso garante que a resposta seja sempre <code>404 Not Found</code> quando o ID nao
+  existe, em vez de um erro generico ou silencioso.
+</div>
+
+<hr>
+
+<!-- ================================================
+     9. ROUTES
+================================================ -->
+
+<h1 id="sec-9"><span class="section-num">9</span> Routes — ExampleRoutes.kt</h1>
+
+<h2 id="sec-9-1">9.1 Tabela de endpoints</h2>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Metodo</th><th>Caminho</th><th>Descricao</th><th>Papeis</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="method m-get">GET</span></td>
+        <td><code>/examples</code></td>
+        <td>Lista paginada com filtros opcionais (<code>nome</code>, <code>email</code>, <code>ativo</code>, <code>enumExample</code>)</td>
+        <td>AP, AI</td>
+      </tr>
+      <tr>
+        <td><span class="method m-get">GET</span></td>
+        <td><code>/examples/{id}</code></td>
+        <td>Busca por ID</td>
+        <td>AP, AI, OP</td>
+      </tr>
+      <tr>
+        <td><span class="method m-get">GET</span></td>
+        <td><code>/examples/enum/{enumValue}</code></td>
+        <td>Lista examples que contem o enum informado</td>
+        <td>AP, AI, OP</td>
+      </tr>
+      <tr>
+        <td><span class="method m-post">POST</span></td>
+        <td><code>/examples</code></td>
+        <td>Cria novo example. Retorna <code>201 Created</code>.</td>
+        <td>AP, AI</td>
+      </tr>
+      <tr>
+        <td><span class="method m-patch">PATCH</span></td>
+        <td><code>/examples/{id}</code></td>
+        <td>Atualiza campos (todos opcionais)</td>
+        <td>AP, AI</td>
+      </tr>
+      <tr>
+        <td><span class="method m-patch">PATCH</span></td>
+        <td><code>/examples/{id}/ativar</code></td>
+        <td>Define <code>ativo = true</code></td>
+        <td>AP, AI</td>
+      </tr>
+      <tr>
+        <td><span class="method m-patch">PATCH</span></td>
+        <td><code>/examples/{id}/desativar</code></td>
+        <td>Define <code>ativo = false</code></td>
+        <td>AP, AI</td>
+      </tr>
+      <tr>
+        <td><span class="method m-delete">DELETE</span></td>
+        <td><code>/examples/{id}</code></td>
+        <td>Deleta. Falha com <code>400</code> se o example estiver ativo.</td>
+        <td>AP</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+    <p><small>AP = ADMIN_PLATAFORMA &nbsp;|&nbsp; AI = ADMIN_INSTITUICAO &nbsp;|&nbsp; OP = OPERADOR</small></p>
+
+    <div class="callout callout-success">
+      <strong>Swagger UI disponível em <a href="http://localhost:7351/api-docs" target="_blank">http://localhost:7351/api-docs</a></strong><br>
+      Todos os 8 endpoints acima estão documentados na tag <strong>Examples</strong> do Swagger,
+      com schemas, exemplos de request/response e controle de autorização JWT.
+      Para testar: faça login em <code>POST /auth/login</code>, copie o <code>token</code>
+      e clique em <strong>Authorize</strong>.
+    </div>
+
+<h2 id="sec-9-2">9.2 Codigo completo</h2>
+
+<pre><code><span class="kw">fun</span> Route.<span class="fn">exampleRoutes</span>() {
+    <span class="kw">val</span> exampleService <span class="kw">by</span> inject&lt;<span class="ty">ExampleService</span>&gt;()
+
+    authenticate(<span class="str">"auth-jwt"</span>) {
+        route(<span class="str">"/examples"</span>) {
+
+            <span class="cmt">// GET /examples</span>
+            authorize(<span class="ty">Papel</span>.ADMIN_PLATAFORMA, <span class="ty">Papel</span>.ADMIN_INSTITUICAO) {
+                get {
+                    <span class="kw">val</span> pagination = call.<span class="fn">parsePagination</span>()
+                    <span class="kw">val</span> filters = mapOf(
+                        <span class="str">"nome"</span>        <span class="kw">to</span> call.request.queryParameters[<span class="str">"nome"</span>],
+                        <span class="str">"email"</span>       <span class="kw">to</span> call.request.queryParameters[<span class="str">"email"</span>],
+                        <span class="str">"ativo"</span>       <span class="kw">to</span> call.request.queryParameters[<span class="str">"ativo"</span>]?.<span class="fn">toBooleanStrictOrNull</span>(),
+                        <span class="str">"enumExample"</span> <span class="kw">to</span> call.request.queryParameters[<span class="str">"enumExample"</span>]
+                    )
+                    call.<span class="fn">respondSuccess</span>(exampleService.<span class="fn">listar</span>(pagination, filters))
+                }
+            }
+
+            <span class="cmt">// GET /examples/enum/{enumValue}</span>
+            authorize(<span class="ty">Papel</span>.ADMIN_PLATAFORMA, <span class="ty">Papel</span>.ADMIN_INSTITUICAO, <span class="ty">Papel</span>.OPERADOR) {
+                get(<span class="str">"/enum/{enumValue}"</span>) {
+                    <span class="kw">val</span> enumValue  = call.parameters[<span class="str">"enumValue"</span>]!!
+                    <span class="kw">val</span> pagination = call.<span class="fn">parsePagination</span>()
+                    call.<span class="fn">respondSuccess</span>(exampleService.<span class="fn">buscarPorEnum</span>(enumValue, pagination))
+                }
+            }
+
+            <span class="cmt">// GET /examples/{id}</span>
+            authorize(<span class="ty">Papel</span>.ADMIN_PLATAFORMA, <span class="ty">Papel</span>.ADMIN_INSTITUICAO, <span class="ty">Papel</span>.OPERADOR) {
+                get(<span class="str">"/{id}"</span>) {
+                    <span class="kw">val</span> id = call.parameters[<span class="str">"id"</span>]!!
+                    call.<span class="fn">respondSuccess</span>(exampleService.<span class="fn">buscarPorId</span>(id))
+                }
+            }
+
+            <span class="cmt">// POST /examples</span>
+            authorize(<span class="ty">Papel</span>.ADMIN_PLATAFORMA, <span class="ty">Papel</span>.ADMIN_INSTITUICAO) {
+                post {
+                    <span class="kw">val</span> request = call.<span class="fn">receive</span>&lt;<span class="ty">CreateExampleRequest</span>&gt;()
+                    <span class="kw">val</span> criado  = exampleService.<span class="fn">criar</span>(request)
+                    call.<span class="fn">respondSuccess</span>(criado, <span class="str">"Example criado com sucesso"</span>, HttpStatusCode.Created)
+                }
+            }
+
+            <span class="cmt">// PATCH /examples/{id}</span>
+            authorize(<span class="ty">Papel</span>.ADMIN_PLATAFORMA, <span class="ty">Papel</span>.ADMIN_INSTITUICAO) {
+                patch(<span class="str">"/{id}"</span>) {
+                    <span class="kw">val</span> id      = call.parameters[<span class="str">"id"</span>]!!
+                    <span class="kw">val</span> request = call.<span class="fn">receive</span>&lt;<span class="ty">UpdateExampleRequest</span>&gt;()
+                    call.<span class="fn">respondSuccess</span>(exampleService.<span class="fn">atualizar</span>(id, request), <span class="str">"Example atualizado"</span>)
+                }
+            }
+
+            <span class="cmt">// PATCH /examples/{id}/ativar</span>
+            authorize(<span class="ty">Papel</span>.ADMIN_PLATAFORMA, <span class="ty">Papel</span>.ADMIN_INSTITUICAO) {
+                patch(<span class="str">"/{id}/ativar"</span>) {
+                    <span class="kw">val</span> id = call.parameters[<span class="str">"id"</span>]!!
+                    call.<span class="fn">respondSuccess</span>(exampleService.<span class="fn">ativar</span>(id), <span class="str">"Example ativado"</span>)
+                }
+            }
+
+            <span class="cmt">// PATCH /examples/{id}/desativar</span>
+            authorize(<span class="ty">Papel</span>.ADMIN_PLATAFORMA, <span class="ty">Papel</span>.ADMIN_INSTITUICAO) {
+                patch(<span class="str">"/{id}/desativar"</span>) {
+                    <span class="kw">val</span> id = call.parameters[<span class="str">"id"</span>]!!
+                    call.<span class="fn">respondSuccess</span>(exampleService.<span class="fn">desativar</span>(id), <span class="str">"Example desativado"</span>)
+                }
+            }
+
+            <span class="cmt">// DELETE /examples/{id}</span>
+            authorize(<span class="ty">Papel</span>.ADMIN_PLATAFORMA) {
+                delete(<span class="str">"/{id}"</span>) {
+                    <span class="kw">val</span> id = call.parameters[<span class="str">"id"</span>]!!
+                    exampleService.<span class="fn">deletar</span>(id)
+                    call.<span class="fn">respondEmptySuccess</span>(<span class="str">"Example removido"</span>)
+                }
+            }
+        }
+    }
+}
+<span class="file-label">routes/ExampleRoutes.kt</span></code></pre>
+
+<hr>
+
+<!-- ================================================
+     10. KOIN + APPLICATION
+================================================ -->
+
+<h1 id="sec-10"><span class="section-num">10</span> Injecao de Dependencia e Registro</h1>
+
+<h2 id="sec-10-1">10.1 KoinModules.kt</h2>
+
+<p>
+  Para que o Koin possa injetar o <code>ExampleService</code> na Route e o <code>ExampleRepository</code>
+  no Service, precisamos registra-los no modulo do Koin. Cada <code>single { }</code> cria
+  uma instancia <strong>singleton</strong> — um unico objeto compartilhado por toda a aplicacao.
+</p>
+
+<pre><code><span class="kw">val</span> appModule = module {
+
+    <span class="cmt">// Config</span>
+    single { <span class="ty">MongoConfig</span>() }
+    single { <span class="ty">JwtConfig</span>() }
+
+    <span class="cmt">// Repositories — &lt;Interface&gt; { Implementacao(dependencias) }</span>
+    single&lt;<span class="ty">UsuarioRepository</span>&gt; { <span class="ty">UsuarioRepositoryImpl</span>(<span class="fn">get</span>&lt;<span class="ty">MongoConfig</span>&gt;().usuarios) }
+    single&lt;<span class="ty">ExampleRepository</span>&gt;  { <span class="ty">ExampleRepositoryImpl</span>(<span class="fn">get</span>&lt;<span class="ty">MongoConfig</span>&gt;().examples) }  <span class="cmt">// &lt;-- novo</span>
+
+    <span class="cmt">// Services</span>
+    single { <span class="ty">AuthService</span>(<span class="fn">get</span>(), <span class="fn">get</span>(), <span class="fn">get</span>()) }
+    single { <span class="ty">UsuarioService</span>(<span class="fn">get</span>(), <span class="fn">get</span>()) }
+    single { <span class="ty">PerfilService</span>(<span class="fn">get</span>()) }
+    single { <span class="ty">ExampleService</span>(<span class="fn">get</span>()) }    <span class="cmt">// get() injeta ExampleRepository automaticamente</span>
+}
+<span class="file-label">config/KoinModules.kt</span></code></pre>
+
+<div class="callout callout-concept">
+  <strong>Como o Koin resolve o get() automaticamente?</strong>
+  Quando o Koin ve <code>ExampleService(get())</code>, ele procura em seu registro interno
+  alguma definicao cujo tipo bate com o primeiro parametro do construtor de
+  <code>ExampleService</code>, que e <code>ExampleRepository</code>. Ele encontra
+  <code>single&lt;ExampleRepository&gt; { ExampleRepositoryImpl(...) }</code> e injeta a implementacao.
+  O Service nem sabe que e uma <code>ExampleRepositoryImpl</code>.
+</div>
+
+<h2 id="sec-10-2">10.2 Application.kt</h2>
+
+<p>
+  Por fim, a rota e registrada no servidor adicionando <code>exampleRoutes()</code> dentro
+  do bloco <code>routing { }</code>:
+</p>
+
+<pre><code><span class="kw">fun</span> Application.<span class="fn">module</span>() {
+    install(<span class="ty">Koin</span>) { modules(appModule) }
+    <span class="kw">val</span> jwtConfig = <span class="ty">JwtConfig</span>()
+
+    <span class="fn">configureContentNegotiation</span>()
+    <span class="fn">configureCORS</span>()
+    <span class="fn">configureAuthentication</span>(jwtConfig)
+    <span class="fn">configureStatusPages</span>()
+    <span class="fn">configureSwagger</span>()
+
+    routing {
+        <span class="fn">authRoutes</span>()
+        <span class="fn">usuarioRoutes</span>()
+        <span class="fn">perfilRoutes</span>()
+        <span class="fn">specialRoutes</span>()
+        <span class="fn">exampleRoutes</span>()   <span class="cmt">// &lt;-- registrado aqui</span>
+    }
+}
+<span class="file-label">Application.kt</span></code></pre>
+
+<hr>
+
+<!-- ================================================
+     11. FLUXO COMPLETO
+================================================ -->
+
+<h1 id="sec-11"><span class="section-num">11</span> Fluxo Completo de uma Requisicao</h1>
+
+<p>Veja como os 9 arquivos se comunicam em uma requisicao <code>POST /examples</code>:</p>
+
+<div class="diagram" style="flex-direction:column; align-items:stretch; gap:.8rem">
+
+  <div style="display:flex; gap:.5rem; align-items:center">
+    <div class="diagram-box box-blue" style="min-width:200px">
+      <div>Route</div>
+      <small>ExampleRoutes.kt</small>
+    </div>
+    <div class="diagram-arrow">&#8594;</div>
+    <div style="font-size:.83rem; color:var(--gray-600)">
+      Recebe JSON, desserializa para <code>CreateExampleRequest</code>,
+      chama <code>exampleService.criar(request)</code>
+    </div>
+  </div>
+
+  <div style="display:flex; gap:.5rem; align-items:center">
+    <div class="diagram-box box-orange" style="min-width:200px">
+      <div>Service</div>
+      <small>ExampleService.kt</small>
+    </div>
+    <div class="diagram-arrow">&#8594;</div>
+    <div style="font-size:.83rem; color:var(--gray-600)">
+      Valida email unico, converte <code>List&lt;String&gt;</code> para <code>Set&lt;EnumExample&gt;</code>,
+      cria entidade com UUID, chama <code>exampleRepository.insert(example)</code>
+    </div>
+  </div>
+
+  <div style="display:flex; gap:.5rem; align-items:center">
+    <div class="diagram-box box-purple" style="min-width:200px">
+      <div>Repository Impl</div>
+      <small>ExampleRepositoryImpl.kt</small>
+    </div>
+    <div class="diagram-arrow">&#8594;</div>
+    <div style="font-size:.83rem; color:var(--gray-600)">
+      Executa <code>collection.insertOne(example)</code> no MongoDB e retorna o objeto
+    </div>
+  </div>
+
+  <div style="display:flex; gap:.5rem; align-items:center">
+    <div class="diagram-box box-green" style="min-width:200px">
+      <div>MongoDB</div>
+      <small>colecao "examples"</small>
+    </div>
+    <div class="diagram-arrow">&#8594;</div>
+    <div style="font-size:.83rem; color:var(--gray-600)">
+      Persiste o documento BSON e confirma o insert
+    </div>
+  </div>
+
+  <div style="text-align:center; color:var(--gray-400); font-size:1.2rem">&#8595; resposta sobe pelas camadas</div>
+
+  <div style="display:flex; gap:.5rem; align-items:center">
+    <div class="diagram-box box-blue" style="min-width:200px">
+      <div>Route</div>
+      <small>ExampleRoutes.kt</small>
+    </div>
+    <div class="diagram-arrow">&#8594;</div>
+    <div style="font-size:.83rem; color:var(--gray-600)">
+      Chama <code>call.respondSuccess(criado, "Example criado com sucesso", 201)</code>.
+      O Ktor serializa o <code>Example</code> para JSON e envia <code>201 Created</code>.
+    </div>
+  </div>
+</div>
+
+<div class="callout callout-success" style="margin-top:2rem">
+  <strong>Resumo da feature /examples</strong>
+  <ul>
+    <li>9 arquivos criados ou modificados, seguindo a ordem de dependencias</li>
+    <li>4 regras de negocio encapsuladas no Service</li>
+    <li>8 endpoints REST com autorizacao por papel (JWT)</li>
+    <li>Filtros dinamicos no Repository via <code>buildFilters</code></li>
+    <li>Consulta especializada por enum via <code>findByEnum</code></li>
+    <li>15 registros fake gerados no seed com Kotlin-Faker</li>
+  </ul>
+</div>
+
+</main>
+</div>
+
+<footer class="doc-footer">
+  Projeto FilaCidada &mdash; Documentacao de Implementacao &mdash; Março 2026
+</footer>
+
+<button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Voltar ao topo">&#8679;</button>
+
+<script>
+  const btn = document.getElementById('backTop');
+  window.addEventListener('scroll', () => {
+    btn.classList.toggle('visible', window.scrollY > 400);
+  });
+</script>
+</body>
+</html>
+

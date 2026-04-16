@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tutorial – Estrutura Base de uma API com Ktor</title>
+  <style>
+    :root {
+      --primary: #1e3a5f;
+      --primary-light: #2a5298;
+      --accent: #0ea5e9;
+      --accent-light: #e0f2fe;
+      --success: #10b981;
+      --success-light: #d1fae5;
+      --warning: #f59e0b;
+      --warning-light: #fef3c7;
+      --danger: #ef4444;
+      --danger-light: #fee2e2;
+      --purple: #7c3aed;
+      --purple-light: #ede9fe;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-300: #cbd5e1;
+      --gray-400: #94a3b8;
+      --gray-500: #64748b;
+      --gray-600: #475569;
+      --gray-700: #334155;
+      --gray-800: #1e293b;
+      --gray-900: #0f172a;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+      --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: var(--gray-800);
+      background: var(--gray-50);
+      line-height: 1.75;
+    }
+
+    /* ── HEADER ── */
+    .doc-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: #fff;
+      padding: 3rem 2rem 2.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .doc-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--success), var(--purple));
+    }
+    .doc-header h1 { font-size: 2rem; font-weight: 700; margin-bottom: .5rem; color: #fff; }
+    .doc-header .subtitle { font-size: .95rem; opacity: .85; max-width: 700px; margin: 0 auto; }
+    .badges { margin-top: 1rem; display: flex; gap: .6rem; justify-content: center; flex-wrap: wrap; }
+    .badge {
+      display: inline-block;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
+      padding: .25rem .8rem;
+      border-radius: 999px;
+      font-size: .78rem;
+      letter-spacing: .3px;
+    }
+
+    /* ── LAYOUT ── */
+    .wrapper { display: flex; max-width: 1400px; margin: 0 auto; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 290px;
+      min-width: 290px;
+      background: #fff;
+      border-right: 1px solid var(--gray-200);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 1.5rem 0;
+      font-size: .84rem;
+      scrollbar-width: thin;
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 4px; }
+    .toc-title {
+      padding: 0 1.5rem .8rem;
+      font-weight: 700;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--gray-400);
+    }
+    .toc-section {
+      padding: .5rem 1.5rem .2rem;
+      font-weight: 700;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--gray-400);
+      margin-top: .4rem;
+    }
+    .sidebar a {
+      display: block;
+      padding: .35rem 1.5rem;
+      color: var(--gray-600);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: all .15s;
+      line-height: 1.4;
+    }
+    .sidebar a:hover { color: var(--primary); background: var(--gray-50); border-left-color: var(--accent); }
+    .sidebar a.toc-h1 { font-weight: 600; color: var(--gray-800); padding-top: .5rem; }
+    .sidebar a.toc-h2 { padding-left: 2.2rem; font-size: .8rem; }
+    .sidebar a.toc-h3 { padding-left: 3rem; font-size: .77rem; color: var(--gray-500); }
+
+    /* ── CONTENT ── */
+    .content { flex: 1; min-width: 0; padding: 2.5rem 3rem 5rem; max-width: 900px; }
+
+    /* ── HEADINGS ── */
+    h1 {
+      font-size: 1.65rem;
+      color: var(--primary);
+      margin: 3rem 0 1rem;
+      padding-bottom: .6rem;
+      border-bottom: 2px solid var(--gray-200);
+      scroll-margin-top: 1rem;
+    }
+    h1:first-of-type { margin-top: 0; }
+    h2 {
+      font-size: 1.2rem;
+      color: var(--primary-light);
+      margin: 2.2rem 0 .8rem;
+      scroll-margin-top: 1rem;
+    }
+    h3 {
+      font-size: 1.05rem;
+      color: var(--gray-700);
+      margin: 1.8rem 0 .6rem;
+      scroll-margin-top: 1rem;
+    }
+    h4 { font-size: .95rem; font-weight: 700; color: var(--gray-600); margin: 1.4rem 0 .5rem; }
+
+    .section-num {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      font-size: .72rem;
+      padding: .15rem .5rem;
+      border-radius: 4px;
+      margin-right: .5rem;
+      vertical-align: middle;
+    }
+    .step-num {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: .72rem;
+      padding: .15rem .5rem;
+      border-radius: 999px;
+      margin-right: .5rem;
+      vertical-align: middle;
+      min-width: 1.6rem;
+      text-align: center;
+    }
+
+    p { margin: .7rem 0; }
+    ul, ol { margin: .5rem 0 .8rem 1.6rem; }
+    li { margin: .35rem 0; }
+    li::marker { color: var(--accent); }
+
+    /* ── CODE ── */
+    code {
+      font-family: 'SFMono-Regular', 'Consolas', monospace;
+      font-size: .85em;
+      background: var(--gray-100);
+      padding: .15em .45em;
+      border-radius: 4px;
+      color: var(--primary-light);
+    }
+    pre {
+      background: #0d1117;
+      color: #e6edf3;
+      padding: 1.3rem 1.6rem;
+      border-radius: var(--radius);
+      overflow-x: auto;
+      margin: 1rem 0;
+      font-size: .85rem;
+      line-height: 1.7;
+      box-shadow: var(--shadow-md);
+      position: relative;
+    }
+    pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+
+    /* Kotlin syntax highlight colors */
+    .kw  { color: #ff7b72; }
+    .ty  { color: #79c0ff; }
+    .str { color: #a5d6ff; }
+    .ann { color: #f2cc60; }
+    .cmt { color: #8b949e; font-style: italic; }
+    .fn  { color: #d2a8ff; }
+    .num { color: #ffa657; }
+    .op  { color: #ff7b72; }
+
+    pre .file-label {
+      position: absolute;
+      top: .5rem; right: .8rem;
+      font-size: .72rem;
+      color: var(--gray-500);
+      background: var(--gray-800);
+      padding: .1rem .5rem;
+      border-radius: 3px;
+    }
+
+    /* ── CALLOUTS ── */
+    .callout {
+      border-radius: var(--radius);
+      padding: 1rem 1.3rem;
+      margin: 1.2rem 0;
+      font-size: .92rem;
+      border-left: 4px solid;
+    }
+    .callout-icon { font-size: 1.1em; margin-right: .4rem; }
+    .callout strong { display: block; margin-bottom: .3rem; }
+    .callout-info    { background: var(--accent-light);   border-color: var(--accent);   color: #0c4a6e; }
+    .callout-success { background: var(--success-light);  border-color: var(--success);  color: #064e3b; }
+    .callout-warn    { background: var(--warning-light);  border-color: var(--warning);  color: #78350f; }
+    .callout-danger  { background: var(--danger-light);   border-color: var(--danger);   color: #7f1d1d; }
+    .callout-concept { background: var(--purple-light);   border-color: var(--purple);   color: #3b0764; }
+
+    /* ── TABLES ── */
+    .table-wrap { overflow-x: auto; margin: 1rem 0; border-radius: var(--radius); box-shadow: var(--shadow); }
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; background: #fff; }
+    thead { background: var(--primary); color: #fff; }
+    thead th { padding: .7rem .85rem; text-align: left; font-size: .82rem; }
+    tbody tr { border-bottom: 1px solid var(--gray-100); }
+    tbody tr:nth-child(even) { background: var(--gray-50); }
+    tbody tr:hover { background: var(--accent-light); }
+    tbody td { padding: .6rem .85rem; vertical-align: top; }
+
+    /* ── DIAGRAM BOXES ── */
+    .diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: wrap;
+      margin: 1.5rem 0;
+      padding: 1.5rem;
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .diagram-box {
+      border-radius: var(--radius);
+      padding: .8rem 1.4rem;
+      font-weight: 600;
+      font-size: .88rem;
+      text-align: center;
+      min-width: 120px;
+    }
+    .box-blue   { background: #dbeafe; color: #1d4ed8; border: 2px solid #93c5fd; }
+    .box-green  { background: var(--success-light); color: #065f46; border: 2px solid #6ee7b7; }
+    .box-purple { background: var(--purple-light); color: #5b21b6; border: 2px solid #c4b5fd; }
+    .box-orange { background: #ffedd5; color: #9a3412; border: 2px solid #fdba74; }
+    .box-red    { background: var(--danger-light); color: #991b1b; border: 2px solid #fca5a5; }
+    .diagram-arrow {
+      padding: 0 .7rem;
+      color: var(--gray-400);
+      font-size: 1.4rem;
+      font-weight: 300;
+    }
+
+    /* ── STEP CARD ── */
+    .step-card {
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 1.2rem 1.6rem;
+      margin: 1rem 0;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+    .step-card h3 { margin-top: 0; }
+
+    /* ── EXERCISE ── */
+    .exercise {
+      background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+      border: 1px solid #7dd3fc;
+      border-radius: var(--radius);
+      padding: 1.2rem 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .exercise h4 { color: #0369a1; margin-top: 0; margin-bottom: .5rem; }
+
+    /* ── FOLDER TREE ── */
+    .folder-tree {
+      background: #0d1117;
+      color: #e6edf3;
+      padding: 1.3rem 1.6rem;
+      border-radius: var(--radius);
+      font-family: 'SFMono-Regular', 'Consolas', monospace;
+      font-size: .84rem;
+      line-height: 2;
+      margin: 1rem 0;
+    }
+    .folder-tree .dir  { color: #79c0ff; font-weight: 600; }
+    .folder-tree .file { color: #e6edf3; }
+    .folder-tree .desc { color: #8b949e; font-style: italic; }
+
+    /* ── LAYER STACK ── */
+    .layer-stack { margin: 1.5rem 0; }
+    .layer {
+      display: flex;
+      align-items: center;
+      padding: .7rem 1.2rem;
+      border-radius: var(--radius);
+      margin: .3rem 0;
+      font-weight: 600;
+      font-size: .9rem;
+      gap: .8rem;
+    }
+    .layer-icon { font-size: 1.2rem; }
+    .layer-desc { font-size: .8rem; font-weight: 400; color: inherit; opacity: .75; margin-left: auto; }
+    .layer-1 { background: #dbeafe; color: #1d4ed8; }
+    .layer-2 { background: #dcfce7; color: #166534; }
+    .layer-3 { background: var(--purple-light); color: #5b21b6; }
+    .layer-4 { background: #ffedd5; color: #9a3412; }
+    .layer-5 { background: var(--accent-light); color: #0c4a6e; }
+    .layer-6 { background: #fef9c3; color: #713f12; }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .content { padding: 1.5rem 1.2rem 4rem; }
+      .doc-header h1 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="doc-header">
+  <h1>Estrutura Base de uma API com Ktor</h1>
+  <p class="subtitle">
+    O que precisamos ter antes de criar nossas rotas — Model, Repository, Service, Plugins e injeção de dependência explicados passo a passo
+  </p>
+  <div class="badges">
+    <span class="badge">Kotlin</span>
+    <span class="badge">Ktor 2.3</span>
+    <span class="badge">MongoDB + KMongo</span>
+    <span class="badge">Koin DI</span>
+    <span class="badge">JWT Auth</span>
+    <span class="badge">MVC Layers</span>
+  </div>
+</header>
+
+<div class="wrapper">
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="toc-title">Conteúdo</div>
+
+    <div class="toc-section">Introdução</div>
+    <a href="#visao-geral" class="toc-h1">1. Visão Geral</a>
+    <a href="#stack" class="toc-h2">Stack do Projeto</a>
+    <a href="#estrutura-pastas" class="toc-h2">Estrutura de Pastas</a>
+    <a href="#camadas" class="toc-h2">Camadas da Arquitetura</a>
+
+    <div class="toc-section">Fundamentos</div>
+    <a href="#application" class="toc-h1">2. Application.kt</a>
+    <a href="#application-main" class="toc-h2">Ponto de Entrada</a>
+    <a href="#application-module" class="toc-h2">Função module()</a>
+
+    <a href="#model" class="toc-h1">3. Model</a>
+    <a href="#model-usuario" class="toc-h2">data class Usuario</a>
+    <a href="#model-enum" class="toc-h2">enum class Papel</a>
+    <a href="#model-serializable" class="toc-h2">@Serializable e @Contextual</a>
+
+    <div class="toc-section">Configuração</div>
+    <a href="#mongodb" class="toc-h1">4. MongoConfig</a>
+    <a href="#mongodb-conexao" class="toc-h2">Conexão com KMongo</a>
+    <a href="#mongodb-colecoes" class="toc-h2">Coleções tipadas</a>
+
+    <a href="#koin" class="toc-h1">5. Injeção de Dependência</a>
+    <a href="#koin-conceito" class="toc-h2">O que é Koin?</a>
+    <a href="#koin-modulo" class="toc-h2">appModule</a>
+    <a href="#koin-single" class="toc-h2">single vs factory</a>
+
+    <a href="#jwt" class="toc-h1">6. JwtConfig</a>
+    <a href="#jwt-conceito" class="toc-h2">Como funciona o JWT</a>
+    <a href="#jwt-tokens" class="toc-h2">Access e Refresh Token</a>
+
+    <div class="toc-section">Repository e Service</div>
+    <a href="#repository" class="toc-h1">7. Repository</a>
+    <a href="#repo-interface" class="toc-h2">Interface contrato</a>
+    <a href="#repo-impl" class="toc-h2">Implementação KMongo</a>
+    <a href="#repo-filtros" class="toc-h2">Filtros dinâmicos</a>
+
+    <a href="#service" class="toc-h1">8. Services</a>
+    <a href="#service-auth" class="toc-h2">AuthService</a>
+    <a href="#service-usuario" class="toc-h2">UsuarioService</a>
+    <a href="#service-perfil" class="toc-h2">PerfilService</a>
+
+    <div class="toc-section">Plugins</div>
+    <a href="#plugins" class="toc-h1">9. Plugins Ktor</a>
+    <a href="#plugin-json" class="toc-h2">ContentNegotiation</a>
+    <a href="#plugin-cors" class="toc-h2">CORS</a>
+    <a href="#plugin-auth" class="toc-h2">Authentication (JWT)</a>
+    <a href="#plugin-authz" class="toc-h2">Authorization (papéis)</a>
+    <a href="#plugin-status" class="toc-h2">StatusPages</a>
+    <a href="#plugin-swagger" class="toc-h2">Swagger</a>
+
+    <div class="toc-section">DTOs e Utils</div>
+    <a href="#dtos" class="toc-h1">10. DTOs</a>
+    <a href="#dtos-request" class="toc-h2">Requests</a>
+    <a href="#dtos-response" class="toc-h2">Responses e ApiResponse</a>
+
+    <a href="#utils" class="toc-h1">11. Utilitários</a>
+    <a href="#utils-constants" class="toc-h2">Constants</a>
+    <a href="#utils-extensions" class="toc-h2">Extensions JWT</a>
+    <a href="#utils-pagination" class="toc-h2">PaginationUtils</a>
+    <a href="#utils-password" class="toc-h2">PasswordUtils</a>
+
+    <div class="toc-section">Conclusão</div>
+    <a href="#rotas" class="toc-h1">12. Agora sim: Rotas</a>
+    <a href="#checklist" class="toc-h2">Checklist</a>
+  </nav>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- ═══════════════════════════════ 1. VISÃO GERAL ═══════════════════════════════ -->
+    <h1 id="visao-geral"><span class="section-num">1</span> Visão Geral do Projeto</h1>
+
+    <p>
+      Antes de criarmos a primeira rota de uma API, precisamos montar a <strong>infraestrutura que sustenta tudo</strong>.
+      Pense nisso como construir uma casa: você não coloca os móveis antes de ter paredes, encanamento e elétrica.
+    </p>
+    <p>
+      Neste tutorial vamos dissecar o que foi construído no projeto inicial, entender <em>por que</em> cada peça existe
+      e como elas se conectam — para que quando você criar suas próprias entidades, saiba exatamente onde colocar cada coisa.
+    </p>
+
+    <h2 id="stack">Stack do Projeto</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Responsabilidade</th><th>Biblioteca</th><th>Por que essa escolha?</th></tr></thead>
+        <tbody>
+          <tr><td>Framework HTTP</td><td>Ktor 2.3 + Netty</td><td>Assíncrono, leve, 100% Kotlin</td></tr>
+          <tr><td>Banco de dados</td><td>MongoDB + KMongo 4.11</td><td>Flexível para dados sem esquema fixo; KMongo adiciona tipos Kotlin</td></tr>
+          <tr><td>Serialização JSON</td><td>kotlinx.serialization</td><td>Nativa Kotlin, integrada ao Ktor</td></tr>
+          <tr><td>Injeção de Dependência</td><td>Koin 3.5</td><td>DSL simples, sem reflexão pesada</td></tr>
+          <tr><td>Autenticação</td><td>JWT (Auth0 java-jwt)</td><td>Padrão de mercado para APIs REST</td></tr>
+          <tr><td>Hash de senha</td><td>jBCrypt</td><td>BCrypt é o padrão de segurança para senhas</td></tr>
+          <tr><td>Documentação</td><td>Ktor Swagger UI</td><td>Documenta automaticamente via OpenAPI</td></tr>
+          <tr><td>Build</td><td>Gradle + Kotlin DSL</td><td>build.gradle.kts com syntax check</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="estrutura-pastas">Estrutura de Pastas</h2>
+
+    <p>O projeto segue uma organização por <strong>responsabilidade</strong> (package by layer):</p>
+
+    <div class="folder-tree">
+<span class="dir">src/main/kotlin/</span><br>
+│<br>
+├── <span class="file">Application.kt</span>         <span class="desc">// ponto de entrada — junta tudo</span><br>
+├── <span class="file">DatabaseSeed.kt</span>         <span class="desc">// popula o banco com dados de exemplo</span><br>
+│<br>
+├── <span class="dir">models/</span><br>
+│   └── <span class="file">Usuario.kt</span>          <span class="desc">// data class + enum Papel</span><br>
+│<br>
+├── <span class="dir">config/</span><br>
+│   ├── <span class="file">MongoConfig.kt</span>      <span class="desc">// conexão com MongoDB</span><br>
+│   ├── <span class="file">JwtConfig.kt</span>        <span class="desc">// geração/validação de tokens JWT</span><br>
+│   └── <span class="file">KoinModules.kt</span>      <span class="desc">// módulo de injeção de dependência</span><br>
+│<br>
+├── <span class="dir">repositories/</span><br>
+│   ├── <span class="file">UsuarioRepository.kt</span>     <span class="desc">// interface (contrato)</span><br>
+│   └── <span class="file">UsuarioRepositoryImpl.kt</span> <span class="desc">// implementação KMongo</span><br>
+│<br>
+├── <span class="dir">services/</span><br>
+│   ├── <span class="file">AuthService.kt</span>      <span class="desc">// login, registro, refresh...</span><br>
+│   ├── <span class="file">UsuarioService.kt</span>   <span class="desc">// CRUD de usuários</span><br>
+│   ├── <span class="file">PerfilService.kt</span>    <span class="desc">// editar perfil, avatar, senha</span><br>
+│   ├── <span class="file">EmailService.kt</span>     <span class="desc">// envio de e-mails</span><br>
+│   └── <span class="file">FileStorageService.kt</span><span class="desc">// upload de arquivos</span><br>
+│<br>
+├── <span class="dir">plugins/</span><br>
+│   ├── <span class="file">ContentNegotiation.kt</span><span class="desc">// serialização JSON</span><br>
+│   ├── <span class="file">CORS.kt</span>             <span class="desc">// Cross-Origin Resource Sharing</span><br>
+│   ├── <span class="file">Authentication.kt</span>   <span class="desc">// validação do token JWT</span><br>
+│   ├── <span class="file">Authorization.kt</span>    <span class="desc">// controle de papéis</span><br>
+│   ├── <span class="file">StatusPages.kt</span>      <span class="desc">// tratamento centralizado de erros</span><br>
+│   ├── <span class="file">Swagger.kt</span>          <span class="desc">// documentação interativa</span><br>
+│   └── <span class="file">ApiException.kt</span>     <span class="desc">// exceção customizada da API</span><br>
+│<br>
+├── <span class="dir">dtos/</span><br>
+│   ├── <span class="dir">request/</span>             <span class="desc">// dados que entram pela requisição</span><br>
+│   └── <span class="dir">response/</span>            <span class="desc">// dados serializados na resposta</span><br>
+│<br>
+└── <span class="dir">utils/</span><br>
+    ├── <span class="file">Constants.kt</span>        <span class="desc">// constantes globais</span><br>
+    ├── <span class="file">Extensions.kt</span>       <span class="desc">// funções de extensão para ApplicationCall</span><br>
+    ├── <span class="file">PaginationUtils.kt</span>  <span class="desc">// helpers de paginação</span><br>
+    ├── <span class="file">PasswordUtils.kt</span>    <span class="desc">// hash BCrypt</span><br>
+    └── <span class="file">InstantSerializer.kt</span><span class="desc">// serializa java.time.Instant como ISO 8601</span><br>
+    </div>
+
+    <h2 id="camadas">Camadas da Arquitetura</h2>
+
+    <p>A API segue uma arquitetura em camadas. Cada camada tem uma responsabilidade única e só se comunica com a camada abaixo dela:</p>
+
+    <div class="layer-stack">
+      <div class="layer layer-1">
+        <span class="layer-icon">🌐</span>
+        <span><strong>Routes</strong> — recebe a requisição HTTP, chama o Service, retorna a resposta</span>
+        <span class="layer-desc">AuthRoutes, UsuarioRoutes…</span>
+      </div>
+      <div class="layer layer-2">
+        <span class="layer-icon">⚙️</span>
+        <span><strong>Services</strong> — regras de negócio (o que a aplicação faz)</span>
+        <span class="layer-desc">AuthService, UsuarioService…</span>
+      </div>
+      <div class="layer layer-3">
+        <span class="layer-icon">🗄️</span>
+        <span><strong>Repositories</strong> — acesso ao banco de dados</span>
+        <span class="layer-desc">UsuarioRepositoryImpl</span>
+      </div>
+      <div class="layer layer-4">
+        <span class="layer-icon">🍃</span>
+        <span><strong>MongoDB</strong> — persistência dos dados</span>
+        <span class="layer-desc">Collection&lt;Usuario&gt;</span>
+      </div>
+    </div>
+
+    <div class="callout callout-concept">
+      <span class="callout-icon">💡</span>
+      <strong>Por que separar em camadas?</strong>
+      Se amanhã precisarmos trocar o MongoDB por PostgreSQL, só mudamos a camada Repository.
+      As rotas e os services não precisam saber onde os dados são armazenados. Isso é <em>separação de responsabilidades</em>.
+    </div>
+
+    <!-- ═══════════════════════════════ 2. APPLICATION ═══════════════════════════════ -->
+    <h1 id="application"><span class="section-num">2</span> Application.kt — O Ponto de Entrada</h1>
+
+    <p>
+      Este é o arquivo que o Gradle executa quando você roda <code>./gradlew run</code>.
+      Ele é responsável por <strong>ligar todas as peças</strong> do sistema.
+    </p>
+
+    <pre><code class="file-label">Application.kt</code><span class="kw">fun</span> <span class="fn">main</span>() {
+    <span class="kw">val</span> port = System.getenv(<span class="str">"PORT"</span>)?.toIntOrNull() ?: <span class="num">7351</span>
+    embeddedServer(Netty, port = port, module = Application::<span class="fn">module</span>).start(wait = <span class="kw">true</span>)
+}
+
+<span class="kw">fun</span> Application.<span class="fn">module</span>() {
+
+    <span class="cmt">// 1. Injeção de dependência</span>
+    install(Koin) {
+        modules(appModule)
+    }
+
+    <span class="kw">val</span> jwtConfig = JwtConfig()
+
+    <span class="cmt">// 2. Plugins</span>
+    <span class="fn">configureContentNegotiation</span>()
+    <span class="fn">configureCORS</span>()
+    <span class="fn">configureAuthentication</span>(jwtConfig)
+    <span class="fn">configureStatusPages</span>()
+    <span class="fn">configureSwagger</span>()
+
+    <span class="cmt">// 3. Rotas</span>
+    routing {
+        <span class="fn">authRoutes</span>()
+        <span class="fn">usuarioRoutes</span>()
+        <span class="fn">perfilRoutes</span>()
+        <span class="fn">specialRoutes</span>()
+    }
+}</code></pre>
+
+    <h2 id="application-main">Ponto de Entrada (<code>main</code>)</h2>
+
+    <p>A função <code>main()</code> cria um servidor Netty na porta configurada:</p>
+    <ul>
+      <li>Primeiro tenta ler a variável de ambiente <code>PORT</code> (útil em produção/Docker).</li>
+      <li>Se não existir, usa a porta <code>7351</code> como padrão.</li>
+      <li><code>embeddedServer</code> cria o servidor em memória — sem precisar de um Tomcat ou servidor externo.</li>
+      <li><code>wait = true</code> faz a thread principal bloquear (o servidor fica rodando até você encerrar com Ctrl+C).</li>
+    </ul>
+
+    <h2 id="application-module">Função <code>module()</code></h2>
+
+    <p>
+      O <code>module()</code> é uma <strong>função de extensão</strong> sobre <code>Application</code> — ele "configura" a aplicação Ktor.
+      A ordem importa:
+    </p>
+    <ol>
+      <li><strong>Koin primeiro</strong> — precisa estar instalado antes de qualquer código que tente injetar dependências.</li>
+      <li><strong>Plugins depois</strong> — JSON, CORS, Auth são registrados globalmente.</li>
+      <li><strong>Rotas por último</strong> — são o "topo" da pirâmide; dependem de tudo que veio antes.</li>
+    </ol>
+
+    <!-- ═══════════════════════════════ 3. MODEL ═══════════════════════════════ -->
+    <h1 id="model"><span class="section-num">3</span> Model — A Representação dos Dados</h1>
+
+    <p>
+      O model define <strong>como um Usuário existe no sistema</strong>. É a classe que será salva no MongoDB
+      e trafegada entre as camadas da aplicação.
+    </p>
+
+    <h2 id="model-usuario">data class Usuario</h2>
+
+    <pre><code class="file-label">models/Usuario.kt</code><span class="ann">@Serializable</span>
+<span class="kw">data class</span> <span class="ty">Usuario</span>(
+    <span class="kw">val</span> id: <span class="ty">String</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> nome: <span class="ty">String</span>,
+    <span class="kw">val</span> email: <span class="ty">String</span>,
+    <span class="kw">val</span> senhaHash: <span class="ty">String</span>,            <span class="cmt">// nunca a senha em texto!</span>
+    <span class="kw">val</span> papeis: <span class="ty">Set</span>&lt;<span class="ty">Papel</span>&gt;,
+    <span class="kw">val</span> instituicaoId: <span class="ty">String</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> ativo: <span class="ty">Boolean</span> = <span class="kw">true</span>,
+    <span class="kw">val</span> avatar: <span class="ty">String</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> fusoHorario: <span class="ty">String</span> = <span class="str">"America/Manaus"</span>,
+    <span class="kw">val</span> accesstoken: <span class="ty">String</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> refreshtoken: <span class="ty">String</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> tokenUnico: <span class="ty">String</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> codigoRecuperaSenha: <span class="ty">String</span>? = <span class="kw">null</span>,
+    <span class="ann">@Contextual</span> <span class="kw">val</span> expCodigoRecuperaSenha: <span class="ty">Instant</span>? = <span class="kw">null</span>,
+    <span class="ann">@Contextual</span> <span class="kw">val</span> ultimoLoginEm: <span class="ty">Instant</span>? = <span class="kw">null</span>,
+    <span class="ann">@Contextual</span> <span class="kw">val</span> createdAt: <span class="ty">Instant</span> = Instant.<span class="fn">now</span>(),
+    <span class="ann">@Contextual</span> <span class="kw">val</span> updatedAt: <span class="ty">Instant</span>? = <span class="kw">null</span>
+)</code></pre>
+
+    <h4>Por que <code>data class</code>?</h4>
+    <p>
+      <code>data class</code> gera automaticamente <code>equals()</code>, <code>hashCode()</code>, <code>toString()</code> e <code>copy()</code>,
+      que são essenciais para comparar e clonar objetos. No contexto de repositórios, isso facilita muito os testes.
+    </p>
+
+    <h4>Por que <code>id</code> é nullable (<code>String?</code>)?</h4>
+    <p>
+      Quando criamos um usuário novo (antes de salvar), ele ainda não tem ID — por isso <code>null</code>.
+      O ID é atribuído com <code>UUID.randomUUID().toString()</code> no Service antes de chamar <code>insert()</code>.
+      Se fosse não-nullable, seria obrigatório fornecer um ID na construção, o que não faz sentido.
+    </p>
+
+    <h4>Por que guardar <code>accesstoken</code> e <code>refreshtoken</code> no banco?</h4>
+    <p>
+      Para conseguir <strong>invalidar sessões</strong>: se um usuário fizer logout ou mudar a senha,
+      apagamos o token do banco. Na próxima requisição, mesmo que o token ainda não tenha expirado pelo tempo,
+      ele não bate mais com o banco — e é rejeitado. Isso implementa o conceito de <em>revogação de token</em>.
+    </p>
+
+    <h2 id="model-enum">enum class Papel</h2>
+
+    <pre><code class="file-label">models/Usuario.kt</code><span class="kw">enum class</span> <span class="ty">Papel</span> {
+    ADMIN_PLATAFORMA,   <span class="cmt">// visão global, gerencia tudo</span>
+    ADMIN_INSTITUICAO,  <span class="cmt">// administrador de uma instituição</span>
+    OPERADOR,           <span class="cmt">// atua no atendimento</span>
+    USUARIO_FINAL       <span class="cmt">// cidadão comum</span>
+}</code></pre>
+
+    <p>
+      Usar <code>enum</code> em vez de <code>String</code> garante que nenhum papel inválido entre na aplicação.
+      Se alguém tentar criar um usuário com papel <code>"super_hacker"</code>, o Kotlin jogará uma exceção na desserialização.
+    </p>
+
+    <h2 id="model-serializable"><code>@Serializable</code> e <code>@Contextual</code></h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Anotação</th><th>O que faz</th><th>Quando usar</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>@Serializable</code></td>
+            <td>Diz ao compilador para gerar código de serialização/desserialização JSON automaticamente</td>
+            <td>Em toda <code>data class</code> ou <code>enum</code> que trafega pela API ou é salvo no banco</td>
+          </tr>
+          <tr>
+            <td><code>@Contextual</code></td>
+            <td>Delega a serialização daquele campo ao serializer contextual registrado (no nosso caso, <code>InstantSerializer</code>)</td>
+            <td>Em campos de tipos que o kotlinx.serialization não sabe serializar nativamente, como <code>java.time.Instant</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <strong>Atenção: campos sensíveis na resposta</strong>
+      A classe <code>Usuario</code> contém <code>senhaHash</code>, <code>accesstoken</code> e <code>refreshtoken</code>.
+      Esses campos <strong>nunca devem</strong> aparecer na resposta da API. Por isso usamos DTOs de resposta
+      (como <code>PerfilResponse</code>) que incluem apenas os campos públicos.
+    </div>
+
+    <!-- ═══════════════════════════════ 4. MONGO ═══════════════════════════════ -->
+    <h1 id="mongodb"><span class="section-num">4</span> MongoConfig — Conexão com o Banco</h1>
+
+    <h2 id="mongodb-conexao">Conexão com KMongo</h2>
+
+    <pre><code class="file-label">config/MongoConfig.kt</code><span class="kw">class</span> <span class="ty">MongoConfig</span>(
+    connectionString: <span class="ty">String</span> = System.<span class="fn">getenv</span>(<span class="str">"MONGO_URI"</span>) ?: <span class="str">"mongodb+srv://..."</span>,
+    databaseName: <span class="ty">String</span> = System.<span class="fn">getenv</span>(<span class="str">"MONGO_DB"</span>) ?: <span class="str">"Aula"</span>
+) {
+    <span class="kw">private val</span> client = KMongo.<span class="fn">createClient</span>(connectionString)
+    <span class="kw">val</span> database: <span class="ty">MongoDatabase</span> = client.<span class="fn">getDatabase</span>(databaseName)
+
+    <span class="kw">val</span> usuarios <span class="kw">get</span>() = database.getCollection&lt;<span class="ty">Usuario</span>&gt;(Constants.COLLECTION_USUARIOS)
+}</code></pre>
+
+    <p>
+      <code>KMongo.createClient()</code> cria uma conexão com o MongoDB. O cliente é criado uma única vez
+      (registrado como <code>single</code> no Koin) e reutilizado em todas as requisições.
+    </p>
+
+    <h2 id="mongodb-colecoes">Coleções tipadas</h2>
+
+    <p>
+      <code>database.getCollection&lt;Usuario&gt;("usuarios")</code> retorna um objeto <code>MongoCollection&lt;Usuario&gt;</code>.
+      Isso significa que quando você fizer <code>collection.findOne(...)</code>, o resultado já virá
+      desserializado como um objeto <code>Usuario</code> — sem precisar converter manualmente de JSON.
+    </p>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <strong>Uma coleção por entidade</strong>
+      Para cada nova entidade que você criar (ex: <code>Produto</code>), adicione uma propriedade correspondente
+      no <code>MongoConfig</code>: <code>val produtos get() = database.getCollection&lt;Produto&gt;("produtos")</code>
+    </div>
+
+    <!-- ═══════════════════════════════ 5. KOIN ═══════════════════════════════ -->
+    <h1 id="koin"><span class="section-num">5</span> Injeção de Dependência com Koin</h1>
+
+    <h2 id="koin-conceito">O que é Injeção de Dependência?</h2>
+
+    <p>
+      Imagine que o <code>AuthService</code> precisa do <code>UsuarioRepository</code> para funcionar.
+      Sem DI, o <code>AuthService</code> criaria o repositório dentro de si: <code>val repo = UsuarioRepositoryImpl(...)</code>.
+      O problema: o service ficaria acoplado à implementação concreta — impossível de testar e difícil de trocar.
+    </p>
+    <p>
+      Com <strong>Injeção de Dependência</strong>, alguém externo (o Koin) cria as dependências e as "injeta"
+      no service. O service declara o que precisa, mas não sabe como é criado.
+    </p>
+
+    <div class="diagram">
+      <div class="diagram-box box-blue">Koin<br><small>cria e gerencia</small></div>
+      <div class="diagram-arrow">→</div>
+      <div class="diagram-box box-purple">MongoConfig<br>JwtConfig<br>Repository<br>Services</div>
+      <div class="diagram-arrow">→</div>
+      <div class="diagram-box box-green">Injetado nas<br>Routes e Services<br>automaticamente</div>
+    </div>
+
+    <h2 id="koin-modulo">O appModule</h2>
+
+    <pre><code class="file-label">config/KoinModules.kt</code><span class="kw">val</span> appModule = <span class="fn">module</span> {
+
+    <span class="cmt">// Config</span>
+    <span class="fn">single</span> { <span class="ty">MongoConfig</span>() }
+    <span class="fn">single</span> { <span class="ty">JwtConfig</span>() }
+
+    <span class="cmt">// Repositories — injeta a coleção tipada do MongoConfig</span>
+    <span class="fn">single</span>&lt;<span class="ty">UsuarioRepository</span>&gt; { <span class="ty">UsuarioRepositoryImpl</span>(<span class="fn">get</span>&lt;<span class="ty">MongoConfig</span>&gt;().<span class="fn">usuarios</span>) }
+
+    <span class="cmt">// Services auxiliares</span>
+    <span class="fn">single</span> { <span class="ty">FileStorageService</span>() }
+    <span class="fn">single</span> { <span class="ty">EmailService</span>() }
+
+    <span class="cmt">// Services principais — get() resolve a dependência automaticamente</span>
+    <span class="fn">single</span> { <span class="ty">AuthService</span>(<span class="fn">get</span>(), <span class="fn">get</span>(), <span class="fn">get</span>()) }
+    <span class="fn">single</span> { <span class="ty">UsuarioService</span>(<span class="fn">get</span>(), <span class="fn">get</span>()) }
+    <span class="fn">single</span> { <span class="ty">PerfilService</span>(<span class="fn">get</span>()) }
+}</code></pre>
+
+    <h2 id="koin-single"><code>single</code> vs <code>factory</code></h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Declaração</th><th>Comportamento</th><th>Quando usar</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>single { ... }</code></td>
+            <td>Cria <strong>uma única instância</strong> compartilhada em toda a aplicação (Singleton)</td>
+            <td>Conexões de banco, configs, services sem estado mutável por requisição</td>
+          </tr>
+          <tr>
+            <td><code>factory { ... }</code></td>
+            <td>Cria uma <strong>nova instância a cada injeção</strong></td>
+            <td>Objetos que precisam ser isolados por requisição ou teste</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      A função <code>get()</code> dentro do módulo é o Koin resolvendo uma dependência registrada.
+      No <code>AuthService(get(), get(), get())</code>, o Koin injeta automaticamente
+      <code>UsuarioRepository</code>, <code>JwtConfig</code> e <code>EmailService</code> — na ordem dos parâmetros do construtor.
+    </p>
+
+    <div class="callout callout-concept">
+      <span class="callout-icon">💡</span>
+      <strong>Para usar um Service numa rota, faça assim:</strong>
+      <code>val authService: AuthService by inject()</code> — o Koin encontra e entrega a instância registrada em <code>appModule</code>.
+    </div>
+
+    <!-- ═══════════════════════════════ 6. JWT ═══════════════════════════════ -->
+    <h1 id="jwt"><span class="section-num">6</span> JwtConfig — Autenticação com Tokens</h1>
+
+    <h2 id="jwt-conceito">Como funciona o JWT</h2>
+
+    <p>
+      JWT (JSON Web Token) é um token compacto e auto-suficiente.
+      Ele contém <strong>claims</strong> (informações) sobre o usuário assinadas com uma chave secreta.
+      Como a assinatura é verificável, qualquer servidor com a mesma chave pode validar o token
+      <em>sem consultar o banco de dados a cada requisição</em>.
+    </p>
+
+    <div class="diagram">
+      <div class="diagram-box box-blue">Cliente<br>faz login</div>
+      <div class="diagram-arrow">→</div>
+      <div class="diagram-box box-green">API gera<br>Access + Refresh<br>tokens</div>
+      <div class="diagram-arrow">→</div>
+      <div class="diagram-box box-purple">Cliente envia<br>token no header<br><small>Authorization: Bearer …</small></div>
+      <div class="diagram-arrow">→</div>
+      <div class="diagram-box box-orange">API valida<br>a assinatura<br>e extrai o ID</div>
+    </div>
+
+    <h2 id="jwt-tokens">Access Token e Refresh Token</h2>
+
+    <pre><code class="file-label">config/JwtConfig.kt</code><span class="cmt">// Access Token — curta duração (15 minutos)</span>
+<span class="kw">fun</span> <span class="fn">generateAccessToken</span>(userId: <span class="ty">String</span>, papeis: <span class="ty">Set</span>&lt;<span class="ty">Papel</span>&gt;, instituicaoId: <span class="ty">String</span>?): <span class="ty">String</span> {
+    <span class="kw">return</span> JWT.<span class="fn">create</span>()
+        .<span class="fn">withClaim</span>(<span class="str">"id"</span>, userId)
+        .<span class="fn">withClaim</span>(<span class="str">"papeis"</span>, papeis.<span class="fn">map</span> { it.name })
+        .<span class="fn">withClaim</span>(<span class="str">"instituicaoId"</span>, instituicaoId)
+        .<span class="fn">withExpiresAt</span>(Date(System.<span class="fn">currentTimeMillis</span>() + Constants.JWT_ACCESS_EXPIRATION_MS))
+        .<span class="fn">sign</span>(algorithm)
+}
+
+<span class="cmt">// Refresh Token — longa duração (7 dias)</span>
+<span class="kw">fun</span> <span class="fn">generateRefreshToken</span>(userId: <span class="ty">String</span>): <span class="ty">String</span> {
+    <span class="kw">return</span> JWT.<span class="fn">create</span>()
+        .<span class="fn">withClaim</span>(<span class="str">"id"</span>, userId)
+        .<span class="fn">withClaim</span>(<span class="str">"type"</span>, <span class="str">"refresh"</span>)
+        .<span class="fn">withExpiresAt</span>(Date(System.<span class="fn">currentTimeMillis</span>() + Constants.JWT_REFRESH_EXPIRATION_MS))
+        .<span class="fn">sign</span>(algorithm)
+}</code></pre>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Token</th><th>Validade</th><th>Contém</th><th>Quando usar</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Access Token</strong></td>
+            <td>15 minutos</td>
+            <td>id, papeis, instituicaoId</td>
+            <td>Enviado em toda requisição protegida no header <code>Authorization</code></td>
+          </tr>
+          <tr>
+            <td><strong>Refresh Token</strong></td>
+            <td>7 dias</td>
+            <td>id, type="refresh"</td>
+            <td>Enviado ao endpoint <code>POST /auth/refresh</code> para obter um novo access token</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ═══════════════════════════════ 7. REPOSITORY ═══════════════════════════════ -->
+    <h1 id="repository"><span class="section-num">7</span> Repository — Acesso ao Banco</h1>
+
+    <h2 id="repo-interface">Interface — o Contrato</h2>
+
+    <p>
+      O padrão <strong>Repository</strong> separa a lógica de acesso a dados do resto da aplicação.
+      A <strong>interface</strong> define o contrato (o que pode ser feito), sem dizer como:
+    </p>
+
+    <pre><code class="file-label">repositories/UsuarioRepository.kt</code><span class="kw">interface</span> <span class="ty">UsuarioRepository</span> {
+    <span class="kw">fun</span> <span class="fn">findById</span>(id: <span class="ty">String</span>): <span class="ty">Usuario</span>?
+    <span class="kw">fun</span> <span class="fn">findByEmail</span>(email: <span class="ty">String</span>): <span class="ty">Usuario</span>?
+    <span class="kw">fun</span> <span class="fn">findAll</span>(page: <span class="ty">Int</span>, limit: <span class="ty">Int</span>, filters: <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">Any</span>?&gt;): <span class="ty">Pair</span>&lt;<span class="ty">List</span>&lt;<span class="ty">Usuario</span>&gt;, <span class="ty">Long</span>&gt;
+    <span class="kw">fun</span> <span class="fn">insert</span>(usuario: <span class="ty">Usuario</span>): <span class="ty">Usuario</span>
+    <span class="kw">fun</span> <span class="fn">update</span>(id: <span class="ty">String</span>, updates: <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">Any</span>?&gt;): <span class="ty">Boolean</span>
+    <span class="kw">fun</span> <span class="fn">delete</span>(id: <span class="ty">String</span>): <span class="ty">Boolean</span>
+    <span class="kw">fun</span> <span class="fn">findByTokenUnico</span>(token: <span class="ty">String</span>): <span class="ty">Usuario</span>?
+    <span class="kw">fun</span> <span class="fn">findByCodigoRecuperacao</span>(codigo: <span class="ty">String</span>): <span class="ty">Usuario</span>?
+}</code></pre>
+
+    <p>
+      O retorno de <code>findById</code> é <code>Usuario?</code> — nullable.
+      Isso força quem chama a tratar o caso em que o usuário não existe, em vez de explodir com um <code>NullPointerException</code>.
+    </p>
+
+    <h2 id="repo-impl">Implementação com KMongo</h2>
+
+    <pre><code class="file-label">repositories/UsuarioRepositoryImpl.kt</code><span class="kw">class</span> <span class="ty">UsuarioRepositoryImpl</span>(
+    <span class="kw">private val</span> collection: <span class="ty">MongoCollection</span>&lt;<span class="ty">Usuario</span>&gt;
+) : <span class="ty">UsuarioRepository</span> {
+
+    <span class="kw">override fun</span> <span class="fn">findById</span>(id: <span class="ty">String</span>) = collection.<span class="fn">findOneById</span>(id)
+
+    <span class="kw">override fun</span> <span class="fn">findByEmail</span>(email: <span class="ty">String</span>) =
+        collection.<span class="fn">findOne</span>(Usuario::email <span class="kw">eq</span> email.<span class="fn">lowercase</span>())
+
+    <span class="kw">override fun</span> <span class="fn">insert</span>(usuario: <span class="ty">Usuario</span>): <span class="ty">Usuario</span> {
+        collection.<span class="fn">insertOne</span>(usuario)
+        <span class="kw">return</span> usuario
+    }
+
+    <span class="kw">override fun</span> <span class="fn">update</span>(id: <span class="ty">String</span>, updates: <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">Any</span>?&gt;): <span class="ty">Boolean</span> {
+        <span class="kw">val</span> setUpdates = updates.<span class="fn">map</span> { (key, value) -> Updates.<span class="fn">set</span>(key, value) }
+        <span class="kw">val</span> result = collection.<span class="fn">updateOneById</span>(id, <span class="fn">combine</span>(setUpdates))
+        <span class="kw">return</span> result.modifiedCount &gt; <span class="num">0</span>
+    }
+}</code></pre>
+
+    <p>
+      Perceba que o KMongo permite usar a referência Kotlin do campo com <code>Usuario::email eq email</code>
+      em vez de strings mágicas como <code>"email" to email</code>. Isso evita erros de digitação no nome do campo.
+    </p>
+
+    <h2 id="repo-filtros">Filtros Dinâmicos</h2>
+
+    <p>
+      O método <code>buildFilters</code> constrói a query MongoDB a partir de um mapa de critérios.
+      Isso permite que a mesma listagem suporte vários filtros opcionais sem duplicar código:
+    </p>
+
+    <pre><code><span class="kw">private fun</span> <span class="fn">buildFilters</span>(filters: <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">Any</span>?&gt;): <span class="ty">List</span>&lt;Bson&gt; {
+    <span class="kw">return</span> filters.<span class="fn">mapNotNull</span> { (key, value) ->
+        <span class="kw">when</span> {
+            value == <span class="kw">null</span>         -> <span class="kw">null</span>          <span class="cmt">// ignora campo ausente</span>
+            key == <span class="str">"nome"</span>  -> Usuario::nome  <span class="kw">regex</span> Regex(<span class="str">".*$value.*"</span>, ...)
+            key == <span class="str">"email"</span> -> Usuario::email <span class="kw">regex</span> Regex(<span class="str">".*$value.*"</span>, ...)
+            key == <span class="str">"ativo"</span> -> Usuario::ativo <span class="kw">eq</span> (value <span class="kw">as</span> <span class="ty">Boolean</span>)
+            <span class="kw">else</span>                   -> <span class="kw">null</span>
+        }
+    }
+}</code></pre>
+
+    <!-- ═══════════════════════════════ 8. SERVICES ═══════════════════════════════ -->
+    <h1 id="service"><span class="section-num">8</span> Services — As Regras de Negócio</h1>
+
+    <p>
+      Os Services são o coração da aplicação. Eles <strong>não conhecem HTTP</strong> (nada de
+      <code>call.respond()</code> aqui) e <strong>não conhecem o banco</strong> diretamente (usam o Repository).
+      Sua única preocupação é a lógica de negócio.
+    </p>
+
+    <h2 id="service-auth">AuthService</h2>
+
+    <pre><code class="file-label">services/AuthService.kt</code><span class="kw">class</span> <span class="ty">AuthService</span>(
+    <span class="kw">private val</span> usuarioRepository: <span class="ty">UsuarioRepository</span>,  <span class="cmt">// interface, não a impl!</span>
+    <span class="kw">private val</span> jwtConfig: <span class="ty">JwtConfig</span>,
+    <span class="kw">private val</span> emailService: <span class="ty">EmailService</span>
+) {
+    <span class="kw">fun</span> <span class="fn">login</span>(request: <span class="ty">LoginRequest</span>): <span class="ty">TokenResponse</span> {
+        <span class="kw">val</span> usuario = usuarioRepository.<span class="fn">findByEmail</span>(request.email)
+            ?: <span class="kw">throw</span> <span class="ty">ApiException</span>(<span class="num">401</span>, <span class="str">"Credenciais inválidas"</span>)
+
+        <span class="kw">if</span> (!usuario.ativo) <span class="kw">throw</span> <span class="ty">ApiException</span>(<span class="num">403</span>, <span class="str">"Usuário desativado"</span>)
+
+        <span class="kw">if</span> (!PasswordUtils.<span class="fn">verifyPassword</span>(request.senha, usuario.senhaHash))
+            <span class="kw">throw</span> <span class="ty">ApiException</span>(<span class="num">401</span>, <span class="str">"Credenciais inválidas"</span>)
+
+        <span class="kw">val</span> accessToken = jwtConfig.<span class="fn">generateAccessToken</span>(...)
+        <span class="kw">val</span> refreshToken = jwtConfig.<span class="fn">generateRefreshToken</span>(...)
+
+        <span class="cmt">// Salva os tokens no banco para controle de sessão</span>
+        usuarioRepository.<span class="fn">update</span>(usuario.id!!, mapOf(
+            <span class="str">"accesstoken"</span> to accessToken,
+            <span class="str">"refreshtoken"</span> to refreshToken,
+            <span class="str">"ultimoLoginEm"</span> to Instant.<span class="fn">now</span>()
+        ))
+
+        <span class="kw">return</span> <span class="ty">TokenResponse</span>(accessToken, refreshToken, jwtConfig.<span class="fn">accessTokenExpiresAt</span>())
+    }
+}</code></pre>
+
+    <p>Perceba como as regras de negócio ficam claras:</p>
+    <ol>
+      <li>Busca o usuário pelo e-mail.</li>
+      <li>Verifica se ele existe — se não, lança <code>ApiException(401)</code>.</li>
+      <li>Verifica se está ativo.</li>
+      <li>Verifica a senha com BCrypt.</li>
+      <li>Gera os tokens e salva no banco.</li>
+    </ol>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <strong>Por que usamos a mesma mensagem para "usuário não encontrado" e "senha errada"?</strong>
+      Para não revelar ao atacante se o e-mail existe no sistema. Se a mensagem fosse
+      <em>"e-mail não cadastrado"</em>, um atacante poderia enumerar quais e-mails existem no banco.
+    </div>
+
+    <h2 id="service-usuario">UsuarioService</h2>
+
+    <p>Lida com as operações CRUD de usuários: listar, buscar por ID, atualizar, deletar e criar via instituição.</p>
+
+    <h2 id="service-perfil">PerfilService</h2>
+
+    <p>Lida com o "meu perfil" — editar nome/e-mail, trocar senha, fazer upload/remoção de avatar.</p>
+
+    <!-- ═══════════════════════════════ 9. PLUGINS ═══════════════════════════════ -->
+    <h1 id="plugins"><span class="section-num">9</span> Plugins Ktor</h1>
+
+    <p>
+      Plugins são extensões instaladas na aplicação Ktor via <code>install()</code>.
+      Eles interceptam todas as requisições e respostas, adicionando comportamentos globais.
+    </p>
+
+    <h2 id="plugin-json">ContentNegotiation — Serialização JSON</h2>
+
+    <pre><code class="file-label">plugins/ContentNegotiation.kt</code><span class="kw">fun</span> Application.<span class="fn">configureContentNegotiation</span>() {
+    install(ContentNegotiation) {
+        json(Json {
+            prettyPrint = <span class="kw">true</span>         <span class="cmt">// JSON indentado (mais legível)</span>
+            isLenient = <span class="kw">true</span>            <span class="cmt">// tolera JSON levemente mal-formado</span>
+            ignoreUnknownKeys = <span class="kw">true</span>    <span class="cmt">// ignora campos extras no request</span>
+            encodeDefaults = <span class="kw">true</span>       <span class="cmt">// inclui campos com valor default</span>
+            serializersModule = SerializersModule {
+                contextual(InstantSerializer)  <span class="cmt">// registra serializer de Instant</span>
+            }
+        })
+    }
+}</code></pre>
+
+    <p>
+      Sem este plugin, o Ktor não saberia converter objetos Kotlin para JSON e vice-versa.
+      <code>ignoreUnknownKeys = true</code> é especialmente útil quando o cliente envia campos extras
+      (como campos futuros) — a API não quebra.
+    </p>
+
+    <h2 id="plugin-cors">CORS</h2>
+
+    <pre><code class="file-label">plugins/CORS.kt</code>install(CORS) {
+    <span class="fn">anyHost</span>()                              <span class="cmt">// permite qualquer origem</span>
+    <span class="fn">allowHeader</span>(HttpHeaders.Authorization)  <span class="cmt">// permite o header JWT</span>
+    <span class="fn">allowMethod</span>(HttpMethod.Get)
+    <span class="fn">allowMethod</span>(HttpMethod.Post)
+    <span class="fn">allowMethod</span>(HttpMethod.Patch)
+    <span class="fn">allowMethod</span>(HttpMethod.Delete)
+}</code></pre>
+
+    <p>
+      CORS (Cross-Origin Resource Sharing) é uma política de segurança dos navegadores.
+      Sem este plugin, qualquer frontend hospedado em domínio diferente da API seria bloqueado pelo browser.
+    </p>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <strong><code>anyHost()</code> é para desenvolvimento!</strong>
+      Em produção, substitua por <code>allowHost("meuapp.com")</code> para permitir apenas origens conhecidas.
+    </div>
+
+    <h2 id="plugin-auth">Authentication — Validação JWT</h2>
+
+    <pre><code class="file-label">plugins/Authentication.kt</code><span class="kw">fun</span> Application.<span class="fn">configureAuthentication</span>(jwtConfig: <span class="ty">JwtConfig</span>) {
+    install(Authentication) {
+        jwt(<span class="str">"auth-jwt"</span>) {
+            realm = jwtConfig.realm
+            <span class="fn">verifier</span>(jwtConfig.verifier)   <span class="cmt">// valida a assinatura</span>
+            <span class="fn">validate</span> { credential ->
+                <span class="kw">val</span> userId = credential.payload.<span class="fn">getClaim</span>(<span class="str">"id"</span>).<span class="fn">asString</span>()
+                <span class="kw">if</span> (userId != <span class="kw">null</span>) <span class="ty">JWTPrincipal</span>(credential.payload)
+                <span class="kw">else null</span>
+            }
+            <span class="fn">challenge</span> { _, _ ->
+                call.<span class="fn">respond</span>(Unauthorized, ApiResponse.<span class="fn">error</span>&lt;<span class="ty">Any</span>&gt;(<span class="str">"Token inválido ou ausente"</span>))
+            }
+        }
+    }
+}</code></pre>
+
+    <p>
+      Este plugin registra o esquema de autenticação <code>"auth-jwt"</code>.
+      Para proteger uma rota, você adiciona <code>authenticate("auth-jwt") { ... }</code> ao redor dela.
+      O Ktor verifica o token automaticamente — se inválido, a função <code>challenge</code> responde com 401.
+    </p>
+
+    <h2 id="plugin-authz">Authorization — Controle de Papéis</h2>
+
+    <pre><code class="file-label">plugins/Authorization.kt</code><span class="kw">fun</span> Route.<span class="fn">authorize</span>(<span class="kw">vararg</span> papeis: <span class="ty">Papel</span>, build: Route.() -> Unit): Route {
+    <span class="kw">val</span> route = <span class="fn">createChild</span>(<span class="ty">AuthorizationRouteSelector</span>())
+
+    route.<span class="fn">intercept</span>(ApplicationCallPipeline.Call) {
+        <span class="kw">val</span> userPapeis = call.<span class="fn">currentUserPapeis</span>()
+        <span class="kw">if</span> (userPapeis.<span class="fn">none</span> { it <span class="kw">in</span> papeis }) {
+            call.<span class="fn">respond</span>(Forbidden, ApiResponse.<span class="fn">error</span>&lt;<span class="ty">Any</span>&gt;(<span class="str">"Acesso negado"</span>))
+            <span class="fn">finish</span>()
+        }
+    }
+
+    route.<span class="fn">build</span>()
+    <span class="kw">return</span> route
+}</code></pre>
+
+    <p>
+      Este é um plugin <em>customizado</em> (não é nativo do Ktor).
+      Ele cria uma camada de autorização baseada em papéis. Uso nas rotas:
+    </p>
+
+    <pre><code><span class="fn">authenticate</span>(<span class="str">"auth-jwt"</span>) {
+    <span class="fn">authorize</span>(Papel.ADMIN_PLATAFORMA) {
+        get(<span class="str">"/admin/dashboard"</span>) { <span class="cmt">/* apenas admins chegam aqui */</span> }
+    }
+}</code></pre>
+
+    <div class="callout callout-concept">
+      <span class="callout-icon">💡</span>
+      <strong>Diferença entre Authentication e Authorization:</strong><br>
+      <strong>Authentication</strong> (Autenticação) = "quem é você?" — verifica o token JWT.<br>
+      <strong>Authorization</strong> (Autorização) = "o que você pode fazer?" — verifica os papéis.
+    </div>
+
+    <h2 id="plugin-status">StatusPages — Tratamento Centralizado de Erros</h2>
+
+    <pre><code class="file-label">plugins/StatusPages.kt</code>install(StatusPages) {
+    <span class="fn">exception</span>&lt;<span class="ty">ApiException</span>&gt; { call, cause ->
+        call.<span class="fn">respond</span>(
+            HttpStatusCode.<span class="fn">fromValue</span>(cause.statusCode),
+            ApiResponse.<span class="fn">error</span>&lt;<span class="ty">Any</span>&gt;(cause.message, cause.errors)
+        )
+    }
+    <span class="fn">exception</span>&lt;<span class="ty">Exception</span>&gt; { call, cause ->
+        call.<span class="fn">respond</span>(InternalServerError, ApiResponse.<span class="fn">error</span>&lt;<span class="ty">Any</span>&gt;(<span class="str">"Erro interno"</span>))
+    }
+}</code></pre>
+
+    <p>
+      Sem este plugin, qualquer exceção não tratada derrubaria a requisição com uma resposta em branco.
+      Com o <code>StatusPages</code>, <strong>qualquer</strong> <code>throw ApiException(404, "Não encontrado")</code>
+      lançado em qualquer camada é capturado aqui e retorna um JSON padronizado.
+    </p>
+
+    <p>
+      <code>ApiException</code> é nossa exceção customizada:
+    </p>
+
+    <pre><code class="file-label">plugins/ApiException.kt</code><span class="kw">class</span> <span class="ty">ApiException</span>(
+    <span class="kw">val</span> statusCode: <span class="ty">Int</span>,
+    <span class="kw">override val</span> message: <span class="ty">String</span>,
+    <span class="kw">val</span> errors: <span class="ty">List</span>&lt;<span class="ty">String</span>&gt;? = <span class="kw">null</span>
+) : <span class="ty">RuntimeException</span>(message)</code></pre>
+
+    <h2 id="plugin-swagger">Swagger — Documentação Interativa</h2>
+
+    <p>
+      O plugin Swagger serve uma interface visual para testar todos os endpoints da API
+      acessando <code>http://localhost:7351/api-docs</code>. A documentação é gerada
+      a partir do arquivo <code>src/main/resources/openapi/documentation.json</code>.
+    </p>
+
+    <!-- ═══════════════════════════════ 10. DTOS ═══════════════════════════════ -->
+    <h1 id="dtos"><span class="section-num">10</span> DTOs — Objetos de Transferência de Dados</h1>
+
+    <p>
+      DTO (Data Transfer Object) é uma classe que define exatamente quais campos
+      entram ou saem pela API em cada endpoint específico.
+      É a camada de contrato entre o cliente e a API.
+    </p>
+
+    <h2 id="dtos-request">Requests</h2>
+
+    <pre><code class="file-label">dtos/request/AuthRequests.kt</code><span class="ann">@Serializable</span>
+<span class="kw">data class</span> <span class="ty">LoginRequest</span>(
+    <span class="kw">val</span> email: <span class="ty">String</span>,
+    <span class="kw">val</span> senha: <span class="ty">String</span>
+)
+
+<span class="ann">@Serializable</span>
+<span class="kw">data class</span> <span class="ty">RegisterRequest</span>(
+    <span class="kw">val</span> nome: <span class="ty">String</span>,
+    <span class="kw">val</span> email: <span class="ty">String</span>,
+    <span class="kw">val</span> senha: <span class="ty">String</span>
+)</code></pre>
+
+    <p>
+      O cliente HTTP envia um JSON com esses campos. O Ktor desserializa para a <code>data class</code>
+      via <code>call.receive&lt;LoginRequest&gt;()</code> na rota.
+    </p>
+
+    <h2 id="dtos-response">Responses e ApiResponse</h2>
+
+    <pre><code class="file-label">dtos/response/ApiResponse.kt</code><span class="ann">@Serializable</span>
+<span class="kw">data class</span> <span class="ty">ApiResponse</span>&lt;T&gt;(
+    <span class="kw">val</span> success: <span class="ty">Boolean</span>,
+    <span class="kw">val</span> data: T? = <span class="kw">null</span>,
+    <span class="kw">val</span> message: <span class="ty">String</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> errors: <span class="ty">List</span>&lt;<span class="ty">String</span>&gt;? = <span class="kw">null</span>
+) {
+    <span class="kw">companion object</span> {
+        <span class="kw">fun</span> &lt;T&gt; <span class="fn">success</span>(data: T, message: <span class="ty">String</span>? = <span class="kw">null</span>) =
+            ApiResponse(success = <span class="kw">true</span>, data = data, message = message)
+
+        <span class="kw">fun</span> &lt;T&gt; <span class="fn">error</span>(message: <span class="ty">String</span>, errors: <span class="ty">List</span>&lt;<span class="ty">String</span>&gt;? = <span class="kw">null</span>) =
+            ApiResponse&lt;T&gt;(success = <span class="kw">false</span>, message = message, errors = errors)
+    }
+}</code></pre>
+
+    <p>
+      <code>ApiResponse&lt;T&gt;</code> é um wrapper genérico que padroniza <strong>todas</strong> as respostas da API.
+      Independente de ser login, listagem ou erro, o cliente sempre recebe o mesmo envelope:
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Situação</th><th>JSON retornado</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Sucesso com dado</td>
+            <td><code>{"success": true, "data": {...}, "message": "OK"}</code></td>
+          </tr>
+          <tr>
+            <td>Erro de negócio</td>
+            <td><code>{"success": false, "message": "Credenciais inválidas"}</code></td>
+          </tr>
+          <tr>
+            <td>Erro de validação</td>
+            <td><code>{"success": false, "message": "Dados inválidos", "errors": ["Campo nome é obrigatório"]}</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ═══════════════════════════════ 11. UTILS ═══════════════════════════════ -->
+    <h1 id="utils"><span class="section-num">11</span> Utilitários</h1>
+
+    <h2 id="utils-constants">Constants</h2>
+
+    <p>
+      Centraliza todos os "números mágicos" e strings repetidas. Em vez de escrever
+      <code>"usuarios"</code> em vários lugares (e um dia errar a grafia), usamos
+      <code>Constants.COLLECTION_USUARIOS</code>.
+    </p>
+
+    <pre><code class="file-label">utils/Constants.kt</code><span class="kw">object</span> <span class="ty">Constants</span> {
+    <span class="kw">const val</span> COLLECTION_USUARIOS = <span class="str">"usuarios"</span>
+
+    <span class="kw">const val</span> JWT_ACCESS_EXPIRATION_MS  = <span class="num">15</span> * <span class="num">60</span> * <span class="num">1000L</span>         <span class="cmt">// 15 min</span>
+    <span class="kw">const val</span> JWT_REFRESH_EXPIRATION_MS = <span class="num">7</span> * <span class="num">24</span> * <span class="num">60</span> * <span class="num">60</span> * <span class="num">1000L</span>  <span class="cmt">// 7 dias</span>
+
+    <span class="kw">const val</span> PAGE_DEFAULT  = <span class="num">1</span>
+    <span class="kw">const val</span> LIMIT_DEFAULT = <span class="num">10</span>
+    <span class="kw">const val</span> LIMIT_MAX     = <span class="num">100</span>
+
+    <span class="kw">const val</span> AVATAR_MAX_SIZE = <span class="num">5L</span> * <span class="num">1024</span> * <span class="num">1024</span>  <span class="cmt">// 5 MB</span>
+}</code></pre>
+
+    <h2 id="utils-extensions">Extensions — Atalhos para a Requisição JWT</h2>
+
+    <pre><code class="file-label">utils/Extensions.kt</code><span class="cmt">// Retorna o ID do usuário do token JWT</span>
+<span class="kw">fun</span> ApplicationCall.<span class="fn">currentUserId</span>(): <span class="ty">String</span>? =
+    principal&lt;<span class="ty">JWTPrincipal</span>&gt;()?.payload?.<span class="fn">getClaim</span>(<span class="str">"id"</span>)?.<span class="fn">asString</span>()
+
+<span class="cmt">// Retorna os papéis do usuário do token JWT</span>
+<span class="kw">fun</span> ApplicationCall.<span class="fn">currentUserPapeis</span>(): <span class="ty">Set</span>&lt;<span class="ty">Papel</span>&gt; { ... }
+
+<span class="cmt">// Verifica se o usuário tem ao menos um papel</span>
+<span class="kw">fun</span> ApplicationCall.<span class="fn">hasAnyRole</span>(<span class="kw">vararg</span> papeis: <span class="ty">Papel</span>): <span class="ty">Boolean</span> { ... }</code></pre>
+
+    <p>
+      Funções de extensão permitem adicionar métodos a classes existentes sem modificá-las.
+      Nas rotas, em vez de repetir o código de extração do JWT, você apenas chama:
+      <code>val userId = call.currentUserId()</code>
+    </p>
+
+    <h2 id="utils-pagination">PaginationUtils</h2>
+
+    <pre><code class="file-label">utils/PaginationUtils.kt</code><span class="cmt">// Extrai page e limit da query string da URL</span>
+<span class="kw">fun</span> ApplicationCall.<span class="fn">parsePagination</span>(): <span class="ty">PaginationParams</span> {
+    <span class="kw">val</span> page  = request.queryParameters[<span class="str">"page"</span>]?.<span class="fn">toIntOrNull</span>()  ?: <span class="num">1</span>
+    <span class="kw">val</span> limit = request.queryParameters[<span class="str">"limit"</span>]?.<span class="fn">toIntOrNull</span>() ?: <span class="num">10</span>
+    <span class="kw">return</span> <span class="ty">PaginationParams</span>(page, limit)
+}
+
+<span class="cmt">// Constrói o objeto de resposta paginada</span>
+<span class="kw">fun</span> &lt;T&gt; <span class="fn">buildPaginatedResponse</span>(docs: <span class="ty">List</span>&lt;T&gt;, totalDocs: <span class="ty">Long</span>, pagination: <span class="ty">PaginationParams</span>)</code></pre>
+
+    <p>
+      Toda listagem usa esta abstração. Na rota, basta:
+    </p>
+    <pre><code><span class="kw">val</span> pagination = call.<span class="fn">parsePagination</span>()
+<span class="kw">val</span> (lista, total) = service.<span class="fn">listar</span>(pagination.page, pagination.limit)
+<span class="kw">val</span> resposta = <span class="fn">buildPaginatedResponse</span>(lista, total, pagination)</code></pre>
+
+    <h2 id="utils-password">PasswordUtils</h2>
+
+    <pre><code class="file-label">utils/PasswordUtils.kt</code><span class="kw">object</span> <span class="ty">PasswordUtils</span> {
+    <span class="kw">fun</span> <span class="fn">hashPassword</span>(plain: <span class="ty">String</span>): <span class="ty">String</span> =
+        BCrypt.<span class="fn">hashpw</span>(plain, BCrypt.<span class="fn">gensalt</span>(<span class="num">12</span>))
+
+    <span class="kw">fun</span> <span class="fn">verifyPassword</span>(plain: <span class="ty">String</span>, hashed: <span class="ty">String</span>): <span class="ty">Boolean</span> =
+        BCrypt.<span class="fn">checkpw</span>(plain, hashed)
+}</code></pre>
+
+    <p>
+      BCrypt é um algoritmo de hash especial para senhas. Diferente de MD5 ou SHA,
+      ele é <strong>propositalmente lento</strong> e inclui <em>salt</em> automático,
+      tornando ataques de força bruta impraticáveis. O número <code>12</code> é o "fator de custo".
+    </p>
+
+    <div class="callout callout-danger">
+      <span class="callout-icon">🚫</span>
+      <strong>Nunca armazene senhas em texto puro!</strong>
+      Sempre use <code>PasswordUtils.hashPassword()</code> ao salvar e <code>PasswordUtils.verifyPassword()</code>
+      ao comparar. Nunca compare strings diretamente.
+    </div>
+
+    <!-- ═══════════════════════════════ 12. AGORA ROTAS ═══════════════════════════════ -->
+    <h1 id="rotas"><span class="section-num">12</span> Agora Sim: As Rotas</h1>
+
+    <p>
+      Com toda a infraestrutura montada, uma rota se torna muito simples.
+      Ela apenas recebe a requisição, delega ao Service e retorna a resposta:
+    </p>
+
+    <pre><code class="file-label">routes/AuthRoutes.kt (simplificado)</code><span class="kw">fun</span> Route.<span class="fn">authRoutes</span>() {
+    <span class="kw">val</span> authService: <span class="ty">AuthService</span> <span class="kw">by</span> <span class="fn">inject</span>()   <span class="cmt">// Koin entrega a instância</span>
+
+    route(<span class="str">"/auth"</span>) {
+        post(<span class="str">"/login"</span>) {
+            <span class="kw">val</span> request = call.<span class="fn">receive</span>&lt;<span class="ty">LoginRequest</span>&gt;()  <span class="cmt">// DTO entra</span>
+            <span class="kw">val</span> tokens  = authService.<span class="fn">login</span>(request)    <span class="cmt">// service faz o trabalho</span>
+            call.<span class="fn">respond</span>(OK, ApiResponse.<span class="fn">success</span>(tokens)) <span class="cmt">// resposta padronizada</span>
+        }
+
+        authenticate(<span class="str">"auth-jwt"</span>) {        <span class="cmt">// protege com JWT</span>
+            post(<span class="str">"/logout"</span>) {
+                <span class="kw">val</span> userId = call.<span class="fn">currentUserId</span>()!!  <span class="cmt">// extensão JWT</span>
+                authService.<span class="fn">logout</span>(userId)
+                call.<span class="fn">respond</span>(OK, ApiResponse.<span class="fn">success</span>(<span class="kw">null</span>, <span class="str">"Logout realizado"</span>))
+            }
+        }
+    }
+}</code></pre>
+
+    <p>A rota não sabe:</p>
+    <ul>
+      <li>onde os dados estão armazenados (responsabilidade do Repository)</li>
+      <li>como o hash de senha funciona (responsabilidade do PasswordUtils via Service)</li>
+      <li>como o JWT é gerado (responsabilidade do JwtConfig via Service)</li>
+    </ul>
+    <p>Ela só sabe: <strong>receber, delegar, responder</strong>.</p>
+
+    <h2 id="checklist">Checklist — O que precisa existir antes de criar uma rota</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>✅</th><th>O que precisa existir</th><th>Arquivo(s)</th></tr></thead>
+        <tbody>
+          <tr><td>✅</td><td>Model da entidade (<code>@Serializable data class</code>)</td><td><code>models/MinhaEntidade.kt</code></td></tr>
+          <tr><td>✅</td><td>Coleção no MongoConfig</td><td><code>config/MongoConfig.kt</code></td></tr>
+          <tr><td>✅</td><td>Constante da coleção</td><td><code>utils/Constants.kt</code></td></tr>
+          <tr><td>✅</td><td>Interface do Repository</td><td><code>repositories/MinhaEntidadeRepository.kt</code></td></tr>
+          <tr><td>✅</td><td>Implementação do Repository</td><td><code>repositories/MinhaEntidadeRepositoryImpl.kt</code></td></tr>
+          <tr><td>✅</td><td>Service com as regras de negócio</td><td><code>services/MinhaEntidadeService.kt</code></td></tr>
+          <tr><td>✅</td><td>DTOs de request e response</td><td><code>dtos/request/</code>, <code>dtos/response/</code></td></tr>
+          <tr><td>✅</td><td>Registro no Koin</td><td><code>config/KoinModules.kt</code></td></tr>
+          <tr><td>✅</td><td>Rota conectada no Application.kt</td><td><code>Application.kt</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-success">
+      <span class="callout-icon">✅</span>
+      <strong>Resumo do que aprendemos</strong>
+      <p>Uma API bem estruturada em Ktor segue as camadas: <b>Model → Repository → Service → Routes</b>, sustentadas por <b>Config</b> (Mongo, JWT, Koin), <b>Plugins</b> (JSON, CORS, Auth, StatusPages) e <b>Utils</b> (Constants, Extensions, Pagination, PasswordUtils). Cada camada tem uma responsabilidade e só se comunica com a camada imediatamente abaixo. Quando toda essa infraestrutura está pronta, criar uma nova rota se torna simples e previsível.</p>
+    </div>
+
+  </main>
+</div>
+
+</body>
+</html>

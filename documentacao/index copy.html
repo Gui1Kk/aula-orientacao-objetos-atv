@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentação — FilaCidadã API</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            color: #1a1a2e;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            max-width: 720px;
+            width: 100%;
+            padding: 2.5rem;
+        }
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: .5rem;
+            color: #16213e;
+        }
+        .subtitle {
+            color: #6c757d;
+            margin-bottom: 2rem;
+            font-size: .95rem;
+        }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06);
+            padding: 1.5rem 1.75rem;
+            margin-bottom: 1rem;
+            text-decoration: none;
+            display: block;
+            transition: transform .15s, box-shadow .15s;
+            border: 1px solid #e9ecef;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,.1);
+        }
+        .card h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0d6efd;
+            margin-bottom: .35rem;
+        }
+        .card p {
+            font-size: .875rem;
+            color: #6c757d;
+            line-height: 1.5;
+        }
+        .badge {
+            display: inline-block;
+            font-size: .7rem;
+            font-weight: 600;
+            padding: .2rem .55rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: .5rem;
+        }
+        .badge-spec { background: #e8f4fd; color: #0d6efd; }
+        .badge-tutorial { background: #e8fdf0; color: #198754; }
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: .8rem;
+            color: #adb5bd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📄 Documentação</h1>
+        <p class="subtitle">FilaCidadã API — Materiais disponíveis</p>
+
+        <a class="card" href="Especificacao_Tecnica_API_Kotlin.html">
+            <span class="badge badge-spec">Especificação</span>
+            <h2>Especificação Técnica da API</h2>
+            <p>Documento completo com todos os endpoints, modelos de dados, regras de negócio e fluxos da API FilaCidadã em Kotlin/Ktor.</p>
+        </a>
+
+        <a class="card" href="Tutorial_Estrutura_API_Ktor.html">
+            <span class="badge badge-tutorial">Tutorial</span>
+            <h2>Tutorial — Estrutura da API Ktor</h2>
+            <p>Passo a passo para criar endpoints RESTful usando Ktor, incluindo configuração, roteamento, tratamento de requisições e respostas.</p>
+        </a>
+
+        <a class="card" href="parte 1 - Classes_e_Repositorios_Kotlin.html">
+            <span class="badge badge-tutorial">Tutorial - Parte 1</span>
+            <h2>Classes e Repositórios em Kotlin</h2>
+            <p>Material de aula sobre orientação a objetos, classes, data classes, herança, interfaces e padrão Repository com exercícios práticos.</p>
+        </a>
+
+        <a class="card" href="parte 2 - Services_e_Regras_de_Negocio_Kotlin.html">
+            <span class="badge badge-tutorial">Tutorial - Parte 2</span>
+            <h2>Services e Regras de Negócio em Kotlin</h2>
+            <p>Implementação da camada de serviços, lógica de negócio, validações e integração entre camadas da aplicação.</p>
+        </a>
+
+        <footer>FilaCidadã &copy; 2026</footer>
+    </div>
+</body>
+</html>

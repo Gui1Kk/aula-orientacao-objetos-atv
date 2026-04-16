@@ -1,0 +1,88 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║  FilaCidadã API — Docker Compose                            ║
+# ║                                                              ║
+# ║  Serviços:                                                   ║
+# ║    api    → Ktor/Netty na porta 7351                         ║
+# ║    mongo  → MongoDB 7 local (desabilitado por padrão quando  ║
+# ║             MONGO_URI aponta para Atlas)                     ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+services:
+
+  # ── API ─────────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: filacidada-api
+    restart: unless-stopped
+    ports:
+      - "${PORT:-7351}:${PORT:-7351}"
+    environment:
+      # ── Servidor ──
+      PORT: ${PORT:-7351}
+
+      # ── MongoDB ──
+      # Para usar o MongoDB local (serviço "mongo" abaixo), comente
+      # a linha MONGO_URI do .env e deixe a linha abaixo ativa:
+      # MONGO_URI: mongodb://mongo:27017/${MONGO_DB:-filacidada}
+      MONGO_URI: ${MONGO_URI:-mongodb://mongo:27017/filacidada}
+      MONGO_DB:  ${MONGO_DB:-filacidada}
+
+      # ── JWT ──
+      JWT_SECRET: ${JWT_SECRET}
+
+      # ── E-mail ──
+      MAIL_ENABLED:  ${MAIL_ENABLED:-false}
+      MAIL_HOST:     ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT:     ${MAIL_PORT:-587}
+      MAIL_USER:     ${MAIL_USER:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_FROM:     ${MAIL_FROM:-}
+      MAIL_TLS:      ${MAIL_TLS:-true}
+
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - filacidada-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:${PORT:-7351}/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ── MongoDB local ────────────────────────────────────────────────
+  # Remove este serviço e o "depends_on" acima se usar MongoDB Atlas.
+  mongo:
+    image: mongo:7-jammy
+    container_name: filacidada-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"   # remova ou comente em produção
+    environment:
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-filacidada}
+    volumes:
+      - mongo-data:/data/db
+      - mongo-config:/data/configdb
+    networks:
+      - filacidada-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+# ── Volumes ─────────────────────────────────────────────────────────
+volumes:
+  mongo-data:
+    driver: local
+  mongo-config:
+    driver: local
+
+# ── Rede ────────────────────────────────────────────────────────────
+networks:
+  filacidada-net:
+    driver: bridge

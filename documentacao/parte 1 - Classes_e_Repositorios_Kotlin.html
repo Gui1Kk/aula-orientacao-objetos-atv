@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tutorial – Classes e Repositórios em Kotlin</title>
+  <style>
+    :root {
+      --primary: #1e3a5f;
+      --primary-light: #2a5298;
+      --accent: #0ea5e9;
+      --accent-light: #e0f2fe;
+      --success: #10b981;
+      --success-light: #d1fae5;
+      --warning: #f59e0b;
+      --warning-light: #fef3c7;
+      --danger: #ef4444;
+      --purple: #7c3aed;
+      --purple-light: #ede9fe;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-300: #cbd5e1;
+      --gray-400: #94a3b8;
+      --gray-500: #64748b;
+      --gray-600: #475569;
+      --gray-700: #334155;
+      --gray-800: #1e293b;
+      --gray-900: #0f172a;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+      --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: var(--gray-800);
+      background: var(--gray-50);
+      line-height: 1.75;
+    }
+
+    /* ── HEADER ── */
+    .doc-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: #fff;
+      padding: 3rem 2rem 2.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .doc-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--success), var(--purple));
+    }
+    .doc-header h1 { font-size: 2rem; font-weight: 700; margin-bottom: .5rem; color: #fff; }
+    .doc-header .subtitle { font-size: .95rem; opacity: .85; max-width: 700px; margin: 0 auto; }
+    .badges { margin-top: 1rem; display: flex; gap: .6rem; justify-content: center; flex-wrap: wrap; }
+    .badge {
+      display: inline-block;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
+      padding: .25rem .8rem;
+      border-radius: 999px;
+      font-size: .78rem;
+      letter-spacing: .3px;
+    }
+
+    /* ── LAYOUT ── */
+    .wrapper { display: flex; max-width: 1400px; margin: 0 auto; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 290px;
+      min-width: 290px;
+      background: #fff;
+      border-right: 1px solid var(--gray-200);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 1.5rem 0;
+      font-size: .84rem;
+      scrollbar-width: thin;
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 4px; }
+    .toc-title {
+      padding: 0 1.5rem .8rem;
+      font-weight: 700;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--gray-400);
+    }
+    .toc-section {
+      padding: .5rem 1.5rem .2rem;
+      font-weight: 700;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--gray-400);
+      margin-top: .4rem;
+    }
+    .sidebar a {
+      display: block;
+      padding: .35rem 1.5rem;
+      color: var(--gray-600);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: all .15s;
+      line-height: 1.4;
+    }
+    .sidebar a:hover { color: var(--primary); background: var(--gray-50); border-left-color: var(--accent); }
+    .sidebar a.toc-h1 { font-weight: 600; color: var(--gray-800); padding-top: .5rem; }
+    .sidebar a.toc-h2 { padding-left: 2.2rem; font-size: .8rem; }
+    .sidebar a.toc-h3 { padding-left: 3rem; font-size: .77rem; color: var(--gray-500); }
+
+    /* ── CONTENT ── */
+    .content { flex: 1; min-width: 0; padding: 2.5rem 3rem 5rem; max-width: 900px; }
+
+    /* ── HEADINGS ── */
+    h1 {
+      font-size: 1.65rem;
+      color: var(--primary);
+      margin: 3rem 0 1rem;
+      padding-bottom: .6rem;
+      border-bottom: 2px solid var(--gray-200);
+      scroll-margin-top: 1rem;
+    }
+    h1:first-of-type { margin-top: 0; }
+    h2 {
+      font-size: 1.2rem;
+      color: var(--primary-light);
+      margin: 2.2rem 0 .8rem;
+      scroll-margin-top: 1rem;
+    }
+    h3 {
+      font-size: 1.05rem;
+      color: var(--gray-700);
+      margin: 1.8rem 0 .6rem;
+      scroll-margin-top: 1rem;
+    }
+    h4 { font-size: .95rem; font-weight: 700; color: var(--gray-600); margin: 1.4rem 0 .5rem; }
+
+    .section-num {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      font-size: .72rem;
+      padding: .15rem .5rem;
+      border-radius: 4px;
+      margin-right: .5rem;
+      vertical-align: middle;
+    }
+    .step-num {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: .72rem;
+      padding: .15rem .5rem;
+      border-radius: 999px;
+      margin-right: .5rem;
+      vertical-align: middle;
+      min-width: 1.6rem;
+      text-align: center;
+    }
+
+    p { margin: .7rem 0; }
+    ul, ol { margin: .5rem 0 .8rem 1.6rem; }
+    li { margin: .35rem 0; }
+    li::marker { color: var(--accent); }
+
+    /* ── CODE ── */
+    code {
+      font-family: 'SFMono-Regular', 'Consolas', monospace;
+      font-size: .85em;
+      background: var(--gray-100);
+      padding: .15em .45em;
+      border-radius: 4px;
+      color: var(--primary-light);
+    }
+    pre {
+      background: #0d1117;
+      color: #e6edf3;
+      padding: 1.3rem 1.6rem;
+      border-radius: var(--radius);
+      overflow-x: auto;
+      margin: 1rem 0;
+      font-size: .85rem;
+      line-height: 1.7;
+      box-shadow: var(--shadow-md);
+      position: relative;
+    }
+    pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+
+    /* Kotlin syntax highlight colors */
+    .kw  { color: #ff7b72; }   /* keywords: class, fun, val, var, etc */
+    .ty  { color: #79c0ff; }   /* types: String, Int, Boolean, etc */
+    .str { color: #a5d6ff; }   /* strings */
+    .ann { color: #f2cc60; }   /* annotations @Serializable etc */
+    .cmt { color: #8b949e; font-style: italic; }   /* comments */
+    .fn  { color: #d2a8ff; }   /* function names */
+    .num { color: #ffa657; }   /* numbers */
+    .op  { color: #ff7b72; }   /* operators */
+
+    /* file label */
+    pre .file-label {
+      position: absolute;
+      top: .5rem; right: .8rem;
+      font-size: .72rem;
+      color: var(--gray-500);
+      background: var(--gray-800);
+      padding: .1rem .5rem;
+      border-radius: 3px;
+    }
+
+    /* ── CALLOUTS ── */
+    .callout {
+      border-radius: var(--radius);
+      padding: 1rem 1.3rem;
+      margin: 1.2rem 0;
+      font-size: .92rem;
+      border-left: 4px solid;
+    }
+    .callout-icon { font-size: 1.1em; margin-right: .4rem; }
+    .callout strong { display: block; margin-bottom: .3rem; }
+    .callout-info    { background: var(--accent-light);   border-color: var(--accent);   color: #0c4a6e; }
+    .callout-success { background: var(--success-light);  border-color: var(--success);  color: #064e3b; }
+    .callout-warn    { background: var(--warning-light);  border-color: var(--warning);  color: #78350f; }
+    .callout-concept { background: var(--purple-light);   border-color: var(--purple);   color: #3b0764; }
+
+    /* ── TABLES ── */
+    .table-wrap { overflow-x: auto; margin: 1rem 0; border-radius: var(--radius); box-shadow: var(--shadow); }
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; background: #fff; }
+    thead { background: var(--primary); color: #fff; }
+    thead th { padding: .7rem .85rem; text-align: left; font-size: .82rem; }
+    tbody tr { border-bottom: 1px solid var(--gray-100); }
+    tbody tr:nth-child(even) { background: var(--gray-50); }
+    tbody tr:hover { background: var(--accent-light); }
+    tbody td { padding: .6rem .85rem; vertical-align: top; }
+
+    /* ── DIAGRAM BOXES ── */
+    .diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: wrap;
+      margin: 1.5rem 0;
+      padding: 1.5rem;
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .diagram-box {
+      border-radius: var(--radius);
+      padding: .8rem 1.4rem;
+      font-weight: 600;
+      font-size: .88rem;
+      text-align: center;
+      min-width: 120px;
+    }
+    .box-blue   { background: #dbeafe; color: #1d4ed8; border: 2px solid #93c5fd; }
+    .box-green  { background: var(--success-light); color: #065f46; border: 2px solid #6ee7b7; }
+    .box-purple { background: var(--purple-light); color: #5b21b6; border: 2px solid #c4b5fd; }
+    .box-orange { background: #ffedd5; color: #9a3412; border: 2px solid #fdba74; }
+    .diagram-arrow {
+      padding: 0 .7rem;
+      color: var(--gray-400);
+      font-size: 1.4rem;
+      font-weight: 300;
+    }
+
+    /* ── STEP CARD ── */
+    .step-card {
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 1.2rem 1.6rem;
+      margin: 1rem 0;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+    .step-card h3 { margin-top: 0; }
+
+    /* ── QUIZ / EXERCICIO ── */
+    .exercise {
+      background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+      border: 1px solid #7dd3fc;
+      border-radius: var(--radius);
+      padding: 1.2rem 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .exercise h4 { color: #0369a1; margin-top: 0; margin-bottom: .5rem; }
+
+    /* ── COMPARISON ── */
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    .comparison-item { }
+    .comparison-label {
+      font-size: .78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: .3rem;
+      padding: .2rem .6rem;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .label-bad  { background: #fee2e2; color: #b91c1c; }
+    .label-good { background: var(--success-light); color: #065f46; }
+
+    /* ── UML-LIKE CLASS BOX ── */
+    .uml-box {
+      border: 2px solid var(--primary);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin: 1rem auto;
+      max-width: 500px;
+      font-size: .88rem;
+      box-shadow: var(--shadow-md);
+    }
+    .uml-header {
+      background: var(--primary);
+      color: #fff;
+      padding: .5rem 1rem;
+      font-weight: 700;
+      text-align: center;
+    }
+    .uml-header small { font-weight: 400; opacity: .75; display: block; font-size: .78em; }
+    .uml-section { border-top: 1px solid var(--gray-200); }
+    .uml-section-title {
+      background: var(--gray-100);
+      padding: .3rem 1rem;
+      font-size: .78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--gray-500);
+    }
+    .uml-item {
+      padding: .3rem 1.2rem;
+      border-bottom: 1px dotted var(--gray-200);
+    }
+    .uml-item:last-child { border-bottom: none; }
+    .uml-item code { font-size: .82em; }
+
+    /* ── BADGE DE ENTREGA ── */
+    .entrega-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      margin-top: 1.1rem;
+      padding: .35rem 1rem;
+      border-radius: 999px;
+      font-size: .80rem;
+      font-weight: 700;
+      letter-spacing: .3px;
+    }
+    .entrega-repo { background: #dcfce7; color: #14532d; border: 1px solid #86efac; }
+    .entrega-pdf  { background: #fee2e2; color: #7f1d1d; border: 1px solid #fca5a5; }
+    .entrega-note {
+      margin-top: .6rem;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-left: 4px solid #0ea5e9;
+      border-radius: 6px;
+      padding: .7rem 1rem;
+      font-size: .85rem;
+      color: #334155;
+    }
+    .entrega-note ul { margin: .3rem 0 0 1.2rem; }
+    .entrega-note li { margin: .2rem 0; }
+
+    /* ── FOOTER ── */
+    .doc-footer {
+      text-align: center;
+      padding: 2rem;
+      background: var(--gray-100);
+      border-top: 1px solid var(--gray-200);
+      color: var(--gray-500);
+      font-size: .82rem;
+    }
+
+    /* ── BACK TOP ── */
+    .back-top {
+      position: fixed; bottom: 2rem; right: 2rem;
+      width: 42px; height: 42px;
+      border-radius: 50%; background: var(--primary); color: #fff;
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--shadow-md); opacity: 0; transition: opacity .3s; font-size: 1.2rem;
+    }
+    .back-top.visible { opacity: 1; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .sidebar { display: none; }
+      .content { padding: 1.5rem; max-width: 100%; }
+      .comparison { grid-template-columns: 1fr; }
+    }
+    @media print {
+      .sidebar, .back-top { display: none; }
+      .content { max-width: 100%; padding: 0; }
+      pre { white-space: pre-wrap; word-wrap: break-word; }
+    }
+
+    hr { border: none; border-top: 1px solid var(--gray-200); margin: 1.5rem 0; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════ HEADER ═══════════════════ -->
+<header class="doc-header">
+  <h1>Classes e Repositórios em Kotlin</h1>
+  <div class="subtitle">
+    Tutorial prático de Orientação a Objetos — do modelo de dados ao padrão Repository,
+    usando como exemplo a classe <strong>Usuario</strong> do projeto FilaCidadã.
+  </div>
+  <div class="badges">
+    <span class="badge">Kotlin · Orientação a Objetos</span>
+    <span class="badge">Padrão Repository</span>
+    <span class="badge">Graduação</span>
+    <span class="badge">Março 2026</span>
+  </div>
+</header>
+
+<div class="wrapper">
+
+<!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+<nav class="sidebar">
+  <div class="toc-title">Sumário</div>
+
+  <div class="toc-section">Parte I — Classes</div>
+  <a href="#sec-1"   class="toc-h1">1. O que é uma Classe?</a>
+  <a href="#sec-1-1" class="toc-h2">1.1 Classes vs. Objetos</a>
+  <a href="#sec-1-2" class="toc-h2">1.2 Anatomia de uma classe</a>
+  <a href="#sec-2"   class="toc-h1">2. Data Classes</a>
+  <a href="#sec-2-1" class="toc-h2">2.1 O que muda?</a>
+  <a href="#sec-2-2" class="toc-h2">2.2 Construtores</a>
+  <a href="#sec-2-3" class="toc-h2">2.3 Valores padrão e nulidade</a>
+  <a href="#sec-3"   class="toc-h1">3. Enumerações (enum class)</a>
+  <a href="#sec-3-1" class="toc-h2">3.1 Criando um enum</a>
+  <a href="#sec-3-2" class="toc-h2">3.2 Enum com propriedades</a>
+  <a href="#sec-4"   class="toc-h1">4. A classe Usuario</a>
+  <a href="#sec-4-1" class="toc-h2">4.1 Código completo</a>
+  <a href="#sec-4-2" class="toc-h2">4.2 Anotações e serialização</a>
+  <a href="#sec-4-3" class="toc-h2">4.3 Diagrama da classe</a>
+
+  <div class="toc-section">Parte II — Repositórios</div>
+  <a href="#sec-5"   class="toc-h1">5. Por que Repositórios?</a>
+  <a href="#sec-5-1" class="toc-h2">5.1 O problema sem repository</a>
+  <a href="#sec-5-2" class="toc-h2">5.2 Camadas da aplicação</a>
+  <a href="#sec-6"   class="toc-h1">6. Interface do Repositório</a>
+  <a href="#sec-6-1" class="toc-h2">6.1 O que é uma Interface?</a>
+  <a href="#sec-6-2" class="toc-h2">6.2 UsuarioRepository</a>
+  <a href="#sec-6-3" class="toc-h2">6.3 Assinaturas dos métodos</a>
+  <a href="#sec-7"   class="toc-h1">7. Implementação do Repositório</a>
+  <a href="#sec-7-1" class="toc-h2">7.1 UsuarioRepositoryImpl</a>
+  <a href="#sec-7-2" class="toc-h2">7.2 Método a método</a>
+  <a href="#sec-7-3" class="toc-h2">7.3 Construindo filtros</a>
+  <a href="#sec-8"   class="toc-h1">8. Interface vs. Implementação</a>
+  <a href="#sec-9"   class="toc-h1">9. Injeção de Dependência</a>
+  <a href="#sec-10"  class="toc-h1">10. Exercícios Práticos</a>
+  <a href="#sec-10" class="toc-h2" style="padding-left:2.2rem; font-size:.78rem">Ex 1 — Classe Fila</a>
+  <a href="#sec-10" class="toc-h2" style="padding-left:2.2rem; font-size:.78rem">Ex 2 — Repositório Fila</a>
+  <a href="#sec-10" class="toc-h2" style="padding-left:2.2rem; font-size:.78rem">Ex 3 — Classe Senha</a>
+  <a href="#sec-10" class="toc-h2" style="padding-left:2.2rem; font-size:.78rem">Ex 4 — Repositório Senha</a>
+  <a href="#sec-10" class="toc-h2" style="padding-left:2.2rem; font-size:.78rem">Ex 5 — Classe Instituicao</a>
+  <a href="#sec-10" class="toc-h2" style="padding-left:2.2rem; font-size:.78rem">Ex 6 — QrCode e Auditoria</a>
+  <a href="#sec-10" class="toc-h2" style="padding-left:2.2rem; font-size:.78rem">Ex 7 — Análise crítica</a>
+</nav>
+
+<!-- ═══════════════════ CONTENT ═══════════════════ -->
+<main class="content">
+
+<!-- ══════════════════════════════════════════════════
+     PARTE I – CLASSES
+══════════════════════════════════════════════════ -->
+
+<h1 id="sec-1"><span class="section-num">1</span> O que é uma Classe?</h1>
+
+<p>Uma <strong>classe</strong> é o molde (ou planta baixa) a partir do qual criamos objetos. Ela define quais <em>atributos</em> (dados) e quais <em>comportamentos</em> (funções) os objetos desse tipo terão.</p>
+
+<div class="callout callout-concept">
+  <span class="callout-icon">💡</span>
+  <strong>Conceito fundamental — OOP</strong>
+  Orientação a Objetos é um paradigma de programação que organiza o código em <em>objetos</em>, que combinam <em>estado</em> (atributos) e <em>comportamento</em> (métodos). Uma classe é a <em>descrição</em> desse objeto; o objeto em si é chamado de <em>instância</em>.
+</div>
+
+<h2 id="sec-1-1">1.1 Classes vs. Objetos</h2>
+
+<p>A distinção entre classe e objeto é fundamental:</p>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Conceito</th><th>Analogia do mundo real</th><th>No código</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Classe</strong></td><td>A planta baixa de uma casa</td><td>Definição em <code>class Usuario { ... }</code></td></tr>
+    <tr><td><strong>Objeto (instância)</strong></td><td>A casa construída a partir da planta</td><td><code>val u = Usuario(...)</code></td></tr>
+    <tr><td><strong>Atributo</strong></td><td>O número de quartos, a metragem</td><td><code>val nome: String</code></td></tr>
+    <tr><td><strong>Método</strong></td><td>Abrir a porta, ligar a luz</td><td><code>fun ativar() { ... }</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="sec-1-2">1.2 Anatomia de uma classe Kotlin</h2>
+
+<p>Vamos partir de uma classe simples e ir evoluindo:</p>
+
+<pre><code><span class="file-label">exemplo</span><span class="kw">class</span> <span class="ty">Pessoa</span> {
+    <span class="cmt">// atributos</span>
+    <span class="kw">var</span> nome: <span class="ty">String</span> = <span class="str">""</span>
+    <span class="kw">var</span> idade: <span class="ty">Int</span> = <span class="num">0</span>
+
+    <span class="cmt">// método</span>
+    <span class="kw">fun</span> <span class="fn">apresentar</span>() {
+        println(<span class="str">"Olá, meu nome é $nome e tenho $idade anos."</span>)
+    }
+}</code></pre>
+
+<p><strong>Usando a classe:</strong></p>
+
+<pre><code><span class="file-label">uso</span><span class="kw">val</span> p = <span class="ty">Pessoa</span>()    <span class="cmt">// cria uma instância</span>
+p.nome = <span class="str">"Ana"</span>     <span class="cmt">// define o atributo</span>
+p.idade = <span class="num">20</span>
+p.apresentar()      <span class="cmt">// → "Olá, meu nome é Ana e tenho 20 anos."</span></code></pre>
+
+<div class="callout callout-warn">
+  <span class="callout-icon">⚠️</span>
+  <strong>Observação: mutabilidade</strong>
+  Em Kotlin, <code>var</code> declara uma variável <em>mutável</em> (pode ser reatribuída) e <code>val</code> declara uma variável <em>imutável</em> (somente leitura, como <code>final</code> em Java). Prefira <code>val</code> sempre que possível — favorece a previsibilidade e é compatível com dados imutáveis.
+</div>
+
+
+<!-- ══════════════════════════════════════════════════ -->
+<h1 id="sec-2"><span class="section-num">2</span> Data Classes</h1>
+
+<p>Uma <strong>data class</strong> é uma classe especial do Kotlin projetada para armazenar dados. Ela elimina todo o código repetitivo (<em>boilerplate</em>) que normalmente teríamos que escrever manualmente.</p>
+
+<h2 id="sec-2-1">2.1 O que muda com <code>data class</code>?</h2>
+
+<div class="comparison">
+  <div class="comparison-item">
+    <div class="comparison-label label-bad">Sem data class</div>
+    <pre style="margin-top:.4rem"><code><span class="kw">class</span> <span class="ty">Pessoa</span>(
+    <span class="kw">val</span> nome: <span class="ty">String</span>,
+    <span class="kw">val</span> idade: <span class="ty">Int</span>
+) {
+    <span class="cmt">// precisa implementar manualmente:</span>
+    <span class="kw">override fun</span> <span class="fn">toString</span>() = <span class="str">"Pessoa(nome=$nome)"</span>
+    <span class="kw">override fun</span> <span class="fn">equals</span>(o: <span class="ty">Any</span>?) = ...
+    <span class="kw">override fun</span> <span class="fn">hashCode</span>() = ...
+    <span class="kw">fun</span> <span class="fn">copy</span>(...) = ...
+}</code></pre>
+  </div>
+  <div class="comparison-item">
+    <div class="comparison-label label-good">Com data class</div>
+    <pre style="margin-top:.4rem"><code><span class="kw">data class</span> <span class="ty">Pessoa</span>(
+    <span class="kw">val</span> nome: <span class="ty">String</span>,
+    <span class="kw">val</span> idade: <span class="ty">Int</span>
+)
+
+<span class="cmt">// toString(), equals(), hashCode()
+// e copy() já vêm de graça!</span></code></pre>
+  </div>
+</div>
+
+<p>O compilador Kotlin gera automaticamente, para toda <code>data class</code>:</p>
+<ul>
+  <li><code>toString()</code> — representação legível: <code>Pessoa(nome=Ana, idade=20)</code></li>
+  <li><code>equals()</code> — compara valores (não endereços de memória)</li>
+  <li><code>hashCode()</code> — necessário para uso em coleções como <code>Set</code> e <code>Map</code></li>
+  <li><code>copy()</code> — cria uma cópia com campos opcionalmente alterados</li>
+  <li><code>componentN()</code> — suporte a <em>desestruturação</em>: <code>val (nome, idade) = pessoa</code></li>
+</ul>
+
+<h2 id="sec-2-2">2.2 Construtores primário e secundário</h2>
+
+<p>Em Kotlin, o construtor primário é declarado diretamente no cabeçalho da classe. Ele define ao mesmo tempo os parâmetros e as propriedades:</p>
+
+<pre><code><span class="kw">data class</span> <span class="ty">Pessoa</span>(
+    <span class="kw">val</span> nome: <span class="ty">String</span>,    <span class="cmt">// propriedade + parâmetro</span>
+    <span class="kw">val</span> idade: <span class="ty">Int</span>,
+    <span class="kw">val</span> email: <span class="ty">String</span>
+)</code></pre>
+
+<p>Para criar uma instância:</p>
+
+<pre><code><span class="kw">val</span> ana = <span class="ty">Pessoa</span>(
+    nome  = <span class="str">"Ana"</span>,
+    idade = <span class="num">20</span>,
+    email = <span class="str">"ana@exemplo.com"</span>
+)
+
+<span class="cmt">// usando copy() para criar variante</span>
+<span class="kw">val</span> clone = ana.copy(nome = <span class="str">"Ana Luísa"</span>)
+println(clone) <span class="cmt">// → Pessoa(nome=Ana Luísa, idade=20, email=ana@exemplo.com)</span></code></pre>
+
+<h2 id="sec-2-3">2.3 Valores padrão e nulidade</h2>
+
+<p>Kotlin possui um sistema de tipos que distingue referências <strong>nulas</strong> (<em>nullable</em>) de <strong>não nulas</strong>. Isso elimina os <code>NullPointerException</code> em tempo de compilação.</p>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Tipo</th><th>Aceita null?</th><th>Exemplo</th></tr></thead>
+  <tbody>
+    <tr><td><code>String</code></td><td>❌ Não</td><td><code>val nome: String = "Ana"</code></td></tr>
+    <tr><td><code>String?</code></td><td>✅ Sim</td><td><code>val apelido: String? = null</code></td></tr>
+    <tr><td><code>Int</code></td><td>❌ Não</td><td><code>val idade: Int = 20</code></td></tr>
+    <tr><td><code>Int?</code></td><td>✅ Sim</td><td><code>val pontos: Int? = null</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Podemos combinar tipos <em>nullable</em> com <strong>valores padrão</strong> para tornar os parâmetros opcionais:</p>
+
+<pre><code><span class="kw">data class</span> <span class="ty">Pessoa</span>(
+    <span class="kw">val</span> nome: <span class="ty">String</span>,
+    <span class="kw">val</span> email: <span class="ty">String</span>,
+    <span class="kw">val</span> ativo: <span class="ty">Boolean</span> = <span class="kw">true</span>,   <span class="cmt">// padrão: true</span>
+    <span class="kw">val</span> apelido: <span class="ty">String?</span> = <span class="kw">null</span>  <span class="cmt">// nullable, padrão: null</span>
+)
+
+<span class="kw">val</span> p1 = <span class="ty">Pessoa</span>(<span class="str">"Ana"</span>, <span class="str">"ana@email.com"</span>)              <span class="cmt">// ativo=true, apelido=null</span>
+<span class="kw">val</span> p2 = <span class="ty">Pessoa</span>(<span class="str">"Bob"</span>, <span class="str">"bob@email.com"</span>, ativo = <span class="kw">false</span>) <span class="cmt">// ativo=false</span></code></pre>
+
+
+<!-- ══════════════════════════════════════════════════ -->
+<h1 id="sec-3"><span class="section-num">3</span> Enumerações — <code>enum class</code></h1>
+
+<p>Um <strong>enum</strong> (enumeração) é uma classe especial que representa um conjunto <em>finito e conhecido</em> de valores. Em vez de usar strings soltas como <code>"ADMIN"</code> ou <code>"USER"</code> — que podem ter erros de digitação —, usamos uma enumeração que o compilador valida.</p>
+
+<h2 id="sec-3-1">3.1 Criando um enum simples</h2>
+
+<pre><code><span class="kw">enum class</span> <span class="ty">DiaDaSemana</span> {
+    SEGUNDA, TERCA, QUARTA, QUINTA, SEXTA, SABADO, DOMINGO
+}
+
+<span class="cmt">// Usando:</span>
+<span class="kw">val</span> dia = <span class="ty">DiaDaSemana</span>.SEXTA
+<span class="kw">if</span> (dia == <span class="ty">DiaDaSemana</span>.SEXTA) println(<span class="str">"Já é sexta! 🎉"</span>)
+
+<span class="cmt">// when (equivalente ao switch, mas mais poderoso):</span>
+<span class="kw">when</span> (dia) {
+    <span class="ty">DiaDaSemana</span>.SABADO, <span class="ty">DiaDaSemana</span>.DOMINGO -> println(<span class="str">"Fim de semana"</span>)
+    <span class="kw">else</span> -> println(<span class="str">"Dia útil"</span>)
+}</code></pre>
+
+<h2 id="sec-3-2">3.2 Enum com propriedades</h2>
+
+<p>Enums podem ter propriedades e métodos como qualquer outra classe:</p>
+
+<pre><code><span class="kw">enum class</span> <span class="ty">Prioridade</span>(<span class="kw">val</span> peso: <span class="ty">Int</span>) {
+    LEGAL(<span class="num">1</span>),         <span class="cmt">// maior prioridade</span>
+    FIDELIDADE(<span class="num">2</span>),
+    CRONOLOGICA(<span class="num">3</span>);  <span class="cmt">// menor prioridade</span>
+
+    <span class="kw">fun</span> <span class="fn">descricao</span>(): <span class="ty">String</span> = <span class="kw">when</span> (<span class="kw">this</span>) {
+        LEGAL       -> <span class="str">"Prioridade legal (idoso, PCD, gestante)"</span>
+        FIDELIDADE  -> <span class="str">"Prioridade por fidelidade"</span>
+        CRONOLOGICA -> <span class="str">"Ordem de chegada"</span>
+    }
+}
+
+<span class="cmt">// Usando:</span>
+<span class="kw">val</span> p = <span class="ty">Prioridade</span>.LEGAL
+println(p.peso)       <span class="cmt">// → 1</span>
+println(p.descricao()) <span class="cmt">// → "Prioridade legal (idoso, PCD, gestante)"</span></code></pre>
+
+<div class="callout callout-success">
+  <span class="callout-icon">✅</span>
+  <strong>Por que usar enum em vez de String?</strong>
+  <ul>
+    <li>O compilador verifica todos os valores possíveis — o <code>when</code> avisa se você esqueceu um caso.</li>
+    <li>Autocompletar na IDE funciona perfeitamente.</li>
+    <li>Impossível escrever <code>"ADMINISTRADOR"</code> por engano — o tipo é validado em tempo de compilação.</li>
+  </ul>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════ -->
+<h1 id="sec-4"><span class="section-num">4</span> A Classe <code>Usuario</code> — Código Real</h1>
+
+<p>Agora vamos analisar um exemplo do mundo real: a classe <code>Usuario</code> do projeto <strong>FilaCidadã</strong>. Ela modela uma pessoa que usa a plataforma, podendo ser cidadão, operador ou administrador.</p>
+
+<h2 id="sec-4-1">4.1 Código completo</h2>
+
+<pre><code><span class="file-label">models/Usuario.kt</span><span class="ann">@Serializable</span>
+<span class="kw">data class</span> <span class="ty">Usuario</span>(
+    <span class="kw">val</span> id: <span class="ty">String?</span> = <span class="kw">null</span>,                             <span class="cmt">// (1)</span>
+    <span class="kw">val</span> nome: <span class="ty">String</span>,                                     <span class="cmt">// (2)</span>
+    <span class="kw">val</span> email: <span class="ty">String</span>,
+    <span class="kw">val</span> senhaHash: <span class="ty">String</span>,                               <span class="cmt">// (3)</span>
+    <span class="kw">val</span> papeis: <span class="ty">Set</span>&lt;<span class="ty">Papel</span>&gt;,                             <span class="cmt">// (4)</span>
+    <span class="kw">val</span> instituicaoId: <span class="ty">String?</span> = <span class="kw">null</span>,
+    <span class="kw">val</span> ativo: <span class="ty">Boolean</span> = <span class="kw">true</span>,
+    <span class="kw">val</span> avatar: <span class="ty">String?</span> = <span class="kw">null</span>,
+    <span class="kw">val</span> fusoHorario: <span class="ty">String</span> = <span class="str">"America/Manaus"</span>,
+    <span class="kw">val</span> accesstoken: <span class="ty">String?</span> = <span class="kw">null</span>,                   <span class="cmt">// (5)</span>
+    <span class="kw">val</span> refreshtoken: <span class="ty">String?</span> = <span class="kw">null</span>,
+    <span class="kw">val</span> tokenUnico: <span class="ty">String?</span> = <span class="kw">null</span>,
+    <span class="kw">val</span> codigoRecuperaSenha: <span class="ty">String?</span> = <span class="kw">null</span>,
+    <span class="ann">@Contextual</span> <span class="kw">val</span> expCodigoRecuperaSenha: <span class="ty">Instant?</span> = <span class="kw">null</span>,
+    <span class="ann">@Contextual</span> <span class="kw">val</span> ultimoLoginEm: <span class="ty">Instant?</span> = <span class="kw">null</span>,   <span class="cmt">// (6)</span>
+    <span class="ann">@Contextual</span> <span class="kw">val</span> createdAt: <span class="ty">Instant</span> = <span class="ty">Instant</span>.now(),
+    <span class="ann">@Contextual</span> <span class="kw">val</span> updatedAt: <span class="ty">Instant?</span> = <span class="kw">null</span>
+)
+
+<span class="kw">enum class</span> <span class="ty">Papel</span> {
+    ADMIN_PLATAFORMA,
+    ADMIN_INSTITUICAO,
+    OPERADOR,
+    USUARIO_FINAL
+}</code></pre>
+
+<h2 id="sec-4-2">4.2 Anotações e serialização — o que significa cada parte</h2>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Marcador</th><th>Significado</th></tr></thead>
+  <tbody>
+    <tr><td><code>(1) id: String? = null</code></td><td>O MongoDB gera automaticamente o ID ao persistir. Antes de salvar, pode ser <code>null</code>.</td></tr>
+    <tr><td><code>(2) nome: String</code></td><td>Campo obrigatório — não possui valor padrão, portanto deve ser informado no construtor.</td></tr>
+    <tr><td><code>(3) senhaHash</code></td><td>Nunca armazenamos senhas em texto puro. O hash BCrypt da senha é armazenado.</td></tr>
+    <tr><td><code>(4) Set&lt;Papel&gt;</code></td><td>Um usuário pode ter múltiplos papéis. <code>Set</code> garante que não haverá duplicatas.</td></tr>
+    <tr><td><code>(5) accesstoken</code></td><td>Token armazenado para permitir invalidação no logout. Excluído das respostas da API.</td></tr>
+    <tr><td><code>(6) @Contextual Instant</code></td><td>A anotação indica ao serializador como converter tipos de data/hora não serializáveis por padrão.</td></tr>
+    <tr><td><code>@Serializable</code></td><td>Marca a classe para serialização automática (JSON) com <code>kotlinx.serialization</code>.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="sec-4-3">4.3 Diagrama da classe (UML simplificado)</h2>
+
+<div class="uml-box">
+  <div class="uml-header">
+    &lt;&lt;data class&gt;&gt;<br>
+    <strong>Usuario</strong>
+    <small>models/Usuario.kt</small>
+  </div>
+  <div class="uml-section">
+    <div class="uml-section-title">Atributos</div>
+    <div class="uml-item"><code>+ id: String?</code></div>
+    <div class="uml-item"><code>+ nome: String</code></div>
+    <div class="uml-item"><code>+ email: String</code></div>
+    <div class="uml-item"><code>- senhaHash: String</code> <small style="color:var(--danger)">(sensível)</small></div>
+    <div class="uml-item"><code>+ papeis: Set&lt;Papel&gt;</code></div>
+    <div class="uml-item"><code>+ instituicaoId: String?</code></div>
+    <div class="uml-item"><code>+ ativo: Boolean = true</code></div>
+    <div class="uml-item"><code>+ fusoHorario: String</code></div>
+    <div class="uml-item"><code>- accesstoken: String?</code> <small style="color:var(--danger)">(sensível)</small></div>
+    <div class="uml-item"><code>+ createdAt: Instant</code></div>
+    <div class="uml-item"><code>+ updatedAt: Instant?</code></div>
+  </div>
+  <div class="uml-section">
+    <div class="uml-section-title">Métodos gerados (data class)</div>
+    <div class="uml-item"><code>+ toString(): String</code></div>
+    <div class="uml-item"><code>+ equals(other: Any?): Boolean</code></div>
+    <div class="uml-item"><code>+ copy(...): Usuario</code></div>
+  </div>
+</div>
+
+<div class="callout callout-info">
+  <span class="callout-icon">ℹ️</span>
+  <strong>Convenção UML de visibilidade</strong>
+  <code>+</code> público (public), <code>-</code> privado (private), <code>#</code> protegido (protected). Em Kotlin, todos os campos de uma <code>data class</code> declarados no construtor são públicos por padrão. Para campos sensíveis, a proteção se dá por <em>exclusão na serialização</em>, não por modificador de acesso.
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     PARTE II – REPOSITÓRIOS
+══════════════════════════════════════════════════ -->
+
+<h1 id="sec-5"><span class="section-num">5</span> Por que Existem os Repositórios?</h1>
+
+<p>Imagine que você precisa buscar um usuário pelo e-mail. A lógica mais ingênua seria escrever diretamente a consulta ao banco de dados em qualquer lugar do código onde precisar:</p>
+
+<h2 id="sec-5-1">5.1 O problema sem o padrão Repository</h2>
+
+<pre><code><span class="cmt">// ❌ RUIM: mistura lógica de negócio com acesso ao banco</span>
+<span class="kw">fun</span> <span class="fn">login</span>(email: <span class="ty">String</span>, senha: <span class="ty">String</span>) {
+    <span class="kw">val</span> collection = database.getCollection&lt;<span class="ty">Usuario</span>&gt;(<span class="str">"usuarios"</span>)
+    <span class="kw">val</span> usuario = collection.findOne(Usuario::email <span class="op">eq</span> email)
+    <span class="cmt">// ... validação da senha ...</span>
+}
+
+<span class="kw">fun</span> <span class="fn">buscarPerfil</span>(email: <span class="ty">String</span>) {
+    <span class="kw">val</span> collection = database.getCollection&lt;<span class="ty">Usuario</span>&gt;(<span class="str">"usuarios"</span>)
+    <span class="kw">val</span> usuario = collection.findOne(Usuario::email <span class="op">eq</span> email)
+    <span class="cmt">// código de banco duplicado!</span>
+}</code></pre>
+
+<div class="callout callout-warn">
+  <span class="callout-icon">⚠️</span>
+  <strong>Problemas desse design:</strong>
+  <ul>
+    <li><strong>Duplicação:</strong> a consulta ao banco está espalhada pelo código.</li>
+    <li><strong>Acoplamento:</strong> a lógica de negócio conhece detalhes do banco (MongoDB, KMongo, nome da coleção).</li>
+    <li><strong>Testabilidade:</strong> é impossível testar o serviço sem um banco de dados real.</li>
+    <li><strong>Manutenção:</strong> se a estrutura do banco mudar, você precisa alterar vários lugares.</li>
+  </ul>
+</div>
+
+<h2 id="sec-5-2">5.2 A arquitetura em camadas</h2>
+
+<p>A solução é separar as responsabilidades em camadas. O <strong>padrão Repository</strong> é uma das formas mais populares de fazer isso:</p>
+
+<div class="diagram" style="flex-wrap:wrap; gap:.3rem;">
+  <div class="diagram-box box-blue" style="min-width:110px">
+    <div>🌐 Routes</div>
+    <small>Define as rotas HTTP e delega ao Controller</small>
+  </div>
+  <div class="diagram-arrow">→</div>
+  <div class="diagram-box" style="min-width:110px; background:#fce7f3; color:#9d174d; border:2px solid #f9a8d4;">
+    <div>🎮 Controller</div>
+    <small>Recebe a requisição, valida entrada e retorna resposta</small>
+  </div>
+  <div class="diagram-arrow">→</div>
+  <div class="diagram-box box-orange" style="min-width:110px">
+    <div>⚙️ Service</div>
+    <small>Lógica de negócio</small>
+  </div>
+  <div class="diagram-arrow">→</div>
+  <div class="diagram-box box-purple" style="min-width:110px">
+    <div>📋 Repository</div>
+    <small>Acesso a dados</small>
+  </div>
+  <div class="diagram-arrow">→</div>
+  <div class="diagram-box box-green" style="min-width:110px">
+    <div>🗄️ MongoDB</div>
+    <small>Banco de dados</small>
+  </div>
+</div>
+
+<div class="table-wrap" style="margin-top:1.2rem">
+<table>
+  <thead><tr><th>Camada</th><th>Responsabilidade</th><th>Exemplo no projeto</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Routes</strong></td>
+      <td>Registra os endpoints HTTP (<code>GET</code>, <code>POST</code>, etc.) e encaminha a requisição ao Controller correspondente.</td>
+      <td><code>UsuarioRoutes.kt</code></td>
+    </tr>
+    <tr>
+      <td><strong>Controller</strong></td>
+      <td>Recebe a chamada da rota, faz a leitura/validação dos parâmetros e do corpo da requisição, chama o Service e devolve a resposta HTTP.</td>
+      <td>Bloco de handler dentro de <code>UsuarioRoutes.kt</code></td>
+    </tr>
+    <tr>
+      <td><strong>Service</strong></td>
+      <td>Contém as regras de negócio. Não sabe nada de HTTP nem de banco — trabalha apenas com objetos do domínio.</td>
+      <td><code>UsuarioService.kt</code></td>
+    </tr>
+    <tr>
+      <td><strong>Repository</strong></td>
+      <td>Abstrai o acesso ao banco de dados. O Service depende da <em>interface</em>; a implementação concreta conhece o MongoDB.</td>
+      <td><code>UsuarioRepository.kt</code> / <code>UsuarioRepositoryImpl.kt</code></td>
+    </tr>
+    <tr>
+      <td><strong>MongoDB</strong></td>
+      <td>Banco de dados NoSQL orientado a documentos. Armazena os dados persistidos.</td>
+      <td>Coleção <code>usuarios</code></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout callout-info">
+  <span class="callout-icon">ℹ️</span>
+  <strong>Routes vs. Controller — qual a diferença prática?</strong><br>
+  Em frameworks como o Ktor, é comum que o arquivo de <em>routes</em> já contenha o código do <em>controller</em> (o handler da lambda). A separação conceitual existe para clareza: <strong>Routes</strong> cuida de <em>qual URL</em> ativa <em>qual lógica</em>; <strong>Controller</strong> cuida de <em>como</em> ler os dados da requisição e montar a resposta. Em projetos maiores, são arquivos separados.
+</div>
+
+<p>O <strong>Service</strong> não sabe <em>como</em> os dados são armazenados nem como a resposta HTTP será formatada. Ele apenas chama métodos do Repository, como <code>findByEmail()</code>. Essa separação torna cada camada independentemente testável e substituível.</p>
+
+
+<!-- ══════════════════════════════════════════════════ -->
+<h1 id="sec-6"><span class="section-num">6</span> Interface do Repositório</h1>
+
+<h2 id="sec-6-1">6.1 O que é uma Interface em Kotlin?</h2>
+
+<p>Uma <strong>interface</strong> é um <em>contrato</em>. Ela declara <em>o quê</em> deve ser feito, sem dizer <em>como</em>. Quem assina o contrato (a classe que a <em>implementa</em>) é obrigada a fornecer o "como".</p>
+
+<div class="callout callout-concept">
+  <span class="callout-icon">💡</span>
+  <strong>Analogia: contrato de aluguel</strong>
+  A interface é como um contrato de aluguel que diz "o inquilino deve pagar aluguel mensalmente e manter o imóvel conservado". O contrato não diz <em>como</em> o inquilino vai arrumar o dinheiro ou <em>como</em> vai conservar o imóvel — isso é decisão dele. Mas ele <em>é obrigado</em> a cumprir o que está no contrato.
+</div>
+
+<p>Em Kotlin, uma interface é declarada com a palavra-chave <code>interface</code>. Seus métodos não têm corpo (somente a assinatura):</p>
+
+<pre><code><span class="kw">interface</span> <span class="ty">Veiculo</span> {
+    <span class="kw">fun</span> <span class="fn">acelerar</span>(velocidade: <span class="ty">Int</span>)
+    <span class="kw">fun</span> <span class="fn">frear</span>()
+    <span class="kw">fun</span> <span class="fn">ligar</span>(): <span class="ty">Boolean</span>
+}
+
+<span class="cmt">// Quem quiser ser um "Veículo" deve implementar todos os métodos:</span>
+<span class="kw">class</span> <span class="ty">Carro</span> : <span class="ty">Veiculo</span> {
+    <span class="kw">override fun</span> <span class="fn">acelerar</span>(velocidade: <span class="ty">Int</span>) { <span class="cmt">/* implementação específica de carro */</span> }
+    <span class="kw">override fun</span> <span class="fn">frear</span>()                      { <span class="cmt">/* ... */</span> }
+    <span class="kw">override fun</span> <span class="fn">ligar</span>(): <span class="ty">Boolean</span>             { <span class="kw">return true</span> }
+}</code></pre>
+
+<h2 id="sec-6-2">6.2 A interface <code>UsuarioRepository</code></h2>
+
+<p>Veja o código real da interface do projeto:</p>
+
+<pre><code><span class="file-label">repositories/UsuarioRepository.kt</span><span class="cmt">/**
+ * Interface do repositório de Usuários.
+ * Contrato para operações CRUD e consultas específicas.
+ * Cria obrigações de implementação, garantindo consistência e flexibilidade.
+ */</span>
+<span class="kw">interface</span> <span class="ty">UsuarioRepository</span> {
+
+    <span class="kw">fun</span> <span class="fn">findById</span>(id: <span class="ty">String</span>): <span class="ty">Usuario?</span>
+
+    <span class="kw">fun</span> <span class="fn">findByEmail</span>(email: <span class="ty">String</span>): <span class="ty">Usuario?</span>
+
+    <span class="kw">fun</span> <span class="fn">findAll</span>(
+        page: <span class="ty">Int</span>,
+        limit: <span class="ty">Int</span>,
+        filters: <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">Any?</span>&gt; = emptyMap()
+    ): <span class="ty">Pair</span>&lt;<span class="ty">List</span>&lt;<span class="ty">Usuario</span>&gt;, <span class="ty">Long</span>&gt;
+
+    <span class="kw">fun</span> <span class="fn">findByInstituicaoId</span>(
+        instituicaoId: <span class="ty">String</span>,
+        page: <span class="ty">Int</span>,
+        limit: <span class="ty">Int</span>,
+        filters: <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">Any?</span>&gt; = emptyMap()
+    ): <span class="ty">Pair</span>&lt;<span class="ty">List</span>&lt;<span class="ty">Usuario</span>&gt;, <span class="ty">Long</span>&gt;
+
+    <span class="kw">fun</span> <span class="fn">insert</span>(usuario: <span class="ty">Usuario</span>): <span class="ty">Usuario</span>
+
+    <span class="kw">fun</span> <span class="fn">update</span>(id: <span class="ty">String</span>, updates: <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">Any?</span>&gt;): <span class="ty">Boolean</span>
+
+    <span class="kw">fun</span> <span class="fn">delete</span>(id: <span class="ty">String</span>): <span class="ty">Boolean</span>
+
+    <span class="kw">fun</span> <span class="fn">findByTokenUnico</span>(token: <span class="ty">String</span>): <span class="ty">Usuario?</span>
+
+    <span class="kw">fun</span> <span class="fn">findByCodigoRecuperacao</span>(codigo: <span class="ty">String</span>): <span class="ty">Usuario?</span>
+}</code></pre>
+
+<h2 id="sec-6-3">6.3 Análise das assinaturas dos métodos</h2>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Método</th><th>Retorno</th><th>Por que esse retorno?</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>findById(id)</code></td>
+      <td><code>Usuario?</code></td>
+      <td>Pode não existir um usuário com esse ID — <code>?</code> indica que o resultado pode ser <code>null</code>.</td>
+    </tr>
+    <tr>
+      <td><code>findByEmail(email)</code></td>
+      <td><code>Usuario?</code></td>
+      <td>Idem — e-mail pode não estar cadastrado.</td>
+    </tr>
+    <tr>
+      <td><code>findAll(page, limit, filters)</code></td>
+      <td><code>Pair&lt;List&lt;Usuario&gt;, Long&gt;</code></td>
+      <td>Retorna dois valores: a lista de usuários da página atual e o total de registros (para paginação).</td>
+    </tr>
+    <tr>
+      <td><code>insert(usuario)</code></td>
+      <td><code>Usuario</code></td>
+      <td>Retorna o usuário com o <code>id</code> gerado pelo banco preenchido.</td>
+    </tr>
+    <tr>
+      <td><code>update(id, updates)</code></td>
+      <td><code>Boolean</code></td>
+      <td><code>true</code> se o documento foi encontrado e modificado; <code>false</code> se nenhum documento foi alterado.</td>
+    </tr>
+    <tr>
+      <td><code>delete(id)</code></td>
+      <td><code>Boolean</code></td>
+      <td><code>true</code> se o documento foi encontrado e removido; <code>false</code> caso contrário.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout callout-info">
+  <span class="callout-icon">ℹ️</span>
+  <strong>O tipo <code>Pair&lt;A, B&gt;</code></strong><br>
+  <code>Pair</code> é uma classe genérica do Kotlin que agrega dois valores de tipos possivelmente diferentes. <code>Pair&lt;List&lt;Usuario&gt;, Long&gt;</code> retorna ao mesmo tempo a lista paginada de usuários (<code>.first</code>) e a contagem total (<code>.second</code>). Isso evita ter que criar uma classe extra só para transportar esses dois dados.
+</div>
+
+
+<!-- ══════════════════════════════════════════════════ -->
+<h1 id="sec-7"><span class="section-num">7</span> Implementação do Repositório</h1>
+
+<p>A interface define o <em>contrato</em>. A implementação define o <em>como</em>. No projeto <strong>FilaCidadã</strong>, usamos o banco <strong>MongoDB</strong> com o driver <strong>KMongo</strong> para Kotlin.</p>
+
+<h2 id="sec-7-1">7.1 Código completo — <code>UsuarioRepositoryImpl</code></h2>
+
+<pre><code><span class="file-label">repositories/UsuarioRepositoryImpl.kt</span><span class="kw">class</span> <span class="ty">UsuarioRepositoryImpl</span>(
+    <span class="kw">private val</span> collection: <span class="ty">MongoCollection</span>&lt;<span class="ty">Usuario</span>&gt;   <span class="cmt">// (A)</span>
+) : <span class="ty">UsuarioRepository</span> {
+
+    <span class="kw">override fun</span> <span class="fn">findById</span>(id: <span class="ty">String</span>): <span class="ty">Usuario?</span> {
+        <span class="kw">return</span> collection.findOneById(id)                  <span class="cmt">// (B)</span>
+    }
+
+    <span class="kw">override fun</span> <span class="fn">findByEmail</span>(email: <span class="ty">String</span>): <span class="ty">Usuario?</span> {
+        <span class="kw">return</span> collection.findOne(Usuario::email <span class="op">eq</span> email.lowercase())
+    }
+
+    <span class="kw">override fun</span> <span class="fn">findAll</span>(
+        page: <span class="ty">Int</span>, limit: <span class="ty">Int</span>, filters: <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">Any?</span>&gt;
+    ): <span class="ty">Pair</span>&lt;<span class="ty">List</span>&lt;<span class="ty">Usuario</span>&gt;, <span class="ty">Long</span>&gt; {
+        <span class="kw">val</span> bsonFilters = <span class="fn">buildFilters</span>(filters)
+        <span class="kw">val</span> total = collection.countDocuments(and(bsonFilters))
+        <span class="kw">val</span> docs  = collection.find(and(bsonFilters))
+            .skip((page - <span class="num">1</span>) * limit)
+            .limit(limit)
+            .toList()
+        <span class="kw">return</span> Pair(docs, total)
+    }
+
+    <span class="kw">override fun</span> <span class="fn">findByInstituicaoId</span>(
+        instituicaoId: <span class="ty">String</span>, page: <span class="ty">Int</span>, limit: <span class="ty">Int</span>,
+        filters: <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">Any?</span>&gt;
+    ): <span class="ty">Pair</span>&lt;<span class="ty">List</span>&lt;<span class="ty">Usuario</span>&gt;, <span class="ty">Long</span>&gt; {
+        <span class="kw">val</span> allFilters = filters + (<span class="str">"instituicaoId"</span> to instituicaoId) <span class="cmt">// (C)</span>
+        <span class="kw">return</span> <span class="fn">findAll</span>(page, limit, allFilters)
+    }
+
+    <span class="kw">override fun</span> <span class="fn">insert</span>(usuario: <span class="ty">Usuario</span>): <span class="ty">Usuario</span> {
+        collection.insertOne(usuario)
+        <span class="kw">return</span> usuario
+    }
+
+    <span class="kw">override fun</span> <span class="fn">update</span>(id: <span class="ty">String</span>, updates: <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">Any?</span>&gt;): <span class="ty">Boolean</span> {
+        <span class="kw">val</span> setUpdates = updates.map { (key, value) -> Updates.set(key, value) } <span class="cmt">// (D)</span>
+        <span class="kw">val</span> result = collection.updateOneById(id, combine(setUpdates))
+        <span class="kw">return</span> result.modifiedCount > <span class="num">0</span>
+    }
+
+    <span class="kw">override fun</span> <span class="fn">delete</span>(id: <span class="ty">String</span>): <span class="ty">Boolean</span> {
+        <span class="kw">return</span> collection.deleteOneById(id).deletedCount > <span class="num">0</span>
+    }
+
+    <span class="kw">override fun</span> <span class="fn">findByTokenUnico</span>(token: <span class="ty">String</span>): <span class="ty">Usuario?</span> {
+        <span class="kw">return</span> collection.findOne(Usuario::tokenUnico <span class="op">eq</span> token)
+    }
+
+    <span class="kw">override fun</span> <span class="fn">findByCodigoRecuperacao</span>(codigo: <span class="ty">String</span>): <span class="ty">Usuario?</span> {
+        <span class="kw">return</span> collection.findOne(Usuario::codigoRecuperaSenha <span class="op">eq</span> codigo)
+    }
+
+    <span class="cmt">// ── método privado auxiliar ──────────────────────────────</span>
+    <span class="kw">private fun</span> <span class="fn">buildFilters</span>(filters: <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">Any?</span>&gt;): <span class="ty">List</span>&lt;<span class="ty">Bson</span>&gt; {  <span class="cmt">// (E)</span>
+        <span class="kw">return</span> filters.mapNotNull { (key, value) ->
+            <span class="kw">when</span> {
+                value == <span class="kw">null</span>        -> <span class="kw">null</span>
+                key == <span class="str">"nome"</span>        -> Usuario::nome <span class="op">regex</span> Regex(<span class="str">".*$value.*"</span>, RegexOption.IGNORE_CASE)
+                key == <span class="str">"email"</span>       -> Usuario::email <span class="op">regex</span> Regex(<span class="str">".*$value.*"</span>, RegexOption.IGNORE_CASE)
+                key == <span class="str">"ativo"</span>       -> Usuario::ativo <span class="op">eq</span> (value <span class="kw">as</span> <span class="ty">Boolean</span>)
+                key == <span class="str">"instituicaoId"</span> -> Usuario::instituicaoId <span class="op">eq</span> (value <span class="kw">as</span> <span class="ty">String</span>)
+                <span class="kw">else</span>                -> <span class="kw">null</span>
+            }
+        }
+    }
+}</code></pre>
+
+<h2 id="sec-7-2">7.2 Entendendo método a método</h2>
+
+<div class="step-card">
+  <h3><span class="step-num">(A)</span> Injeção da coleção via construtor</h3>
+  <p>A classe recebe a coleção MongoDB no construtor (<code>MongoCollection&lt;Usuario&gt;</code>). Isso é chamado de <strong>injeção de dependência</strong> — a classe não cria sua dependência, ela recebe de fora. Isso facilita os testes (é possível passar uma coleção em memória).</p>
+  <pre><code><span class="cmt">// O construtor diz: "me dê a coleção, eu farei o resto"</span>
+<span class="kw">class</span> <span class="ty">UsuarioRepositoryImpl</span>(<span class="kw">private val</span> collection: <span class="ty">MongoCollection</span>&lt;<span class="ty">Usuario</span>&gt;)</code></pre>
+</div>
+
+<div class="step-card">
+  <h3><span class="step-num">(B)</span> Operadores infix do KMongo — DSL de consulta</h3>
+  <p>O KMongo oferece uma DSL (sintaxe de domínio específico) para construir filtros MongoDB de forma tipada em Kotlin. Em vez de strings com o nome do campo (que podem ter erros de digitação), usamos referências reais à propriedade:</p>
+  <pre><code><span class="cmt">// ❌ Sem type-safety: string pode estar errada</span>
+collection.find(<span class="str">"{ email: '$email' }"</span>)
+
+<span class="cmt">// ✅ Com KMongo DSL: compilador valida o nome do campo</span>
+collection.findOne(Usuario::email <span class="op">eq</span> email)
+<span class="cmt">// Usuario::email → referência à propriedade (KProperty)</span>
+<span class="cmt">// eq           → operador "igual" (infix)</span></code></pre>
+  <p>Se você renomear o campo <code>email</code> na classe <code>Usuario</code>, o compilador imediatamente apontará o erro aqui.</p>
+</div>
+
+<div class="step-card">
+  <h3><span class="step-num">(C)</span> Paginação com <code>skip</code> + <code>limit</code></h3>
+  <p>A paginação funciona assim: para obter a página <code>N</code> com <code>L</code> itens por página, pulamos os primeiros <code>(N - 1) × L</code> documentos e buscamos os próximos <code>L</code>:</p>
+  <pre><code>page = 3, limit = 10
+skip = (3 - 1) × 10 = 20  <span class="cmt">// pula os primeiros 20</span>
+limit = 10                 <span class="cmt">// pega os próximos 10 (documentos 21 a 30)</span></code></pre>
+  <pre><code>collection.find(filtro)
+    .skip((page - <span class="num">1</span>) * limit)
+    .limit(limit)
+    .toList()</code></pre>
+</div>
+
+<div class="step-card">
+  <h3><span class="step-num">(D)</span> Atualização parcial com <code>Updates.set</code></h3>
+  <p>O método <code>update</code> recebe um <code>Map&lt;String, Any?&gt;</code> com apenas os campos a alterar. Ele converte cada entrada em um comando <code>$set</code> do MongoDB:</p>
+  <pre><code><span class="cmt">// Chamada: atualizar só o nome e o status</span>
+repository.update(id, mapOf(<span class="str">"nome"</span> to <span class="str">"Carlos"</span>, <span class="str">"ativo"</span> to <span class="kw">false</span>))
+
+<span class="cmt">// Internamente gera: { $set: { nome: "Carlos", ativo: false } }</span>
+<span class="kw">val</span> setUpdates = updates.map { (key, value) -> Updates.set(key, value) }
+collection.updateOneById(id, combine(setUpdates))</code></pre>
+  <p>O MongoDB atualiza <strong>somente</strong> os campos informados, sem tocar nos outros.</p>
+</div>
+
+<h2 id="sec-7-3">7.3 O método <code>buildFilters</code> — construindo filtros dinamicamente</h2>
+
+<p>Um dos pontos mais elegantes da implementação é o método privado <code>buildFilters</code>. Ele recebe um mapa genérico de filtros e constrói filtros tipados do MongoDB:</p>
+
+<pre><code><span class="kw">private fun</span> <span class="fn">buildFilters</span>(filters: <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">Any?</span>&gt;): <span class="ty">List</span>&lt;<span class="ty">Bson</span>&gt; {
+    <span class="kw">return</span> filters.mapNotNull { (key, value) ->
+        <span class="kw">when</span> {
+            value == <span class="kw">null</span>          -> <span class="kw">null</span>  <span class="cmt">// filtro não aplicado</span>
+            key == <span class="str">"nome"</span>          -> Usuario::nome  <span class="op">regex</span> Regex(<span class="str">".*$value.*"</span>, RegexOption.IGNORE_CASE)
+            key == <span class="str">"email"</span>         -> Usuario::email <span class="op">regex</span> Regex(<span class="str">".*$value.*"</span>, RegexOption.IGNORE_CASE)
+            key == <span class="str">"ativo"</span>         -> Usuario::ativo <span class="op">eq</span> (value <span class="kw">as</span> <span class="ty">Boolean</span>)
+            key == <span class="str">"instituicaoId"</span> -> Usuario::instituicaoId <span class="op">eq</span> (value <span class="kw">as</span> <span class="ty">String</span>)
+            <span class="kw">else</span>                   -> <span class="kw">null</span>  <span class="cmt">// chave desconhecida, ignora</span>
+        }
+    }
+}</code></pre>
+
+<p><strong>O que acontece passo a passo:</strong></p>
+<ol>
+  <li>Para cada entrada <code>(key, value)</code> do mapa, aplica a expressão <code>when</code>.</li>
+  <li>Se <code>value == null</code>, retorna <code>null</code> (o filtro não é aplicado — <code>mapNotNull</code> descarta nulls automaticamente).</li>
+  <li>Para <code>nome</code> e <code>email</code>, usa uma busca por <strong>expressão regular</strong> case-insensitive (busca parcial).</li>
+  <li>Para <code>ativo</code>, faz uma comparação exata de booleano.</li>
+  <li>A lista resultante é combinada com <code>and(bsonFilters)</code> — todos os filtros ativados são aplicados simultaneamente.</li>
+</ol>
+
+<div class="callout callout-success">
+  <span class="callout-icon">✅</span>
+  <strong>Usar <code>mapNotNull</code> em vez de <code>filter + map</code></strong><br>
+  <code>mapNotNull { ... }</code> é equivalente a <code>map { ... }.filterNotNull()</code>, mas em uma única passagem. Ele transforma e filcula em uma operação só — preferível por ser mais conciso e legível.
+</div>
+
+
+<!-- ══════════════════════════════════════════════════ -->
+<h1 id="sec-8"><span class="section-num">8</span> Interface vs. Implementação — Comparativo</h1>
+
+<p>Agora que vimos ambos os arquivos, vamos consolidar a diferença entre eles:</p>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Aspecto</th><th>Interface (<code>UsuarioRepository</code>)</th><th>Implementação (<code>UsuarioRepositoryImpl</code>)</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Arquivo</strong></td><td><code>UsuarioRepository.kt</code></td><td><code>UsuarioRepositoryImpl.kt</code></td></tr>
+    <tr><td><strong>O que declara</strong></td><td>Os métodos disponíveis (assinaturas)</td><td>O código real de cada método</td></tr>
+    <tr><td><strong>Conhece o banco?</strong></td><td>❌ Não — não importa MongoDB</td><td>✅ Sim — usa KMongo e MongoDB</td></tr>
+    <tr><td><strong>Pode ser instanciada?</strong></td><td>❌ Não — é abstrata</td><td>✅ Sim — <code>UsuarioRepositoryImpl(collection)</code></td></tr>
+    <tr><td><strong>Quanto ao banco</strong></td><td>Não importa qual banco é usado</td><td>Específica para MongoDB/KMongo</td></tr>
+    <tr><td><strong>Para testes</strong></td><td>Permite criar implementação em memória</td><td>Requer MongoDB para funcionar</td></tr>
+    <tr><td><strong>Palavra-chave</strong></td><td><code>interface</code></td><td><code>class ... : UsuarioRepository</code></td></tr>
+    <tr><td><strong>Métodos</strong></td><td>Sem corpo <code>{ }</code> (somente assinatura)</td><td>Com corpo <code>{ }</code> (implementação real)</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout callout-concept">
+  <span class="callout-icon">💡</span>
+  <strong>Princípio da Inversão de Dependência (SOLID — letra D)</strong><br>
+  "Módulos de alto nível não devem depender de módulos de baixo nível. Ambos devem depender de abstrações."<br><br>
+  O Service (alto nível) depende de <code>UsuarioRepository</code> (abstração/interface), não de <code>UsuarioRepositoryImpl</code> (detalhe/baixo nível). Isso significa que podemos trocar o MongoDB por PostgreSQL simplesmente criando uma nova classe <code>UsuarioRepositoryPostgresImpl</code> que implemente a mesma interface — sem mudar uma linha do Service.
+</div>
+
+<p>Visualmente:</p>
+
+<div class="diagram">
+  <div class="diagram-box box-orange" style="text-align:left;min-width:160px">
+    <strong>UsuarioService</strong><br>
+    <small>usa ↓</small><br>
+    <code style="font-size:.8em">val repo: UsuarioRepository</code>
+  </div>
+  <div class="diagram-arrow">→</div>
+  <div class="diagram-box box-purple" style="min-width:160px">
+    <strong>&lt;&lt;interface&gt;&gt;</strong><br>
+    <strong>UsuarioRepository</strong><br>
+    <small>implementada por ↓</small>
+  </div>
+  <div class="diagram-arrow">→</div>
+  <div style="display:flex; flex-direction:column; gap:.5rem">
+    <div class="diagram-box box-green" style="font-size:.8em">UsuarioRepositoryImpl<br><small>(MongoDB)</small></div>
+    <div class="diagram-box box-blue" style="font-size:.8em">UsuarioRepositoryFake<br><small>(testes/memória)</small></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════ -->
+<h1 id="sec-9"><span class="section-num">9</span> Injeção de Dependência com Koin</h1>
+
+<p>Como o Service recebe a implementação correta do repositório? Por meio de um <strong>container de injeção de dependência</strong>. No projeto FilaCidadã, usamos o <strong>Koin</strong>.</p>
+
+<p>O Koin é um framework leve de injeção de dependência para Kotlin. Você define um <em>módulo</em> que diz ao framework como criar cada objeto:</p>
+
+<pre><code><span class="file-label">config/KoinModules.kt (simplificado)</span><span class="kw">val</span> appModule = module {
+
+    <span class="cmt">// 1. Cria a coleção do MongoDB</span>
+    single {
+        get&lt;<span class="ty">MongoDatabase</span>&gt;().getCollection&lt;<span class="ty">Usuario</span>&gt;(<span class="str">"usuarios"</span>)
+    }
+
+    <span class="cmt">// 2. Vincula a INTERFACE à IMPLEMENTAÇÃO</span>
+    single&lt;<span class="ty">UsuarioRepository</span>&gt; {
+        <span class="ty">UsuarioRepositoryImpl</span>(get()) <span class="cmt">// "get()" injeta a coleção do passo 1</span>
+    }
+
+    <span class="cmt">// 3. Service recebe a interface (não sabe qual implementação)</span>
+    single { <span class="ty">UsuarioService</span>(get&lt;<span class="ty">UsuarioRepository</span>&gt;()) }
+}</code></pre>
+
+<p>No service, você simplesmente declara:</p>
+
+<pre><code><span class="file-label">services/UsuarioService.kt (simplificado)</span><span class="kw">class</span> <span class="ty">UsuarioService</span>(
+    <span class="kw">private val</span> usuarioRepository: <span class="ty">UsuarioRepository</span>  <span class="cmt">// ← interface, não impl</span>
+) {
+    <span class="kw">fun</span> <span class="fn">buscarPorId</span>(id: <span class="ty">String</span>): <span class="ty">Usuario</span> {
+        <span class="kw">return</span> usuarioRepository.findById(id)
+            ?: <span class="kw">throw</span> <span class="ty">ApiException</span>(<span class="num">404</span>, <span class="str">"Usuário não encontrado"</span>)
+    }
+}</code></pre>
+
+<div class="callout callout-info">
+  <span class="callout-icon">ℹ️</span>
+  <strong>Por que <code>single { }</code>?</strong><br>
+  No Koin, <code>single { }</code> cria um <em>singleton</em> — uma única instância compartilhada por toda a aplicação. Para repositórios e serviços, isso é o comportamento desejado: criamos uma vez e reutilizamos.
+</div>
+
+
+<!-- ══════════════════════════════════════════════════ -->
+<h1 id="sec-10"><span class="section-num">10</span> Exercícios Práticos</h1>
+
+<p>Coloque em prática o que aprendeu recriando, a partir do zero, as demais classes do projeto <strong>FilaCidadã</strong>. Use a classe <code>Usuario</code> e o <code>UsuarioRepository</code> (estudados neste tutorial) como referência de estilo e estrutura.</p>
+
+<div class="callout callout-info" style="margin-bottom:1.5rem">
+  <span class="callout-icon">📌</span>
+  <strong>Como usar a documentação oficial</strong><br>
+  Todos os detalhes necessários para realizar estes exercícios — atributos, tipos, enums, regras de negócio e operações dos endpoints — estão descritos na
+  <a href="Especificacao_Tecnica_API_Kotlin.html" target="_blank"><strong>Especificação Técnica da API</strong></a>.
+  Para cada exercício, a seção relevante da especificação é indicada. <strong>Consulte o documento antes de codificar.</strong><br><br>
+  Convenções obrigatórias (as mesmas usadas em <code>Usuario.kt</code>):
+  <ul style="margin-top:.5rem">
+    <li>Anote data classes com <code>@Serializable</code></li>
+    <li>Anote campos do tipo <code>Instant</code> com <code>@Contextual</code></li>
+    <li>Campos opcionais usam tipo nullable (<code>String?</code>) com default <code>null</code></li>
+    <li>Crie os arquivos nos pacotes <code>models/</code> e <code>repositories/</code></li>
+  </ul>
+  <hr style="border:none; border-top:1px solid #7dd3fc; margin:.8rem 0">
+  <strong>Formato de entrega:</strong>
+  <ul style="margin-top:.4rem">
+    <li><span class="entrega-badge entrega-repo" style="display:inline-flex">📦 Exercícios 1 a 7</span> — repositório de código (commit no branch da entrega) <strong>+</strong> envio no <strong>AVA</strong>.</li>
+    <li><span class="entrega-badge entrega-pdf" style="display:inline-flex">📄 Exercício 8</span> — entregue as respostas em <strong>PDF</strong> (também no AVA).</li>
+  </ul>
+</div>
+
+<hr>
+
+<!-- ─── EXERCÍCIO 1 ─── -->
+<div class="exercise">
+  <h4>🏋️ Exercício 1 — A entidade <code>Fila</code></h4>
+  <p>
+    <strong>Especificação de referência:</strong>
+    <a href="Especificacao_Tecnica_API_Kotlin.html#sec-7-3" target="_blank">§7.3 Modelo de Dados — Filas</a>
+    e <a href="Especificacao_Tecnica_API_Kotlin.html#sec-8-2" target="_blank">§8.2 Filas Presenciais e QR Code</a>.
+  </p>
+  <p>Crie o arquivo <code>models/Fila.kt</code> com <strong>todos</strong> os tipos necessários para modelar uma fila:</p>
+  <ul>
+    <li><strong>Dois enums</strong> — identifique-os na seção §7.3 da especificação e crie-os com os valores corretos.</li>
+    <li><strong>Duas classes de apoio</strong> (<code>data class</code>) — a especificação descreve os atributos de configuração de QR Code e de pontos de atendimento (mesas). Modele-as como tipos reutilizáveis.</li>
+    <li><strong>Classe principal <code>Fila</code></strong> — todos os atributos estão descritos na tabela de §7.3. Preste atenção nos tipos: alguns atributos são das classes de apoio que você criou acima.</li>
+  </ul>
+  <p><strong>Reflexão:</strong> por que <code>ConfiguracaoQRCode</code> e <code>Mesa</code> são <code>data class</code> separadas em vez de atributos simples como <code>String</code>? Que vantagem isso traz para a manutenibilidade do código?</p>
+  <p><span class="entrega-badge entrega-repo">📦 Entrega: repositório de código + AVA</span></p>
+  <div class="entrega-note">
+    <strong>📋 Regras de entrega:</strong>
+    <ul>
+      <li>No <strong>repositório</strong>: faça o commit com os arquivos em <code>models/</code> e <code>repositories/</code> no branch da entrega.</li>
+      <li>No <strong>AVA</strong>: envie as pastas <code>models/</code> e <code>repositories/</code> compactadas (<code>.zip</code>), juntamente com o <strong>PDF dos exercícios</strong>.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── EXERCÍCIO 2 ─── -->
+<div class="exercise">
+  <h4>🏋️ Exercício 2 — Repositório da <code>Fila</code></h4>
+  <p>
+    <strong>Especificação de referência:</strong>
+    <a href="Especificacao_Tecnica_API_Kotlin.html#sec-9-5" target="_blank">§9.5 Endpoints — Filas</a>.
+  </p>
+  <p>Crie dois arquivos em <code>repositories/</code>:</p>
+  <ul>
+    <li><strong><code>FilaRepository</code> (interface)</strong> — analise as operações descritas em §9.5 (listar, buscar, criar, atualizar, remover) e declare as assinaturas correspondentes. Observe que listar as filas de uma instituição específica é uma operação diferente da listagem paginada geral — decida qual retorno faz mais sentido para cada caso.</li>
+    <li><strong><code>FilaRepositoryImpl</code> (implementação)</strong> — implemente a interface usando <code>MongoCollection&lt;Fila&gt;</code> injetada no construtor, com os mesmos operadores KMongo demonstrados no tutorial. Inclua paginação (<code>skip</code>/<code>limit</code>) em <code>findAll</code> e um método privado <code>buildFilters</code> para filtros dinâmicos.</li>
+  </ul>
+  <p><strong>Reflexão:</strong> <code>findByInstituicaoId</code> retorna todos os resultados sem paginação. Em que cenário do sistema isso é suficiente e adequado? Quando passaria a ser um problema?</p>
+  <p><span class="entrega-badge entrega-repo">📦 Entrega: repositório de código + AVA</span></p>
+  <div class="entrega-note">
+    <strong>📋 Regras de entrega:</strong>
+    <ul>
+      <li>No <strong>repositório</strong>: faça o commit com os arquivos em <code>models/</code> e <code>repositories/</code> no branch da entrega.</li>
+      <li>No <strong>AVA</strong>: envie as pastas <code>models/</code> e <code>repositories/</code> compactadas (<code>.zip</code>), juntamente com o <strong>PDF dos exercícios</strong>.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── EXERCÍCIO 3 ─── -->
+<div class="exercise">
+  <h4>🏋️ Exercício 3 — A entidade <code>Senha</code></h4>
+  <p>
+    <strong>Especificação de referência:</strong>
+    <a href="Especificacao_Tecnica_API_Kotlin.html#sec-7-4" target="_blank">§7.4 Modelo de Dados — Senhas</a>,
+    <a href="Especificacao_Tecnica_API_Kotlin.html#sec-8-1" target="_blank">§8.1 Criação de Senhas</a>,
+    <a href="Especificacao_Tecnica_API_Kotlin.html#sec-8-3" target="_blank">§8.3 Prioridades</a>
+    e <a href="Especificacao_Tecnica_API_Kotlin.html#apendice-a" target="_blank">Apêndice A — Estados da Senha</a>.
+  </p>
+  <p>Crie o arquivo <code>models/Senha.kt</code> com:</p>
+  <ul>
+    <li><strong>Enum <code>StatusSenha</code></strong> — os estados possíveis estão no Apêndice A da especificação, que descreve também as transições válidas entre estados. Certifique-se de contemplar todos eles.</li>
+    <li><strong>Enum <code>Prioridade</code> com propriedade numérica</strong> — a seção §8.3 descreve os tipos de prioridade e seus pesos. Este enum deve ter uma propriedade <code>peso: Int</code> (menor = maior prioridade) e um método <code>fun descricao(): String</code> que use <code>when(this)</code> para descrever cada valor.</li>
+    <li><strong>Classe principal <code>Senha</code></strong> — todos os atributos estão em §7.4. Observe os atributos relacionados a atendimento presencial: quando são nulos e quando são obrigatórios?</li>
+  </ul>
+  <p><strong>Reflexão:</strong> <code>usuarioId</code> é <code>String?</code> (nullable). Que situação real do sistema justifica isso? Consulte §8.1 para entender o contexto.</p>
+  <p><span class="entrega-badge entrega-repo">📦 Entrega: repositório de código + AVA</span></p>
+  <div class="entrega-note">
+    <strong>📋 Regras de entrega:</strong>
+    <ul>
+      <li>No <strong>repositório</strong>: faça o commit com os arquivos em <code>models/</code> e <code>repositories/</code> no branch da entrega.</li>
+      <li>No <strong>AVA</strong>: envie as pastas <code>models/</code> e <code>repositories/</code> compactadas (<code>.zip</code>), juntamente com o <strong>PDF dos exercícios</strong>.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── EXERCÍCIO 4 ─── -->
+<div class="exercise">
+  <h4>🏋️ Exercício 4 — Repositório da <code>Senha</code></h4>
+  <p>
+    <strong>Especificação de referência:</strong>
+    <a href="Especificacao_Tecnica_API_Kotlin.html#sec-9-6" target="_blank">§9.6 Endpoints — Senhas</a>
+    e <a href="Especificacao_Tecnica_API_Kotlin.html#sec-8-4" target="_blank">§8.4 Cancelamento e Encerramento</a>.
+  </p>
+  <p>O repositório de senhas é o mais rico do projeto — além do CRUD básico, precisa suportar <strong>contagens e buscas contextuais</strong> que alimentam o painel de estatísticas e o fluxo de chamada de senhas.</p>
+  <p>Crie dois arquivos em <code>repositories/</code>:</p>
+  <ul>
+    <li><strong><code>SenhaRepository</code> (interface)</strong> — além das operações CRUD padrão, declare métodos para: contar senhas por fila e status, contar por múltiplos status, encontrar a senha ativa de um usuário em uma fila, obter a próxima senha a ser chamada, e contagens estatísticas por instituição (total do dia, finalizadas do dia). Os tipos de retorno de cada contagem devem ser <code>Long</code>.</li>
+    <li><strong><code>SenhaRepositoryImpl</code> (implementação)</strong> — implemente usando <code>MongoCollection&lt;Senha&gt;</code>. Para contagens use <code>collection.countDocuments(filtro)</code>. Para buscar a próxima senha a ser chamada, ordene por posição crescente e retorne o primeiro resultado com status <code>AGUARDANDO</code>.</li>
+  </ul>
+  <p><strong>Reflexão:</strong> por que os métodos de contagem "do dia" recebem um parâmetro <code>timezone: String</code>? O que aconteceria se ignorássemos o fuso horário nesse cálculo?</p>
+  <p><span class="entrega-badge entrega-repo">📦 Entrega: repositório de código + AVA</span></p>
+  <div class="entrega-note">
+    <strong>📋 Regras de entrega:</strong>
+    <ul>
+      <li>No <strong>repositório</strong>: faça o commit com os arquivos em <code>models/</code> e <code>repositories/</code> no branch da entrega.</li>
+      <li>No <strong>AVA</strong>: envie as pastas <code>models/</code> e <code>repositories/</code> compactadas (<code>.zip</code>), juntamente com o <strong>PDF dos exercícios</strong>.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── EXERCÍCIO 5 ─── -->
+<div class="exercise">
+  <h4>🏋️ Exercício 5 — A entidade <code>Instituicao</code></h4>
+  <p>
+    <strong>Especificação de referência:</strong>
+    <a href="Especificacao_Tecnica_API_Kotlin.html#sec-7-2" target="_blank">§7.2 Modelo de Dados — Instituições</a>
+    e <a href="Especificacao_Tecnica_API_Kotlin.html#sec-9-3" target="_blank">§9.3 Endpoints — Instituições</a>.
+  </p>
+  <p>Crie o arquivo <code>models/Instituicao.kt</code> e os dois arquivos de repositório:</p>
+  <ul>
+    <li><strong>Enum <code>StatusInstituicao</code></strong> — a especificação §7.2 descreve os estados do ciclo de aprovação de uma instituição. Identifique e declare todos eles.</li>
+    <li><strong>Data class <code>Instituicao</code></strong> — use a tabela de §7.2. Note que um dos atributos usa o tipo <code>Map&lt;String, JsonElement&gt;</code> (importe de <code>kotlinx.serialization.json</code>) para armazenar configurações flexíveis.</li>
+    <li><strong><code>InstituicaoRepository</code> (interface)</strong> — deduza as operações necessárias a partir das rotas descritas em §9.3. Inclua uma operação de busca por nome além do CRUD padrão.</li>
+    <li><strong><code>InstituicaoRepositoryImpl</code> (implementação)</strong> — implemente com KMongo seguindo o mesmo padrão dos repositórios anteriores.</li>
+  </ul>
+  <p><strong>Reflexão:</strong> o atributo <code>motivoRejeicao</code> existe na classe mas só faz sentido quando <code>status == REJEITADA</code>. Como o Kotlin poderia expressar essa restrição de forma mais segura? (Pesquise sobre <em>sealed classes</em>.)</p>
+  <p><span class="entrega-badge entrega-repo">📦 Entrega: repositório de código + AVA</span></p>
+  <div class="entrega-note">
+    <strong>📋 Regras de entrega:</strong>
+    <ul>
+      <li>No <strong>repositório</strong>: faça o commit com os arquivos em <code>models/</code> e <code>repositories/</code> no branch da entrega.</li>
+      <li>No <strong>AVA</strong>: envie as pastas <code>models/</code> e <code>repositories/</code> compactadas (<code>.zip</code>), juntamente com o <strong>PDF dos exercícios</strong>.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── EXERCÍCIO 6 — DESAFIO ─── -->
+<div class="exercise" style="background: linear-gradient(135deg, #f5f3ff, #ede9fe); border-color: #a78bfa;">
+  <h4 style="color: #5b21b6;">🚀 Exercício 6 — Desafio: <code>QrCode</code> e <code>Auditoria</code></h4>
+  <p>
+    <strong>Especificação de referência:</strong>
+    <a href="Especificacao_Tecnica_API_Kotlin.html#sec-7-5" target="_blank">§7.5 QR Codes</a>,
+    <a href="Especificacao_Tecnica_API_Kotlin.html#sec-9-7" target="_blank">§9.7 Endpoints — QR Codes</a>,
+    <a href="Especificacao_Tecnica_API_Kotlin.html#sec-11" target="_blank">§11 Especificação Técnica de QR Code</a>,
+    <a href="Especificacao_Tecnica_API_Kotlin.html#sec-7-6" target="_blank">§7.6 Auditoria</a>
+    e <a href="Especificacao_Tecnica_API_Kotlin.html#sec-12" target="_blank">§12 Auditoria e Logs</a>.
+  </p>
+
+  <h4 style="margin-top:1rem">6a. <code>QrCode</code> + <code>QrCodeRepository</code></h4>
+  <p>Consulte §7.5 para o modelo de dados e §9.7 + §11 para as operações. Esta entidade não possui <code>delete</code> — os QR Codes são <em>desativados</em>, não removidos. A interface deve incluir uma operação para desativar todos os QR Codes ativos de uma fila (retorna a contagem de documentos afetados). Implemente o repositório com KMongo.</p>
+
+  <h4 style="margin-top:1rem">6b. <code>Auditoria</code> + <code>AcaoAuditoria</code> + <code>AuditoriaRepository</code></h4>
+  <p>Consulte §7.6 e §12 para entender a natureza desta entidade. Note que um dos atributos usa <code>Map&lt;String, JsonElement&gt;?</code> para dados flexíveis do evento auditado. A interface <code>AuditoriaRepository</code> é intencionalmente minimalista — sem <code>update</code> nem <code>delete</code>. Implemente o repositório.</p>
+  <p><strong>Reflexão:</strong> por que registros de auditoria são imutáveis por design? Que princípio de segurança e rastreabilidade isso garante?</p>
+  <p><span class="entrega-badge entrega-repo">📦 Entrega: repositório de código + AVA</span></p>
+  <div class="entrega-note">
+    <strong>📋 Regras de entrega:</strong>
+    <ul>
+      <li>No <strong>repositório</strong>: faça o commit com os arquivos em <code>models/</code> e <code>repositories/</code> no branch da entrega.</li>
+      <li>No <strong>AVA</strong>: envie as pastas <code>models/</code> e <code>repositories/</code> compactadas (<code>.zip</code>), juntamente com o <strong>PDF dos exercícios</strong>.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── EXERCÍCIO 7 ─── -->
+<div class="exercise">
+  <h4>🏋️ Exercício 7 — A entidade <code>LandingPage</code> e seu repositório</h4>
+  <p>
+    <strong>Especificação de referência:</strong>
+    <a href="Especificacao_Tecnica_API_Kotlin.html#sec-7-7" target="_blank">§7.7 Landing Page</a>.
+  </p>
+
+  <h4 style="margin-top:1rem">7a. Estrutura composta — raiz + classes aninhadas</h4>
+  <p>A <code>LandingPage</code> funciona como um mini-CMS: um único documento na coleção representa o conteúdo inteiro da página pública da plataforma. Consulte §7.7 para a estrutura completa. Implemente:</p>
+  <ul>
+    <li>A classe raiz <code>LandingPage</code> com todos os seus atributos, incluindo os campos temporais anotados com <code>@Contextual</code>.</li>
+    <li>Todas as <strong>data classes aninhadas</strong> que compõem a estrutura (seções da página). Perceba que cada seção é uma <code>data class</code> separada, tornando cada parte da página substituível de forma independente.</li>
+    <li>Todas as classes de item dentro das seções que possuem listas (ex.: itens de features, etapas, depoimentos, FAQ etc.).</li>
+  </ul>
+
+  <h4 style="margin-top:1rem">7b. Interface <code>LandingPageRepository</code></h4>
+  <p>O repositório desta entidade é intencionalmente minimalista. Ao contrário dos outros repositórios do sistema, não há <code>findAll</code>, <code>findById</code> nem <code>delete</code>. Consulte §7.7 para entender o modelo singleton (<code>key = "default"</code>) e implemente a interface com exatamente dois métodos:</p>
+  <ul>
+    <li><strong><code>findDefault()</code></strong> — retorna o conteúdo atual da landing page, ou <code>null</code> se ainda não existir.</li>
+    <li><strong><code>upsertDefault()</code></strong> — salva (insere ou substitui) o documento singleton e retorna o estado persistido.</li>
+  </ul>
+  <p>Depois, implemente <code>LandingPageRepositoryImpl</code> com KMongo usando a operação de <em>upsert</em> adequada.</p>
+
+  <p><strong>Reflexão:</strong> por que <code>upsertDefault</code> faz mais sentido do que ter métodos separados <code>insert</code> e <code>update</code> para esta entidade? Que garantia de consistência isso oferece para um documento singleton?</p>
+  <p><span class="entrega-badge entrega-repo">📦 Entrega: repositório de código + AVA</span></p>
+  <div class="entrega-note">
+    <strong>📋 Regras de entrega:</strong>
+    <ul>
+      <li>No <strong>repositório</strong>: faça o commit com os arquivos em <code>models/</code> e <code>repositories/</code> no branch da entrega.</li>
+      <li>No <strong>AVA</strong>: envie as pastas <code>models/</code> e <code>repositories/</code> compactadas (<code>.zip</code>), juntamente com o <strong>PDF dos exercícios</strong>.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="exercise">
+  <h4>🏋️ Exercício 8 — Análise crítica</h4>
+  <p>Responda por escrito (código ou texto), usando as classes do projeto FilaCidadã como referência:</p>
+  <ol>
+    <li>O que acontece se você tentar criar uma instância de <code>FilaRepository</code> (a interface) diretamente, sem uma implementação concreta? Por que o compilador Kotlin impede isso?</li>
+    <li>O repositório <code>AuditoriaRepository</code> não possui métodos <code>update</code> nem <code>delete</code>. Justifique essa decisão de design com base na responsabilidade da entidade <code>Auditoria</code>.</li>
+    <li>Se o projeto decidir migrar do MongoDB para o PostgreSQL, quais arquivos precisariam ser <strong>criados ou alterados</strong>? Quais <strong>não</strong> precisariam ser tocados? (Mencione arquivos concretos: <code>FilaRepositoryImpl.kt</code>, <code>FilaRepository.kt</code>, <code>FilaService.kt</code>, etc.)</li>
+    <li>O que significa o <code>?</code> em <code>findById(id: String): Fila?</code> e por que o retorno não pode ser simplesmente <code>Fila</code>? O que aconteceria no código que chama esse método se o resultado fosse não-nullable?</li>
+    <li><code>findByInstituicaoId</code> em <code>FilaRepository</code> retorna <code>List&lt;Fila&gt;</code> (sem paginação), enquanto <code>findAll</code> retorna <code>Pair&lt;List&lt;Fila&gt;, Long&gt;</code> (com paginação). Justifique quando cada abordagem é mais apropriada.</li>
+    <li>O enum <code>Prioridade</code> possui uma propriedade <code>peso: Int</code>. Como isso se compara a usar um simples <code>enum class Prioridade { LEGAL, FIDELIDADE, CRONOLOGICA }</code> sem propriedade? Em que situações do sistema o campo <code>peso</code> seria utilizado na prática?</li>
+  </ol>
+  <p><span class="entrega-badge entrega-pdf">📄 Entrega: documento PDF com as respostas</span></p>
+</div>
+
+<hr>
+
+<div class="callout callout-success">
+  <span class="callout-icon">🎯</span>
+  <strong>Resumo do que você aprendeu</strong>
+  <ul>
+    <li><code>data class</code> é ideal para modelar dados — gera automaticamente <code>equals</code>, <code>toString</code> e <code>copy</code>.</li>
+    <li><code>enum class</code> representa um conjunto fixo de valores, com type-safety garantido pelo compilador.</li>
+    <li><code>val</code> é imutável; <code>var</code> é mutável. Prefira <code>val</code>.</li>
+    <li><code>String?</code> é diferente de <code>String</code> — o <code>?</code> indica que o campo pode ser <code>null</code>.</li>
+    <li>Uma <strong>interface</strong> declara um contrato (o quê). A <strong>implementação</strong> define como ele é cumprido.</li>
+    <li>O padrão <strong>Repository</strong> separa o acesso a dados da lógica de negócio.</li>
+    <li><strong>Injeção de dependência</strong> (Koin) conecta interfaces às suas implementações na inicialização da aplicação.</li>
+    <li>O Service depende da interface, não da implementação — isso é o <strong>Princípio D do SOLID</strong>.</li>
+  </ul>
+</div>
+
+</main>
+</div>
+
+<footer class="doc-footer">
+  Tutorial — Classes e Repositórios em Kotlin · FilaCidadã · Março 2026
+</footer>
+
+<button class="back-top" onclick="window.scrollTo({top:0})" title="Voltar ao topo">↑</button>
+
+<script>
+  const btn = document.querySelector('.back-top');
+  window.addEventListener('scroll', () => { btn.classList.toggle('visible', window.scrollY > 400); });
+
+  // TOC active highlight
+  const links = document.querySelectorAll('.sidebar a');
+  const sections = [];
+  links.forEach(link => {
+    const id = link.getAttribute('href')?.slice(1);
+    if (id) { const el = document.getElementById(id); if (el) sections.push({ link, el }); }
+  });
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        links.forEach(l => { l.style.borderLeftColor = 'transparent'; l.style.color = ''; });
+        const active = sections.find(s => s.el === entry.target);
+        if (active) { active.link.style.borderLeftColor = 'var(--accent)'; active.link.style.color = 'var(--primary)'; }
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s.el));
+</script>
+
+</body>
+</html>
