@@ -25,8 +25,9 @@ const val FAKE_USUARIOS_COUNT = 20
 const val FAKE_EXAMPLES_COUNT = 15
 
 fun main() {
-    val mongoUri = System.getenv("MONGO_URI")
-        ?: "mongodb+srv://fs_aula:60egYQtIbESPneFx@cluster0.bpx8s93.mongodb.net/aula"
+    val mongoUri = System.getenv("MONGODB_URI")
+        ?: System.getenv("MONGO_URI")
+        ?: "mongodb://localhost:27017"
     val dbName = System.getenv("MONGO_DB") ?: "Aula"
 
     val faker = Faker()

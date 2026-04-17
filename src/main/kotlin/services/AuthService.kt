@@ -7,7 +7,8 @@ import java.util.UUID
 class AuthService(
     private val usuarioRepository: UsuarioRepository,
     private val jwtConfig: JwtConfig,
-    private val emailService: EmailService
+    private val auditoriaService: AuditoriaService? = null,
+    private val emailService: EmailService = EmailService()
 ) {
 
     fun login(request: LoginRequest): TokenResponse {
@@ -27,6 +28,7 @@ class AuthService(
             "refreshtoken" to refreshToken,
             "ultimoLoginEm" to Instant.now()
         ))
+        auditoriaService?.registrar(AcaoAuditoria.LOGIN, "Usuario", usuario.id, usuario.id, usuario.instituicaoId)
 
         return TokenResponse(accessToken, refreshToken, jwtConfig.accessTokenExpiresAt())
     }
@@ -87,6 +89,7 @@ class AuthService(
             "accesstoken" to null,
             "refreshtoken" to null
         ))
+        auditoriaService?.registrar(AcaoAuditoria.LOGOUT, "Usuario", userId, userId)
     }
 
     fun recover(request: RecoverRequest): Map<String, String?> {

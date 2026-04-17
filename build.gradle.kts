@@ -71,16 +71,11 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host:$ktor_version")
     testImplementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
 
-    // ── Kotlin Test ──
-    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin_version")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlin_version")
-
     // ── JUnit 5 ──
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.1")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.10.1")
 
     // ── Koin Test ──
-    testImplementation("io.insert-koin:koin-test:$koin_version")
     testImplementation("io.insert-koin:koin-test-junit5:$koin_version")
 
     // ── Mockk ──
@@ -94,6 +89,16 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    systemProperty("app.test.mode", "true")
+    jvmArgs("-Dnet.bytebuddy.experimental=true")
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.release.set(21)
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEach {
+    compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
 }
 
 tasks.register<JavaExec>("seed") {
@@ -104,6 +109,6 @@ tasks.register<JavaExec>("seed") {
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(23)
 }
 

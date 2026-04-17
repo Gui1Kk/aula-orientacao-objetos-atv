@@ -1,0 +1,3 @@
+2026-04-16 20:42:32.227 [main] INFO  ktor.application - Autoreload is disabled because the development mode is off.
+2026-04-16 20:42:32.770 [main] INFO  ktor.application - Application started in 0.576 seconds.
+2026-04-16 20:42:32.983 [DefaultDispatcher-worker-1] INFO  ktor.application - Responding at http://127.0.0.1:8080

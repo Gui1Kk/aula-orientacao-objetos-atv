@@ -1,0 +1,1911 @@
+openapi: "3.0.3"
+info:
+  title: "API FilaCidadã - Em construção"
+  description: "API REST da plataforma FilaCidadã — Gestão de Filas de Atendimento. Kotlin + Ktor + MongoDB."
+  version: "3.0.0"
+  contact:
+    name: "FilaCidadã"
+
+servers:
+  - url: "http://localhost:7351"
+    description: "Desenvolvimento local"
+
+tags:
+  - name: Autenticação
+    description: Login, registro, refresh, logout, introspect
+  - name: Recuperação de Senha
+    description: Recuperação e redefinição de senha
+  - name: Instituições
+    description: CRUD de instituições e fluxo de aprovação
+  - name: Usuários
+    description: CRUD de usuários e gestão institucional
+  - name: Filas
+    description: CRUD de filas de atendimento
+  - name: Senhas
+    description: Gestão de senhas (tickets) de atendimento
+  - name: QR Codes
+    description: Gestão de QR Codes para filas presenciais
+  - name: Auditoria
+    description: Consulta de registros de auditoria
+  - name: Perfil
+    description: Perfil do usuário autenticado
+  - name: Landing Page
+    description: Conteúdo da landing page pública
+  - name: Rotas Especiais
+    description: Deep links e asset links
+  - name: WebSocket
+    description: Comunicação em tempo real
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Access token JWT. Enviar como: Authorization: Bearer {token}"
+
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+        message:
+          type: string
+          nullable: true
+        errors:
+          type: array
+          items:
+            type: string
+          nullable: true
+
+    PaginatedResponse:
+      type: object
+      properties:
+        docs:
+          type: array
+          items:
+            type: object
+        totalDocs:
+          type: integer
+          format: int64
+        limit:
+          type: integer
+        totalPages:
+          type: integer
+        page:
+          type: integer
+        hasPrevPage:
+          type: boolean
+        hasNextPage:
+          type: boolean
+
+    LoginRequest:
+      type: object
+      required: [email, senha]
+      properties:
+        email:
+          type: string
+          format: email
+        senha:
+          type: string
+
+    RegisterRequest:
+      type: object
+      required: [nome, email, senha]
+      properties:
+        nome:
+          type: string
+        email:
+          type: string
+          format: email
+        senha:
+          type: string
+          minLength: 8
+
+    RefreshRequest:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+          description: "Refresh token"
+
+    IntrospectRequest:
+      type: object
+      required: [accessToken]
+      properties:
+        accessToken:
+          type: string
+
+    RecoverRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+
+    ResetSenhaByTokenRequest:
+      type: object
+      required: [senha]
+      properties:
+        senha:
+          type: string
+
+    ResetSenhaByCodeRequest:
+      type: object
+      required: [codigo, senha]
+      properties:
+        codigo:
+          type: string
+          minLength: 4
+          maxLength: 4
+        senha:
+          type: string
+
+    TokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        refresh:
+          type: string
+        expiraEm:
+          type: string
+          format: date-time
+
+    IntrospectResponse:
+      type: object
+      properties:
+        active:
+          type: boolean
+        clientId:
+          type: string
+          nullable: true
+        tokenType:
+          type: string
+          nullable: true
+        exp:
+          type: integer
+          format: int64
+          nullable: true
+        iat:
+          type: integer
+          format: int64
+          nullable: true
+        nbf:
+          type: integer
+          format: int64
+          nullable: true
+
+    Usuario:
+      type: object
+      properties:
+        id:
+          type: string
+        nome:
+          type: string
+        email:
+          type: string
+        papeis:
+          type: array
+          items:
+            type: string
+            enum: [ADMIN_PLATAFORMA, ADMIN_INSTITUICAO, OPERADOR, USUARIO_FINAL]
+        instituicaoId:
+          type: string
+          nullable: true
+        ativo:
+          type: boolean
+        avatar:
+          type: string
+          nullable: true
+        fusoHorario:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    Instituicao:
+      type: object
+      properties:
+        id:
+          type: string
+        nome:
+          type: string
+        cnpj:
+          type: string
+        email:
+          type: string
+        telefone:
+          type: string
+        responsavel:
+          type: string
+        endereco:
+          type: string
+        descricao:
+          type: string
+        ativo:
+          type: boolean
+        status:
+          type: string
+          enum: [PENDENTE, APROVADA, REJEITADA]
+        solicitanteId:
+          type: string
+          nullable: true
+        contratoUrl:
+          type: string
+        motivoRejeicao:
+          type: string
+        aprovadoPor:
+          type: string
+          nullable: true
+        aprovadoEm:
+          type: string
+          format: date-time
+          nullable: true
+        configuracoes:
+          type: object
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    CreateInstituicaoRequest:
+      type: object
+      required: [nome]
+      properties:
+        nome:
+          type: string
+        ativo:
+          type: boolean
+          default: true
+        configuracoes:
+          type: object
+
+    SolicitarInstituicaoRequest:
+      type: object
+      required: [nome]
+      properties:
+        nome:
+          type: string
+        cnpj:
+          type: string
+        email:
+          type: string
+        telefone:
+          type: string
+        responsavel:
+          type: string
+        endereco:
+          type: string
+        descricao:
+          type: string
+
+    UpdateInstituicaoRequest:
+      type: object
+      properties:
+        nome:
+          type: string
+        cnpj:
+          type: string
+        email:
+          type: string
+        telefone:
+          type: string
+        responsavel:
+          type: string
+        endereco:
+          type: string
+        descricao:
+          type: string
+        ativo:
+          type: boolean
+        configuracoes:
+          type: object
+
+    RejeitarInstituicaoRequest:
+      type: object
+      properties:
+        motivoRejeicao:
+          type: string
+
+    CreateUsuarioInstituicaoRequest:
+      type: object
+      required: [nome, email, papeis]
+      properties:
+        nome:
+          type: string
+        email:
+          type: string
+          format: email
+        papeis:
+          type: array
+          items:
+            type: string
+            enum: [ADMIN_INSTITUICAO, OPERADOR]
+
+    UpdateUsuarioRequest:
+      type: object
+      properties:
+        nome:
+          type: string
+        papeis:
+          type: array
+          items:
+            type: string
+        ativo:
+          type: boolean
+        instituicaoId:
+          type: string
+
+    Fila:
+      type: object
+      properties:
+        id:
+          type: string
+        instituicaoId:
+          type: string
+        nome:
+          type: string
+        tipoAtendimento:
+          type: string
+          enum: [ONLINE, PRESENCIAL, HIBRIDO]
+        ativa:
+          type: boolean
+        prioridadesHabilitadas:
+          type: boolean
+        fidelidadeHabilitada:
+          type: boolean
+        tempoMaximoAtendimento:
+          type: integer
+          nullable: true
+        configuracaoQRCode:
+          $ref: "#/components/schemas/ConfiguracaoQRCode"
+        mesas:
+          type: array
+          items:
+            $ref: "#/components/schemas/Mesa"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    ConfiguracaoQRCode:
+      type: object
+      properties:
+        modoQRCode:
+          type: string
+          enum: [ROTATIVO, FIXO]
+        tempoExibicaoMin:
+          type: integer
+          nullable: true
+        tempoExpiracaoMin:
+          type: integer
+          nullable: true
+        toleranciaMin:
+          type: integer
+          nullable: true
+        tempoAlertaSegundos:
+          type: integer
+          nullable: true
+
+    Mesa:
+      type: object
+      properties:
+        numero:
+          type: string
+        nome:
+          type: string
+          nullable: true
+        ativa:
+          type: boolean
+
+    CreateFilaRequest:
+      type: object
+      required: [nome, tipoAtendimento]
+      properties:
+        nome:
+          type: string
+        tipoAtendimento:
+          type: string
+          enum: [ONLINE, PRESENCIAL, HIBRIDO]
+        ativa:
+          type: boolean
+          default: true
+        prioridadesHabilitadas:
+          type: boolean
+          default: false
+        fidelidadeHabilitada:
+          type: boolean
+          default: false
+        tempoMaximoAtendimento:
+          type: integer
+          nullable: true
+        configuracaoQRCode:
+          type: object
+          properties:
+            modoQRCode:
+              type: string
+              default: ROTATIVO
+            tempoExibicaoMin:
+              type: integer
+            tempoExpiracaoMin:
+              type: integer
+            toleranciaMin:
+              type: integer
+            tempoAlertaSegundos:
+              type: integer
+        mesas:
+          type: array
+          items:
+            type: object
+            properties:
+              numero:
+                type: string
+              nome:
+                type: string
+              ativa:
+                type: boolean
+
+    UpdateFilaRequest:
+      type: object
+      properties:
+        nome:
+          type: string
+        tipoAtendimento:
+          type: string
+        ativa:
+          type: boolean
+        prioridadesHabilitadas:
+          type: boolean
+        fidelidadeHabilitada:
+          type: boolean
+        tempoMaximoAtendimento:
+          type: integer
+        configuracaoQRCode:
+          type: object
+        mesas:
+          type: array
+          items:
+            type: object
+
+    Senha:
+      type: object
+      properties:
+        id:
+          type: string
+        filaId:
+          type: string
+        instituicaoId:
+          type: string
+        usuarioId:
+          type: string
+          nullable: true
+        nomeCidadao:
+          type: string
+          nullable: true
+        presencial:
+          type: boolean
+        posicao:
+          type: integer
+        status:
+          type: string
+          enum: [AGUARDANDO, EM_ATENDIMENTO, CANCELADA, FINALIZADA]
+        prioridade:
+          type: string
+          nullable: true
+          enum: [LEGAL, FIDELIDADE, CRONOLOGICA]
+        mesa:
+          type: string
+          nullable: true
+        mesaNome:
+          type: string
+          nullable: true
+        operadorId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    CreateSenhaRequest:
+      type: object
+      properties:
+        qrCode:
+          type: string
+          nullable: true
+          description: "Código do QR Code (obrigatório em filas presenciais/híbridas)"
+        prioridade:
+          type: string
+          nullable: true
+          enum: [LEGAL, FIDELIDADE]
+
+    CreateSenhaPresencialRequest:
+      type: object
+      required: [nomeCidadao]
+      properties:
+        nomeCidadao:
+          type: string
+        prioridade:
+          type: string
+          nullable: true
+          enum: [LEGAL, FIDELIDADE]
+
+    SenhaStatsResponse:
+      type: object
+      properties:
+        emAtendimento:
+          type: integer
+          format: int64
+        aguardando:
+          type: integer
+          format: int64
+        finalizadasHoje:
+          type: integer
+          format: int64
+        senhasHoje:
+          type: integer
+          format: int64
+        porFila:
+          type: array
+          items:
+            type: object
+            properties:
+              filaId:
+                type: string
+              nomeFila:
+                type: string
+              aguardando:
+                type: integer
+                format: int64
+              emAtendimento:
+                type: integer
+                format: int64
+              finalizadasHoje:
+                type: integer
+                format: int64
+
+    ContagemSenhasResponse:
+      type: object
+      properties:
+        aguardando:
+          type: integer
+          format: int64
+
+    QrCode:
+      type: object
+      properties:
+        id:
+          type: string
+        filaId:
+          type: string
+        codigo:
+          type: string
+        validoAte:
+          type: string
+          format: date-time
+        toleranciaAte:
+          type: string
+          format: date-time
+        ativo:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    CreateQrCodeRequest:
+      type: object
+      required: [filaId, codigo, validoAte, toleranciaAte]
+      properties:
+        filaId:
+          type: string
+        codigo:
+          type: string
+        validoAte:
+          type: string
+          format: date-time
+        toleranciaAte:
+          type: string
+          format: date-time
+
+    RegenerarQrCodeRequest:
+      type: object
+      required: [filaId]
+      properties:
+        filaId:
+          type: string
+
+    Auditoria:
+      type: object
+      properties:
+        id:
+          type: string
+        instituicaoId:
+          type: string
+          nullable: true
+        usuarioId:
+          type: string
+          nullable: true
+        acao:
+          type: string
+          enum: [LOGIN, CRIAR, ATUALIZAR, DELETAR]
+        entidade:
+          type: string
+        entidadeId:
+          type: string
+          nullable: true
+        dados:
+          type: object
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    MeResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        nome:
+          type: string
+        email:
+          type: string
+        papeis:
+          type: array
+          items:
+            type: string
+        ativo:
+          type: boolean
+        avatar:
+          type: string
+          nullable: true
+        fusoHorario:
+          type: string
+        instituicaoId:
+          type: string
+          nullable: true
+
+    UpdatePerfilRequest:
+      type: object
+      properties:
+        nome:
+          type: string
+        email:
+          type: string
+        fusoHorario:
+          type: string
+
+    AlterarSenhaRequest:
+      type: object
+      required: [senhaAtual, novaSenha]
+      properties:
+        senhaAtual:
+          type: string
+        novaSenha:
+          type: string
+          minLength: 8
+
+    TimezoneResponse:
+      type: object
+      properties:
+        fusos:
+          type: array
+          items:
+            type: string
+        padrao:
+          type: string
+
+    LandingPage:
+      type: object
+      properties:
+        id:
+          type: string
+        key:
+          type: string
+        header:
+          type: object
+        hero:
+          type: object
+        statistics:
+          type: array
+          items:
+            type: object
+        features:
+          type: object
+        steps:
+          type: object
+        targets:
+          type: object
+        testimonials:
+          type: object
+        faq:
+          type: object
+        cta:
+          type: object
+        footer:
+          type: object
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+  parameters:
+    pageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        default: 1
+      description: "Número da página (≥ 1)"
+    limitParam:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 10
+        maximum: 100
+      description: "Itens por página (1–100)"
+
+paths:
+  # ════════════════ AUTENTICAÇÃO ════════════════
+  /auth/login:
+    post:
+      tags: [Autenticação]
+      summary: "Login"
+      description: "Autentica o usuário e emite access token + refresh token."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: "Login realizado"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - properties:
+                      data:
+                        $ref: "#/components/schemas/TokenResponse"
+        "401":
+          description: "Credenciais inválidas"
+        "403":
+          description: "Usuário desativado"
+
+  /auth/register:
+    post:
+      tags: [Autenticação]
+      summary: "Registro"
+      description: "Registra um novo usuário final (auto-cadastro)."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: "Usuário registrado"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - properties:
+                      data:
+                        $ref: "#/components/schemas/TokenResponse"
+        "409":
+          description: "E-mail já cadastrado"
+
+  /auth/refresh:
+    post:
+      tags: [Autenticação]
+      summary: "Refresh token"
+      description: "Renova access token e refresh token."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshRequest"
+      responses:
+        "200":
+          description: "Tokens renovados"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - properties:
+                      data:
+                        $ref: "#/components/schemas/TokenResponse"
+        "401":
+          description: "Refresh token inválido"
+
+  /auth/introspect:
+    post:
+      tags: [Autenticação]
+      summary: "Introspecção de token"
+      description: "Verifica validade de um access token."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IntrospectRequest"
+      responses:
+        "200":
+          description: "Resultado da verificação"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - properties:
+                      data:
+                        $ref: "#/components/schemas/IntrospectResponse"
+
+  /auth/logout:
+    post:
+      tags: [Autenticação]
+      summary: "Logout"
+      description: "Encerra a sessão, invalidando os tokens."
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: "Logout realizado"
+        "401":
+          description: "Não autenticado"
+
+  /auth/recover:
+    post:
+      tags: [Recuperação de Senha]
+      summary: "Solicitar recuperação de senha"
+      description: "Gera token e código de 4 caracteres para redefinição. Envia e-mail quando MAIL_ENABLED=true."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecoverRequest"
+      responses:
+        "200":
+          description: "Recuperação solicitada"
+        "400":
+          description: "E-mail não encontrado"
+
+  /auth/password/reset/{token}:
+    patch:
+      tags: [Recuperação de Senha]
+      summary: "Redefinir senha por token"
+      description: "Redefine a senha usando o token recebido por e-mail."
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetSenhaByTokenRequest"
+      responses:
+        "200":
+          description: "Senha redefinida"
+        "401":
+          description: "Token inválido"
+
+  /auth/password/reset/code:
+    patch:
+      tags: [Recuperação de Senha]
+      summary: "Redefinir senha por código"
+      description: "Redefine a senha usando o código de 4 caracteres."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetSenhaByCodeRequest"
+      responses:
+        "200":
+          description: "Senha redefinida"
+        "401":
+          description: "Código inválido ou expirado"
+
+  # ════════════════ INSTITUIÇÕES ════════════════
+  /instituicoes:
+    get:
+      tags: [Instituições]
+      summary: "Listar instituições"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: nome
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PENDENTE, APROVADA, REJEITADA]
+        - name: ativo
+          in: query
+          schema:
+            type: boolean
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/limitParam"
+      responses:
+        "200":
+          description: "Lista paginada"
+    post:
+      tags: [Instituições]
+      summary: "Criar instituição"
+      description: "Cria uma nova instituição (ADMIN_PLATAFORMA)."
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInstituicaoRequest"
+      responses:
+        "201":
+          description: "Instituição criada"
+        "400":
+          description: "Dados inválidos"
+
+  /instituicoes/solicitar:
+    post:
+      tags: [Instituições]
+      summary: "Solicitar cadastro de instituição"
+      description: "Cria instituição com status PENDENTE aguardando aprovação."
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SolicitarInstituicaoRequest"
+      responses:
+        "201":
+          description: "Solicitação criada"
+
+  /instituicoes/{id}:
+    get:
+      tags: [Instituições]
+      summary: "Buscar instituição por ID"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Instituição encontrada"
+        "404":
+          description: "Não encontrada"
+    patch:
+      tags: [Instituições]
+      summary: "Atualizar instituição"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateInstituicaoRequest"
+      responses:
+        "200":
+          description: "Atualizada"
+        "404":
+          description: "Não encontrada"
+    delete:
+      tags: [Instituições]
+      summary: "Remover instituição"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Removida"
+        "404":
+          description: "Não encontrada"
+
+  /instituicoes/{id}/aprovar:
+    patch:
+      tags: [Instituições]
+      summary: "Aprovar solicitação"
+      description: "Altera status de PENDENTE para APROVADA."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Aprovada"
+        "409":
+          description: "Não está pendente"
+
+  /instituicoes/{id}/rejeitar:
+    patch:
+      tags: [Instituições]
+      summary: "Rejeitar solicitação"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RejeitarInstituicaoRequest"
+      responses:
+        "200":
+          description: "Rejeitada"
+
+  /instituicoes/{id}/reconsiderar:
+    patch:
+      tags: [Instituições]
+      summary: "Reconsiderar instituição rejeitada"
+      description: "Retorna status de REJEITADA para PENDENTE."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Reconsiderada"
+
+  /instituicoes/{id}/contrato:
+    post:
+      tags: [Instituições]
+      summary: "Upload de contrato"
+      description: "Upload do contrato em PDF (máx. 10 MB)."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                contrato:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: "Contrato enviado"
+        "400":
+          description: "Arquivo inválido"
+
+  # ════════════════ USUÁRIOS ════════════════
+  /usuarios:
+    get:
+      tags: [Usuários]
+      summary: "Listar usuários"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: nome
+          in: query
+          schema:
+            type: string
+        - name: email
+          in: query
+          schema:
+            type: string
+        - name: ativo
+          in: query
+          schema:
+            type: boolean
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/limitParam"
+      responses:
+        "200":
+          description: "Lista paginada"
+
+  /usuarios/{id}:
+    get:
+      tags: [Usuários]
+      summary: "Buscar usuário por ID"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Usuário encontrado"
+        "404":
+          description: "Não encontrado"
+    patch:
+      tags: [Usuários]
+      summary: "Atualizar usuário"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUsuarioRequest"
+      responses:
+        "200":
+          description: "Atualizado"
+        "404":
+          description: "Não encontrado"
+    delete:
+      tags: [Usuários]
+      summary: "Remover usuário"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Removido"
+
+  /instituicoes/{instituicaoId}/usuarios:
+    get:
+      tags: [Usuários]
+      summary: "Listar usuários da instituição"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: instituicaoId
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/limitParam"
+      responses:
+        "200":
+          description: "Lista paginada"
+    post:
+      tags: [Usuários]
+      summary: "Criar usuário na instituição (password-less)"
+      description: "Cria usuário sem senha. E-mail de boas-vindas é enviado quando MAIL_ENABLED=true."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: instituicaoId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUsuarioInstituicaoRequest"
+      responses:
+        "201":
+          description: "Usuário criado"
+        "400":
+          description: "E-mail já cadastrado"
+
+  # ════════════════ FILAS ════════════════
+  /filas:
+    get:
+      tags: [Filas]
+      summary: "Listar filas"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: instituicaoId
+          in: query
+          schema:
+            type: string
+        - name: ativa
+          in: query
+          schema:
+            type: boolean
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/limitParam"
+      responses:
+        "200":
+          description: "Lista paginada de filas"
+    post:
+      tags: [Filas]
+      summary: "Criar fila"
+      description: "Cria uma nova fila de atendimento. Emite evento WebSocket fila:criada."
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFilaRequest"
+      responses:
+        "201":
+          description: "Fila criada"
+
+  /filas/{id}:
+    get:
+      tags: [Filas]
+      summary: "Buscar fila por ID"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Fila encontrada"
+        "404":
+          description: "Não encontrada"
+    patch:
+      tags: [Filas]
+      summary: "Atualizar fila"
+      description: "Emite evento WebSocket fila:atualizada."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateFilaRequest"
+      responses:
+        "200":
+          description: "Atualizada"
+    delete:
+      tags: [Filas]
+      summary: "Remover fila"
+      description: "Emite evento WebSocket fila:removida."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Removida"
+
+  /filas/{id}/contagem:
+    get:
+      tags: [Filas]
+      summary: "Contagem de senhas aguardando"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Contagem retornada"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - properties:
+                      data:
+                        $ref: "#/components/schemas/ContagemSenhasResponse"
+
+  # ════════════════ SENHAS ════════════════
+  /senhas/stats:
+    get:
+      tags: [Senhas]
+      summary: "Estatísticas de senhas"
+      description: "Retorna estatísticas agregadas de senhas para dashboards."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: timezone
+          in: query
+          schema:
+            type: string
+            default: "America/Manaus"
+      responses:
+        "200":
+          description: "Estatísticas retornadas"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - properties:
+                      data:
+                        $ref: "#/components/schemas/SenhaStatsResponse"
+
+  /senhas:
+    get:
+      tags: [Senhas]
+      summary: "Listar senhas"
+      description: "Lista senhas com paginação e filtros."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: filaId
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [AGUARDANDO, EM_ATENDIMENTO, CANCELADA, FINALIZADA]
+        - name: instituicaoId
+          in: query
+          schema:
+            type: string
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/limitParam"
+      responses:
+        "200":
+          description: "Lista paginada"
+
+  /senhas/{id}:
+    get:
+      tags: [Senhas]
+      summary: "Buscar senha por ID"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Senha encontrada"
+        "404":
+          description: "Não encontrada"
+
+  /filas/{filaId}/senhas:
+    get:
+      tags: [Senhas]
+      summary: "Listar senhas de uma fila"
+      description: "Lista senhas filtradas por fila com paginação."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: filaId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [AGUARDANDO, EM_ATENDIMENTO, CANCELADA, FINALIZADA]
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/limitParam"
+      responses:
+        "200":
+          description: "Lista paginada de senhas da fila"
+    post:
+      tags: [Senhas]
+      summary: "Criar senha (entrar na fila)"
+      description: "Cidadão cria uma senha digital na fila. Ver regras de negócio §8.1."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: filaId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSenhaRequest"
+      responses:
+        "201":
+          description: "Senha criada"
+        "409":
+          description: "Já possui senha ativa ou QR Code inválido"
+
+  /filas/{filaId}/senhas/presencial:
+    post:
+      tags: [Senhas]
+      summary: "Criar senha presencial"
+      description: "Operador cria senha para cidadão sem celular."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: filaId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSenhaPresencialRequest"
+      responses:
+        "201":
+          description: "Senha presencial criada"
+
+  /senhas/{id}/chamar:
+    post:
+      tags: [Senhas]
+      summary: "Chamar senha"
+      description: "Altera status de AGUARDANDO para EM_ATENDIMENTO. Emite senha:chamada."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Senha chamada"
+        "409":
+          description: "Transição inválida"
+
+  /senhas/{id}/cancelar:
+    post:
+      tags: [Senhas]
+      summary: "Cancelar senha"
+      description: "Cancela uma senha AGUARDANDO."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Cancelada"
+        "409":
+          description: "Transição inválida"
+
+  /senhas/{id}/finalizar:
+    post:
+      tags: [Senhas]
+      summary: "Finalizar atendimento"
+      description: "Altera status de EM_ATENDIMENTO para FINALIZADA. Emite senha:finalizada."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Finalizada"
+        "409":
+          description: "Transição inválida"
+
+  /senhas/{id}/assumir:
+    post:
+      tags: [Senhas]
+      summary: "Assumir atendimento"
+      description: "ADMIN_INSTITUICAO assume senha em atendimento por outro operador."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Atendimento assumido"
+        "409":
+          description: "Transição inválida"
+
+  # ════════════════ QR CODES ════════════════
+  /qrcodes:
+    get:
+      tags: [QR Codes]
+      summary: "Listar QR Codes"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: filaId
+          in: query
+          schema:
+            type: string
+        - name: ativo
+          in: query
+          schema:
+            type: boolean
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/limitParam"
+      responses:
+        "200":
+          description: "Lista paginada"
+    post:
+      tags: [QR Codes]
+      summary: "Criar QR Code"
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateQrCodeRequest"
+      responses:
+        "201":
+          description: "QR Code criado"
+
+  /qrcodes/{id}:
+    get:
+      tags: [QR Codes]
+      summary: "Buscar QR Code por ID"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "QR Code encontrado"
+        "404":
+          description: "Não encontrado"
+
+  /qrcodes/codigo/{codigo}:
+    get:
+      tags: [QR Codes]
+      summary: "Buscar QR Code por código"
+      description: "Busca dados da fila pelo código do QR Code escaneado."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: codigo
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "QR Code encontrado"
+        "404":
+          description: "Código não encontrado"
+
+  /qrcodes/{id}/desativar:
+    patch:
+      tags: [QR Codes]
+      summary: "Desativar QR Code"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Desativado"
+
+  /qrcodes/regenerar:
+    post:
+      tags: [QR Codes]
+      summary: "Regenerar QR Code"
+      description: "Desativa QR Code ativo e cria um novo. Emite qrcode:regenerado."
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegenerarQrCodeRequest"
+      responses:
+        "200":
+          description: "QR Code regenerado"
+
+  # ════════════════ AUDITORIA ════════════════
+  /auditorias:
+    get:
+      tags: [Auditoria]
+      summary: "Listar registros de auditoria"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: instituicaoId
+          in: query
+          schema:
+            type: string
+        - name: usuarioId
+          in: query
+          schema:
+            type: string
+        - name: acao
+          in: query
+          schema:
+            type: string
+            enum: [LOGIN, CRIAR, ATUALIZAR, DELETAR]
+        - $ref: "#/components/parameters/pageParam"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+      responses:
+        "200":
+          description: "Lista paginada"
+
+  # ════════════════ PERFIL ════════════════
+  /me:
+    get:
+      tags: [Perfil]
+      summary: "Perfil do usuário logado"
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: "Perfil retornado"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - properties:
+                      data:
+                        $ref: "#/components/schemas/MeResponse"
+    patch:
+      tags: [Perfil]
+      summary: "Atualizar perfil"
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePerfilRequest"
+      responses:
+        "200":
+          description: "Perfil atualizado"
+
+  /me/senha:
+    patch:
+      tags: [Perfil]
+      summary: "Alterar senha"
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AlterarSenhaRequest"
+      responses:
+        "200":
+          description: "Senha alterada"
+        "400":
+          description: "Senha atual incorreta"
+
+  /me/avatar:
+    post:
+      tags: [Perfil]
+      summary: "Upload de avatar"
+      description: "Máx. 50 MB. Tipos: JPEG, PNG, WebP, GIF."
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: "Avatar salvo"
+        "400":
+          description: "Arquivo inválido"
+    delete:
+      tags: [Perfil]
+      summary: "Remover avatar"
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: "Avatar removido"
+
+  /timezones:
+    get:
+      tags: [Perfil]
+      summary: "Listar fusos horários"
+      description: "Retorna fusos horários suportados (público)."
+      responses:
+        "200":
+          description: "Lista de fusos"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - properties:
+                      data:
+                        $ref: "#/components/schemas/TimezoneResponse"
+
+  # ════════════════ LANDING PAGE ════════════════
+  /landing-page:
+    get:
+      tags: [Landing Page]
+      summary: "Conteúdo da landing page"
+      description: "Retorna o conteúdo da landing page (público)."
+      responses:
+        "200":
+          description: "Landing page"
+        "404":
+          description: "Não configurada"
+
+  # ════════════════ ROTAS ESPECIAIS ════════════════
+  /.well-known/assetlinks.json:
+    get:
+      tags: [Rotas Especiais]
+      summary: "Android App Links"
+      description: "Digital Asset Links para deep linking Android."
+      responses:
+        "200":
+          description: "Asset links JSON"
+
+  /r/{codigo}:
+    get:
+      tags: [Rotas Especiais]
+      summary: "Redirect para deep link"
+      description: "Redireciona dispositivo mobile para o app."
+      parameters:
+        - name: codigo
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "302":
+          description: "Redirect"
+        "200":
+          description: "HTML com link para app"
+
+  # ════════════════ WEBSOCKET ════════════════
+  /ws:
+    get:
+      tags: [WebSocket]
+      summary: "Conexão WebSocket"
+      description: |
+        Endpoint WebSocket para comunicação em tempo real.
+        Conectar via: `ws://host:port/ws?token=JWT_ACCESS_TOKEN`
+
+        **Rooms disponíveis:**
+        - `user:{userId}` — eventos pessoais
+        - `instituicao:{id}` — eventos da instituição
+        - `fila:{filaId}` — eventos da fila
+
+        **Mensagens de controle:**
+        - Join: `{ "action": "join", "room": "fila:abc123" }`
+        - Leave: `{ "action": "leave", "room": "fila:abc123" }`
+
+        **Eventos emitidos:**
+        `senha:criada`, `senha:chamada`, `senha:finalizada`, `senha:atualizada`,
+        `fila:criada`, `fila:atualizada`, `fila:removida`,
+        `qrcode:novo`, `qrcode:regenerado`
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: "JWT access token"
+      responses:
+        "101":
+          description: "WebSocket upgrade"
+        "401":
+          description: "Token inválido"

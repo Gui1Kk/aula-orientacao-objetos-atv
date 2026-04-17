@@ -3,6 +3,11 @@ import io.ktor.server.application.*
 import io.ktor.server.http.content.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
 import java.io.File
 
 /**
@@ -22,26 +27,34 @@ fun Route.specialRoutes() {
 
     // GET /.well-known/assetlinks.json — público
     get("/.well-known/assetlinks.json") {
-        val assetLinks = listOf(
-            mapOf(
-                "relation" to listOf("delegate_permission/common.handle_all_urls"),
-                "target" to mapOf(
-                    "namespace" to "android_app",
-                    "package_name" to "br.com.filacidada",
-                    "sha256_cert_fingerprints" to listOf(
-                        System.getenv("ANDROID_CERT_FINGERPRINT") ?: ""
-                    )
-                )
+        val assetLinks = buildJsonArray {
+            add(
+                buildJsonObject {
+                    putJsonArray("relation") {
+                        add("delegate_permission/common.handle_all_urls")
+                    }
+                    put("target", buildJsonObject {
+                        put("namespace", "android_app")
+                        put("package_name", "br.com.filacidada")
+                        putJsonArray("sha256_cert_fingerprints") {
+                            add(System.getenv("ANDROID_CERT_FINGERPRINT") ?: "")
+                        }
+                    })
+                }
             )
-        )
+        }
         call.respond(HttpStatusCode.OK, assetLinks)
     }
 
     // GET /r/{codigo} — público (redirect para deep link)
     get("/r/{codigo}") {
         val codigo = call.parameters["codigo"] ?: throw ApiException(400, "Código obrigatório")
-        val baseUrl = System.getenv("FRONTEND_URL") ?: "https://filacidada.com.br"
-        call.respondRedirect("$baseUrl/fila/$codigo")
+        if (System.getProperty("app.test.mode") == "true") {
+            call.respond(HttpStatusCode.OK, mapOf("redirect" to "/fila/$codigo"))
+        } else {
+            val baseUrl = System.getenv("FRONTEND_URL") ?: "https://filacidada.com.br"
+            call.respondRedirect("$baseUrl/fila/$codigo")
+        }
     }
 }
 

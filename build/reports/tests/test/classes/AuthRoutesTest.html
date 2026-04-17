@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - Class AuthRoutesTest</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>Class AuthRoutesTest</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/default-package.html">default-package</a> &gt; AuthRoutesTest</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">7</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">1.892s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="tab-container">
+<ul class="tabLinks">
+<li>
+<a href="#">Tests</a>
+</li>
+<li>
+<a href="#">Standard output</a>
+</li>
+</ul>
+<div class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">GET landing-page sem dados retorna 404 ou 500()</td>
+<td class="success">0.011s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">GET timezones retorna lista de fusos publica()</td>
+<td class="success">0.046s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">POST auth-login com credenciais invalidas retorna 401()</td>
+<td class="success">0.019s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">POST auth-logout sem autenticacao retorna 401()</td>
+<td class="success">0.017s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">POST auth-recover com email invalido retorna erro()</td>
+<td class="success">0.019s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">POST auth-refresh sem token retorna erro()</td>
+<td class="success">1.518s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">POST auth-register com dados validos retorna 201()</td>
+<td class="success">0.262s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div class="tab">
+<h2>Standard output</h2>
+<span class="code">
+<pre>20:41:32,134 |-INFO in ch.qos.logback.classic.LoggerContext[default] - This is logback-classic version 1.4.14
+20:41:32,137 |-INFO in ch.qos.logback.classic.util.ContextInitializer@57f791c6 - No custom configurators were discovered as a service.
+20:41:32,137 |-INFO in ch.qos.logback.classic.util.ContextInitializer@57f791c6 - Trying to configure with ch.qos.logback.classic.joran.SerializedModelConfigurator
+20:41:32,138 |-INFO in ch.qos.logback.classic.util.ContextInitializer@57f791c6 - Constructed configurator of type class ch.qos.logback.classic.joran.SerializedModelConfigurator
+20:41:32,142 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.scmo]
+20:41:32,142 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback.scmo]
+20:41:32,147 |-INFO in ch.qos.logback.classic.util.ContextInitializer@57f791c6 - ch.qos.logback.classic.joran.SerializedModelConfigurator.configure() call lasted 4 milliseconds. ExecutionStatus=INVOKE_NEXT_IF_ANY
+20:41:32,147 |-INFO in ch.qos.logback.classic.util.ContextInitializer@57f791c6 - Trying to configure with ch.qos.logback.classic.util.DefaultJoranConfigurator
+20:41:32,149 |-INFO in ch.qos.logback.classic.util.ContextInitializer@57f791c6 - Constructed configurator of type class ch.qos.logback.classic.util.DefaultJoranConfigurator
+20:41:32,150 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.xml]
+20:41:32,152 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Found resource [logback.xml] at [file:/C:/Users/guiga/Documents/aula-orientacao-objetos-atv/build/resources/main/logback.xml]
+20:41:32,153 |-WARN in ch.qos.logback.classic.util.DefaultJoranConfigurator@51650883 - Resource [logback.xml] occurs multiple times on the classpath.
+20:41:32,153 |-WARN in ch.qos.logback.classic.util.DefaultJoranConfigurator@51650883 - Resource [logback.xml] occurs at [jar:file:/C:/Users/guiga/.gradle/caches/modules-2/files-2.1/io.swagger.codegen.v3/swagger-codegen-generators/1.0.38/24ad4592fa92f0e693d616de13629f59e5c3cd97/swagger-codegen-generators-1.0.38.jar!/logback.xml]
+20:41:32,153 |-WARN in ch.qos.logback.classic.util.DefaultJoranConfigurator@51650883 - Resource [logback.xml] occurs at [file:/C:/Users/guiga/Documents/aula-orientacao-objetos-atv/build/resources/main/logback.xml]
+20:41:32,261 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [STDOUT]
+20:41:32,262 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [ch.qos.logback.core.ConsoleAppender]
+20:41:32,269 |-INFO in ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+20:41:32,304 |-INFO in ch.qos.logback.classic.model.processor.RootLoggerModelHandler - Setting level of ROOT logger to INFO
+20:41:32,304 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [STDOUT] to Logger[ROOT]
+20:41:32,306 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [io.ktor] to INFO
+20:41:32,306 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [org.litote.kmongo] to INFO
+20:41:32,306 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [org.mongodb] to WARN
+20:41:32,306 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@6c4f9535 - End of configuration.
+20:41:32,307 |-INFO in ch.qos.logback.classic.joran.JoranConfigurator@5bd1ceca - Registering current configuration as safe fallback point
+20:41:32,307 |-INFO in ch.qos.logback.classic.util.ContextInitializer@57f791c6 - ch.qos.logback.classic.util.DefaultJoranConfigurator.configure() call lasted 158 milliseconds. ExecutionStatus=DO_NOT_INVOKE_NEXT_IF_ANY
+
+2026-04-16 20:41:32.802 [DefaultDispatcher-worker-1 @call-context#2] INFO  ktor.test - No ktor.deployment.watch patterns specified, automatic reload is not active.
+2026-04-16 20:41:33.254 [DefaultDispatcher-worker-1 @call-context#2] INFO  ktor.test - Application started in 0.47 seconds.
+2026-04-16 20:41:33.256 [DefaultDispatcher-worker-2 @coroutine#4] INFO  ktor.test - Responding at http://localhost:80
+2026-04-16 20:41:33.257 [DefaultDispatcher-worker-2 @coroutine#4] INFO  ktor.test - Responding at https://localhost:443
+2026-04-16 20:41:33.465 [DefaultDispatcher-worker-2 @call-context#10] INFO  ktor.test - No ktor.deployment.watch patterns specified, automatic reload is not active.
+2026-04-16 20:41:33.471 [DefaultDispatcher-worker-2 @call-context#10] INFO  ktor.test - Application started in 0.006 seconds.
+2026-04-16 20:41:33.472 [DefaultDispatcher-worker-1 @coroutine#12] INFO  ktor.test - Responding at http://localhost:80
+2026-04-16 20:41:33.472 [DefaultDispatcher-worker-1 @coroutine#12] INFO  ktor.test - Responding at https://localhost:443
+2026-04-16 20:41:33.485 [DefaultDispatcher-worker-1 @call-context#18] INFO  ktor.test - No ktor.deployment.watch patterns specified, automatic reload is not active.
+2026-04-16 20:41:33.490 [DefaultDispatcher-worker-1 @call-context#18] INFO  ktor.test - Application started in 0.005 seconds.
+2026-04-16 20:41:33.490 [DefaultDispatcher-worker-4 @coroutine#20] INFO  ktor.test - Responding at http://localhost:80
+2026-04-16 20:41:33.490 [DefaultDispatcher-worker-4 @coroutine#20] INFO  ktor.test - Responding at https://localhost:443
+2026-04-16 20:41:33.531 [DefaultDispatcher-worker-1 @call-context#26] INFO  ktor.test - No ktor.deployment.watch patterns specified, automatic reload is not active.
+2026-04-16 20:41:33.536 [DefaultDispatcher-worker-1 @call-context#26] INFO  ktor.test - Application started in 0.005 seconds.
+2026-04-16 20:41:33.536 [DefaultDispatcher-worker-3 @coroutine#28] INFO  ktor.test - Responding at http://localhost:80
+2026-04-16 20:41:33.536 [DefaultDispatcher-worker-3 @coroutine#28] INFO  ktor.test - Responding at https://localhost:443
+2026-04-16 20:41:33.551 [DefaultDispatcher-worker-9 @call-context#34] INFO  ktor.test - No ktor.deployment.watch patterns specified, automatic reload is not active.
+2026-04-16 20:41:33.555 [DefaultDispatcher-worker-9 @call-context#34] INFO  ktor.test - Application started in 0.004 seconds.
+2026-04-16 20:41:33.556 [DefaultDispatcher-worker-6 @coroutine#36] INFO  ktor.test - Responding at http://localhost:80
+2026-04-16 20:41:33.556 [DefaultDispatcher-worker-6 @coroutine#36] INFO  ktor.test - Responding at https://localhost:443
+2026-04-16 20:41:33.813 [DefaultDispatcher-worker-2 @call-context#42] INFO  ktor.test - No ktor.deployment.watch patterns specified, automatic reload is not active.
+2026-04-16 20:41:33.817 [DefaultDispatcher-worker-2 @call-context#42] INFO  ktor.test - Application started in 0.004 seconds.
+2026-04-16 20:41:33.817 [DefaultDispatcher-worker-3 @coroutine#44] INFO  ktor.test - Responding at http://localhost:80
+2026-04-16 20:41:33.817 [DefaultDispatcher-worker-3 @coroutine#44] INFO  ktor.test - Responding at https://localhost:443
+2026-04-16 20:41:33.831 [DefaultDispatcher-worker-6 @call-context#50] INFO  ktor.test - No ktor.deployment.watch patterns specified, automatic reload is not active.
+2026-04-16 20:41:33.835 [DefaultDispatcher-worker-6 @call-context#50] INFO  ktor.test - Application started in 0.003 seconds.
+2026-04-16 20:41:33.835 [DefaultDispatcher-worker-2 @coroutine#52] INFO  ktor.test - Responding at http://localhost:80
+2026-04-16 20:41:33.835 [DefaultDispatcher-worker-2 @coroutine#52] INFO  ktor.test - Responding at https://localhost:443
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="https://www.gradle.org">Gradle 8.13</a> at Apr 16, 2026, 8:41:41 PM</p>
+</div>
+</div>
+</body>
+</html>

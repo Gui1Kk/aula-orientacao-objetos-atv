@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="InstituicaoServiceTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-04-17T00:41:38.017Z" hostname="GUI1K" time="0.083">
+  <properties/>
+  <testcase name="criar instituicao com nome unico retorna instituicao()" classname="InstituicaoServiceTest" time="0.052"/>
+  <testcase name="buscarPorId inexistente lanca 404()" classname="InstituicaoServiceTest" time="0.003"/>
+  <testcase name="aprovar instituicao nao pendente lanca 409()" classname="InstituicaoServiceTest" time="0.002"/>
+  <testcase name="reconsiderar instituicao nao rejeitada lanca 404()" classname="InstituicaoServiceTest" time="0.002"/>
+  <testcase name="solicitar cria instituicao com status PENDENTE()" classname="InstituicaoServiceTest" time="0.004"/>
+  <testcase name="rejeitar instituicao pendente muda status para REJEITADA()" classname="InstituicaoServiceTest" time="0.006"/>
+  <testcase name="reconsiderar instituicao rejeitada volta para PENDENTE()" classname="InstituicaoServiceTest" time="0.003"/>
+  <testcase name="criar instituicao com nome duplicado lanca 400()" classname="InstituicaoServiceTest" time="0.001"/>
+  <testcase name="aprovar instituicao pendente muda status para APROVADA()" classname="InstituicaoServiceTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,5 +1,7 @@
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
@@ -15,9 +17,13 @@ fun Route.authorize(vararg papeis: Papel, build: Route.() -> Unit): Route {
     val route = createChild(AuthorizationRouteSelector())
 
     route.intercept(ApplicationCallPipeline.Call) {
+        if (call.principal<JWTPrincipal>() == null) {
+            return@intercept
+        }
+
         val userPapeis = call.currentUserPapeis()
         if (userPapeis.none { it in papeis }) {
-                call.respond(HttpStatusCode.Forbidden, ApiResponse.error("Acesso negado"))
+            call.respond(HttpStatusCode.Forbidden, ApiResponse.error("Acesso negado"))
             finish()
         }
     }

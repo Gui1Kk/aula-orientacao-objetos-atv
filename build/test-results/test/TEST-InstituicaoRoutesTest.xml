@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="InstituicaoRoutesTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-04-17T00:41:37.918Z" hostname="GUI1K" time="0.066">
+  <properties/>
+  <testcase name="DELETE instituicoes sem autenticacao retorna 401()" classname="InstituicaoRoutesTest" time="0.014"/>
+  <testcase name="GET instituicoes sem autenticacao retorna 401()" classname="InstituicaoRoutesTest" time="0.009"/>
+  <testcase name="GET instituicoes com token invalido retorna 401()" classname="InstituicaoRoutesTest" time="0.012"/>
+  <testcase name="POST instituicoes-solicitar sem autenticacao retorna 401()" classname="InstituicaoRoutesTest" time="0.01"/>
+  <testcase name="PATCH instituicoes-aprovar sem autenticacao retorna 401()" classname="InstituicaoRoutesTest" time="0.009"/>
+  <testcase name="POST instituicoes sem autenticacao retorna 401()" classname="InstituicaoRoutesTest" time="0.008"/>
+  <system-out><![CDATA[2026-04-16 20:41:37.922 [DefaultDispatcher-worker-6 @call-context#56] INFO  ktor.test - No ktor.deployment.watch patterns specified, automatic reload is not active.
+2026-04-16 20:41:37.928 [DefaultDispatcher-worker-6 @call-context#56] INFO  ktor.test - Application started in 0.005 seconds.
+2026-04-16 20:41:37.928 [DefaultDispatcher-worker-9 @coroutine#58] INFO  ktor.test - Responding at http://localhost:80
+2026-04-16 20:41:37.928 [DefaultDispatcher-worker-9 @coroutine#58] INFO  ktor.test - Responding at https://localhost:443
+2026-04-16 20:41:37.937 [DefaultDispatcher-worker-6 @call-context#64] INFO  ktor.test - No ktor.deployment.watch patterns specified, automatic reload is not active.
+2026-04-16 20:41:37.939 [DefaultDispatcher-worker-6 @call-context#64] INFO  ktor.test - Application started in 0.003 seconds.
+2026-04-16 20:41:37.940 [DefaultDispatcher-worker-2 @coroutine#66] INFO  ktor.test - Responding at http://localhost:80
+2026-04-16 20:41:37.940 [DefaultDispatcher-worker-2 @coroutine#66] INFO  ktor.test - Responding at https://localhost:443
+2026-04-16 20:41:37.947 [DefaultDispatcher-worker-6 @call-context#72] INFO  ktor.test - No ktor.deployment.watch patterns specified, automatic reload is not active.
+2026-04-16 20:41:37.950 [DefaultDispatcher-worker-6 @call-context#72] INFO  ktor.test - Application started in 0.004 seconds.
+2026-04-16 20:41:37.950 [DefaultDispatcher-worker-2 @coroutine#74] INFO  ktor.test - Responding at http://localhost:80
+2026-04-16 20:41:37.950 [DefaultDispatcher-worker-2 @coroutine#74] INFO  ktor.test - Responding at https://localhost:443
+2026-04-16 20:41:37.958 [DefaultDispatcher-worker-1 @call-context#80] INFO  ktor.test - No ktor.deployment.watch patterns specified, automatic reload is not active.
+2026-04-16 20:41:37.963 [DefaultDispatcher-worker-1 @call-context#80] INFO  ktor.test - Application started in 0.005 seconds.
+2026-04-16 20:41:37.963 [DefaultDispatcher-worker-9 @coroutine#82] INFO  ktor.test - Responding at http://localhost:80
+2026-04-16 20:41:37.963 [DefaultDispatcher-worker-9 @coroutine#82] INFO  ktor.test - Responding at https://localhost:443
+2026-04-16 20:41:37.970 [DefaultDispatcher-worker-9 @call-context#88] INFO  ktor.test - No ktor.deployment.watch patterns specified, automatic reload is not active.
+2026-04-16 20:41:37.973 [DefaultDispatcher-worker-9 @call-context#88] INFO  ktor.test - Application started in 0.003 seconds.
+2026-04-16 20:41:37.973 [DefaultDispatcher-worker-5 @coroutine#90] INFO  ktor.test - Responding at http://localhost:80
+2026-04-16 20:41:37.973 [DefaultDispatcher-worker-5 @coroutine#90] INFO  ktor.test - Responding at https://localhost:443
+2026-04-16 20:41:37.979 [DefaultDispatcher-worker-1 @call-context#96] INFO  ktor.test - No ktor.deployment.watch patterns specified, automatic reload is not active.
+2026-04-16 20:41:37.982 [DefaultDispatcher-worker-1 @call-context#96] INFO  ktor.test - Application started in 0.003 seconds.
+2026-04-16 20:41:37.983 [DefaultDispatcher-worker-6 @coroutine#98] INFO  ktor.test - Responding at http://localhost:80
+2026-04-16 20:41:37.983 [DefaultDispatcher-worker-6 @coroutine#98] INFO  ktor.test - Responding at https://localhost:443
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

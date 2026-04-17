@@ -1,3 +1,4 @@
+import java.time.Instant
 import java.util.UUID
 
 /**
@@ -5,7 +6,8 @@ import java.util.UUID
  */
 class UsuarioService(
     private val usuarioRepository: UsuarioRepository,
-    private val emailService: EmailService
+    private val auditoriaService: AuditoriaService? = null,
+    private val emailService: EmailService = EmailService()
 ) {
 
     fun listar(pagination: PaginationParams, filters: Map<String, Any?>): PaginatedResponse<Usuario> {
@@ -37,39 +39,41 @@ class UsuarioService(
         instituicaoId: String,
         criadorId: String
     ): Usuario {
-        if (usuarioRepository.findByEmail(request.email) != null)
+        val email = request.email.lowercase().trim()
+        if (usuarioRepository.findByEmail(email) != null)
             throw ApiException(400, "E-mail já cadastrado")
 
-        val papeis = request.papeis.map {
-            try { Papel.valueOf(it) } catch (_: Exception) { throw ApiException(400, "Papel inválido: $it") }
+        val papeis = request.papeis.map { papel ->
+            try {
+                Papel.valueOf(papel)
+            } catch (_: Exception) {
+                throw ApiException(400, "Papel inválido: $papel")
+            }
         }.toSet()
 
-        val usuario = Usuario(
-            id = UUID.randomUUID().toString(),
-            nome = request.nome,
-            email = request.email.lowercase(),
-            senhaHash = "", // password-less — sem senha inicial
-            papeis = papeis,
-            instituicaoId = instituicaoId
-        )
-
-        val criado = usuarioRepository.insert(usuario)
-
-        // Gera token + código de recuperação para o usuário definir sua senha
         val tokenUnico = UUID.randomUUID().toString()
         val codigo = (1..Constants.CODIGO_RECUPERACAO_LENGTH)
             .map { ('A'..'Z').random() }
             .joinToString("")
-        val expiracao = java.time.Instant.now().plusMillis(Constants.CODIGO_RECUPERACAO_EXPIRATION_MS)
+        val expiracao = Instant.now().plusMillis(Constants.CODIGO_RECUPERACAO_EXPIRATION_MS)
 
-        usuarioRepository.update(criado.id!!, mapOf(
-            "tokenUnico" to tokenUnico,
-            "codigoRecuperaSenha" to codigo,
-            "expCodigoRecuperaSenha" to expiracao
-        ))
+        val usuario = Usuario(
+            id = UUID.randomUUID().toString(),
+            nome = request.nome.trim(),
+            email = email,
+            senhaHash = "", // password-less — sem senha inicial
+            papeis = papeis,
+            instituicaoId = instituicaoId,
+            tokenUnico = tokenUnico,
+            codigoRecuperaSenha = codigo,
+            expCodigoRecuperaSenha = expiracao
+        )
+
+        val criado = usuarioRepository.insert(usuario)
 
         // Envia e-mail de boas-vindas quando MAIL_ENABLED=true
         emailService.sendWelcomeEmail(criado.email, criado.nome, tokenUnico, codigo)
+        auditoriaService?.registrar(AcaoAuditoria.CRIAR, "Usuario", criado.id, criadorId)
 
         return criado
     }
@@ -78,21 +82,34 @@ class UsuarioService(
         buscarPorId(id) // verifica existência
 
         val updates = mutableMapOf<String, Any?>()
-        request.nome?.let { updates["nome"] = it }
+        request.nome?.let { updates["nome"] = it.trim() }
         request.ativo?.let { updates["ativo"] = it }
         request.instituicaoId?.let { updates["instituicaoId"] = it }
         request.papeis?.let { papeisList ->
-            updates["papeis"] = papeisList.map { Papel.valueOf(it) }.toSet()
+            updates["papeis"] = papeisList.map { papel ->
+                try {
+                    Papel.valueOf(papel)
+                } catch (_: Exception) {
+                    throw ApiException(400, "Papel inválido: $papel")
+                }
+            }.toSet()
         }
-        updates["updatedAt"] = java.time.Instant.now()
+        updates["updatedAt"] = Instant.now()
 
         val result = usuarioRepository.update(id, updates)
+        if (result) {
+            auditoriaService?.registrar(AcaoAuditoria.ATUALIZAR, "Usuario", id, executorId)
+        }
         return result
     }
 
     fun deletar(id: String, executorId: String): Boolean {
         buscarPorId(id) // verifica existência
-        return usuarioRepository.delete(id)
+        val result = usuarioRepository.delete(id)
+        if (result) {
+            auditoriaService?.registrar(AcaoAuditoria.DELETAR, "Usuario", id, executorId)
+        }
+        return result
     }
 }
 
