@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="FileStorageServiceTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-04-17T00:41:37.881Z" hostname="GUI1K" time="0.029">
+<testsuite name="FileStorageServiceTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-04-26T01:52:20.538Z" hostname="GUI1K" time="0.022">
   <properties/>
-  <testcase name="removerArquivo remove arquivo existente()" classname="FileStorageServiceTest" time="0.008"/>
-  <testcase name="removerArquivo com caminho inexistente retorna false()" classname="FileStorageServiceTest" time="0.0"/>
-  <testcase name="salvarAvatar com tipo invalido lanca 400()" classname="FileStorageServiceTest" time="0.002"/>
-  <testcase name="salvarAvatar com tipo valido salva arquivo e retorna caminho()" classname="FileStorageServiceTest" time="0.003"/>
-  <testcase name="salvarAvatar com jpeg funciona()" classname="FileStorageServiceTest" time="0.003"/>
-  <testcase name="salvarContrato com tipo invalido lanca 400()" classname="FileStorageServiceTest" time="0.002"/>
-  <testcase name="salvarAvatar com contentType null lanca 400()" classname="FileStorageServiceTest" time="0.002"/>
+  <testcase name="removerArquivo remove arquivo existente()" classname="FileStorageServiceTest" time="0.005"/>
+  <testcase name="removerArquivo com caminho inexistente retorna false()" classname="FileStorageServiceTest" time="0.001"/>
+  <testcase name="salvarAvatar com tipo invalido lanca 400()" classname="FileStorageServiceTest" time="0.005"/>
+  <testcase name="salvarAvatar com tipo valido salva arquivo e retorna caminho()" classname="FileStorageServiceTest" time="0.002"/>
+  <testcase name="salvarAvatar com jpeg funciona()" classname="FileStorageServiceTest" time="0.001"/>
+  <testcase name="salvarContrato com tipo invalido lanca 400()" classname="FileStorageServiceTest" time="0.001"/>
+  <testcase name="salvarAvatar com contentType null lanca 400()" classname="FileStorageServiceTest" time="0.001"/>
   <testcase name="removerArquivo com caminho vazio retorna false()" classname="FileStorageServiceTest" time="0.001"/>
   <testcase name="salvarContrato com PDF valido salva arquivo()" classname="FileStorageServiceTest" time="0.002"/>
   <testcase name="removerArquivo com caminho null retorna false()" classname="FileStorageServiceTest" time="0.001"/>

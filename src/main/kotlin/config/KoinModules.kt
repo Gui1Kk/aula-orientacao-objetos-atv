@@ -13,6 +13,7 @@ val appModule = module {
     single<SenhaRepository> { SenhaRepositoryImpl(get<MongoConfig>().senhas) }
     single<QrCodeRepository> { QrCodeRepositoryImpl(get<MongoConfig>().qrcodes) }
     single<AuditoriaRepository> { AuditoriaRepositoryImpl(get<MongoConfig>().auditorias) }
+    single<LandingPageRepository> { LandingPageRepositoryImpl(get<MongoConfig>().landingPages) }
     single<ExampleRepository> { ExampleRepositoryImpl(get<MongoConfig>().examples) }
 
     // Infra / auxiliares
@@ -27,5 +28,7 @@ val appModule = module {
     single { InstituicaoService(get(), get()) }
     single { FilaService(get(), get(), get(), get()) }
     single { SenhaService(get(), get(), get(), get(), get()) }
+    single { QrCodeService(get(), get(), get(), get()) }
+    single { LandingPageService(get()) }
     single { ExampleService(get()) }
 }

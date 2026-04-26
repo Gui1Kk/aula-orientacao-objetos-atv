@@ -172,6 +172,37 @@ class SenhaService(
         return atualizada
     }
 
+    fun assumir(id: String, operadorId: String): Senha {
+        val senha = buscarPorId(id)
+        if (senha.status != StatusSenha.EM_ATENDIMENTO) {
+            throw ApiException(409, "Apenas senhas em atendimento podem ser assumidas")
+        }
+
+        val fila = filaRepository.findById(senha.filaId)
+            ?: throw ApiException(404, "Fila da senha não encontrada")
+
+        senhaRepository.update(
+            id,
+            mapOf(
+                "operadorId" to operadorId,
+                "updatedAt" to Instant.now()
+            )
+        )
+
+        auditoriaService.registrar(
+            acao = AcaoAuditoria.ATUALIZAR,
+            entidade = "Senha",
+            entidadeId = id,
+            usuarioId = operadorId,
+            instituicaoId = senha.instituicaoId,
+            dados = mapOf("acao" to "assumir_atendimento")
+        )
+
+        val atualizada = buscarPorId(id)
+        emitirEvento(fila, "senha:atualizada", atualizada)
+        return atualizada
+    }
+
     fun finalizar(id: String, executorId: String): Senha {
         val senha = buscarPorId(id)
         if (senha.status != StatusSenha.EM_ATENDIMENTO) {

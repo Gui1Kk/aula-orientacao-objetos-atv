@@ -102,6 +102,27 @@ class InstituicaoService(
         return buscarPorId(id)
     }
 
+    fun salvarContrato(id: String, contratoUrl: String, executorId: String): Instituicao {
+        buscarPorId(id)
+        instituicaoRepository.update(
+            id,
+            mapOf(
+                "contratoUrl" to contratoUrl,
+                "updatedAt" to Instant.now()
+            )
+        )
+
+        auditoriaService.registrar(
+            acao = AcaoAuditoria.ATUALIZAR,
+            entidade = "Instituicao",
+            entidadeId = id,
+            usuarioId = executorId,
+            instituicaoId = id,
+            dados = mapOf("campo" to "contratoUrl")
+        )
+        return buscarPorId(id)
+    }
+
     fun deletar(id: String, executorId: String): Boolean {
         buscarPorId(id)
         val result = instituicaoRepository.delete(id)

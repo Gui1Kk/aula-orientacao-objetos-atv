@@ -5,6 +5,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.utils.io.core.readBytes
 import org.koin.ktor.ext.inject
 
 /**
@@ -49,7 +50,7 @@ fun Route.perfilRoutes() {
 
             multipart.forEachPart { part ->
                 if (part is PartData.FileItem && part.name == "avatar") {
-                    val bytes = part.streamProvider().readBytes()
+                    val bytes = part.provider().readBytes()
                     val contentType = part.contentType?.toString()
                     val fileName = part.originalFileName
                     caminho = fileStorageService.salvarAvatar(bytes, contentType, fileName)

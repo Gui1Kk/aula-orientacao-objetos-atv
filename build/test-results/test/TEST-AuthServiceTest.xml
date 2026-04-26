@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="AuthServiceTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-04-17T00:41:35.021Z" hostname="GUI1K" time="2.636">
+<testsuite name="AuthServiceTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-04-26T01:52:18.185Z" hostname="GUI1K" time="2.178">
   <properties/>
-  <testcase name="login com senha incorreta lanca ApiException 401()" classname="AuthServiceTest" time="0.377"/>
-  <testcase name="login com credenciais validas retorna tokens()" classname="AuthServiceTest" time="0.362"/>
+  <testcase name="login com senha incorreta lanca ApiException 401()" classname="AuthServiceTest" time="0.332"/>
+  <testcase name="login com credenciais validas retorna tokens()" classname="AuthServiceTest" time="0.25"/>
   <testcase name="login com email inexistente lanca ApiException 401()" classname="AuthServiceTest" time="0.002"/>
   <testcase name="recover com email inexistente lanca ApiException 400()" classname="AuthServiceTest" time="0.002"/>
   <testcase name="register com email existente lanca ApiException 409()" classname="AuthServiceTest" time="0.002"/>
-  <testcase name="login com usuario desativado lanca ApiException 403()" classname="AuthServiceTest" time="0.002"/>
+  <testcase name="login com usuario desativado lanca ApiException 403()" classname="AuthServiceTest" time="0.001"/>
   <testcase name="logout limpa tokens do usuario()" classname="AuthServiceTest" time="0.004"/>
-  <testcase name="recover com email valido gera token e codigo()" classname="AuthServiceTest" time="0.013"/>
-  <testcase name="register com email novo cria usuario e retorna tokens()" classname="AuthServiceTest" time="0.229"/>
-  <system-out><![CDATA[2026-04-16 20:41:37.221 [Test worker] INFO  EmailService - E-mail desabilitado (MAIL_ENABLED=false). Destinatário: teste@email.com, Assunto: FilaCidadã — Código de Recuperação de Senha
+  <testcase name="recover com email valido gera token e codigo()" classname="AuthServiceTest" time="0.01"/>
+  <testcase name="register com email novo cria usuario e retorna tokens()" classname="AuthServiceTest" time="0.191"/>
+  <system-out><![CDATA[2026-04-25 21:52:19.998 [Test worker] INFO  EmailService - E-mail desabilitado (MAIL_ENABLED=false). Destinatário: teste@email.com, Assunto: FilaCidadã — Código de Recuperação de Senha
 ]]></system-out>
   <system-err><![CDATA[WARNING: A Java agent has been loaded dynamically (C:\Users\guiga\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.14.6\46e2545d7a97b6ccb195621650c5957279eb4812\byte-buddy-agent-1.14.6.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning

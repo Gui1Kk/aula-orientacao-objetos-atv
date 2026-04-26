@@ -16,5 +16,6 @@ class MongoConfig(
     val senhas get() = database.getCollection<Senha>(Constants.COLLECTION_SENHAS)
     val qrcodes get() = database.getCollection<QrCode>(Constants.COLLECTION_QRCODES)
     val auditorias get() = database.getCollection<Auditoria>(Constants.COLLECTION_AUDITORIAS)
+    val landingPages get() = database.getCollection<LandingPage>(Constants.COLLECTION_LANDING_PAGE)
     val examples get() = database.getCollection<Example>(Constants.COLLECTION_EXAMPLES)
 }

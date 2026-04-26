@@ -45,8 +45,10 @@ fun Application.module() {
         usuarioRoutes()
         filaRoutes()
         senhaRoutes()
+        qrCodeRoutes()
         auditoriaRoutes()
         perfilRoutes()
+        landingPageRoutes()
         specialRoutes()
         exampleRoutes()
     }

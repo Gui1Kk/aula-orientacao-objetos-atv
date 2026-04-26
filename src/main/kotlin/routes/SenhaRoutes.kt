@@ -52,6 +52,14 @@ fun Route.senhaRoutes() {
                 }
             }
 
+            authorize(Papel.ADMIN_INSTITUICAO) {
+                post("/{id}/assumir") {
+                    val id = call.parameters["id"] ?: throw ApiException(400, "ID obrigatório")
+                    val executorId = call.currentUserId() ?: throw ApiException(401, "Não autenticado")
+                    call.respondSuccess(senhaService.assumir(id, executorId), "Senha assumida")
+                }
+            }
+
             authorize(Papel.ADMIN_INSTITUICAO, Papel.OPERADOR) {
                 post("/{id}/finalizar") {
                     val id = call.parameters["id"] ?: throw ApiException(400, "ID obrigatório")

@@ -66,6 +66,15 @@ class InstituicaoRoutesTest {
     }
 
     @Test
+    fun `POST instituicoes-contrato sem autenticacao retorna 401`() = testApplication {
+        application { module() }
+
+        val response = client.post("/instituicoes/fake-id/contrato")
+
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+    }
+
+    @Test
     fun `DELETE instituicoes sem autenticacao retorna 401`() = testApplication {
         application { module() }
 

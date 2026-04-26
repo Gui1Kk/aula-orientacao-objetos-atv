@@ -61,6 +61,15 @@ class SenhaRoutesTest {
     }
 
     @Test
+    fun `POST senhas-assumir sem autenticacao retorna 401`() = testApplication {
+        application { module() }
+
+        val response = client.post("/senhas/fake-id/assumir")
+
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+    }
+
+    @Test
     fun `GET senhas-stats sem autenticacao retorna 401`() = testApplication {
         application { module() }
 
@@ -83,6 +92,36 @@ class SenhaRoutesTest {
         application { module() }
 
         val response = client.get("/auditorias")
+
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+    }
+
+    @Test
+    fun `GET qrcodes sem autenticacao retorna 401`() = testApplication {
+        application { module() }
+
+        val response = client.get("/qrcodes")
+
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+    }
+
+    @Test
+    fun `POST qrcodes sem autenticacao retorna 401`() = testApplication {
+        application { module() }
+
+        val response = client.post("/qrcodes") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"filaId":"fila-1"}""")
+        }
+
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+    }
+
+    @Test
+    fun `GET qrcodes-codigo sem autenticacao retorna 401`() = testApplication {
+        application { module() }
+
+        val response = client.get("/qrcodes/codigo/abc123")
 
         assertEquals(HttpStatusCode.Unauthorized, response.status)
     }

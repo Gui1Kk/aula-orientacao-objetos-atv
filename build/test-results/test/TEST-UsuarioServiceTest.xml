@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="UsuarioServiceTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-04-17T00:41:40.777Z" hostname="GUI1K" time="0.025">
+<testsuite name="UsuarioServiceTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-04-26T01:52:22.997Z" hostname="GUI1K" time="0.026">
   <properties/>
   <testcase name="listar retorna resposta paginada()" classname="UsuarioServiceTest" time="0.002"/>
-  <testcase name="criarParaInstituicao com papel invalido lanca 400()" classname="UsuarioServiceTest" time="0.003"/>
-  <testcase name="deletar usuario existente retorna true()" classname="UsuarioServiceTest" time="0.003"/>
-  <testcase name="buscarPorId inexistente lanca 404()" classname="UsuarioServiceTest" time="0.001"/>
+  <testcase name="criarParaInstituicao com papel invalido lanca 400()" classname="UsuarioServiceTest" time="0.004"/>
+  <testcase name="deletar usuario existente retorna true()" classname="UsuarioServiceTest" time="0.004"/>
+  <testcase name="buscarPorId inexistente lanca 404()" classname="UsuarioServiceTest" time="0.002"/>
   <testcase name="criarParaInstituicao com email novo cria usuario password-less()" classname="UsuarioServiceTest" time="0.004"/>
-  <testcase name="atualizar usuario existente retorna true()" classname="UsuarioServiceTest" time="0.005"/>
+  <testcase name="atualizar usuario existente retorna true()" classname="UsuarioServiceTest" time="0.006"/>
   <testcase name="buscarPorId retorna usuario existente()" classname="UsuarioServiceTest" time="0.001"/>
   <testcase name="criarParaInstituicao com email existente lanca 400()" classname="UsuarioServiceTest" time="0.001"/>
-  <system-out><![CDATA[2026-04-16 20:41:40.793 [Test worker] INFO  EmailService - E-mail desabilitado (MAIL_ENABLED=false). Destinatário: novo@email.com, Assunto: FilaCidadã — Bem-vindo! Defina sua senha
+  <system-out><![CDATA[2026-04-25 21:52:23.013 [Test worker] INFO  EmailService - E-mail desabilitado (MAIL_ENABLED=false). Destinatário: novo@email.com, Assunto: FilaCidadã — Bem-vindo! Defina sua senha
 ]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

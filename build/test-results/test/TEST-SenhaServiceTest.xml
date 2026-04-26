@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="SenhaServiceTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2026-04-17T00:41:40.686Z" hostname="GUI1K" time="0.089">
+<testsuite name="SenhaServiceTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2026-04-26T01:52:22.918Z" hostname="GUI1K" time="0.078">
   <properties/>
-  <testcase name="criar senha em fila online sem duplicidade retorna senha()" classname="SenhaServiceTest" time="0.049"/>
-  <testcase name="criar senha em fila inativa lanca 400()" classname="SenhaServiceTest" time="0.001"/>
+  <testcase name="criar senha em fila online sem duplicidade retorna senha()" classname="SenhaServiceTest" time="0.039"/>
+  <testcase name="criar senha em fila inativa lanca 400()" classname="SenhaServiceTest" time="0.002"/>
   <testcase name="finalizar senha aguardando lanca 409()" classname="SenhaServiceTest" time="0.002"/>
-  <testcase name="finalizar senha em atendimento transiciona para FINALIZADA()" classname="SenhaServiceTest" time="0.004"/>
+  <testcase name="finalizar senha em atendimento transiciona para FINALIZADA()" classname="SenhaServiceTest" time="0.003"/>
   <testcase name="criar senha com duplicidade lanca 409()" classname="SenhaServiceTest" time="0.003"/>
-  <testcase name="cancelar senha em atendimento lanca 409()" classname="SenhaServiceTest" time="0.002"/>
-  <testcase name="cancelar senha aguardando transiciona para CANCELADA()" classname="SenhaServiceTest" time="0.004"/>
-  <testcase name="criar senha presencial em fila online sem QR sem validacao de QR()" classname="SenhaServiceTest" time="0.005"/>
+  <testcase name="cancelar senha em atendimento lanca 409()" classname="SenhaServiceTest" time="0.001"/>
+  <testcase name="cancelar senha aguardando transiciona para CANCELADA()" classname="SenhaServiceTest" time="0.003"/>
+  <testcase name="criar senha presencial em fila online sem QR sem validacao de QR()" classname="SenhaServiceTest" time="0.004"/>
   <testcase name="criar senha presencial em fila sem QR Code funciona()" classname="SenhaServiceTest" time="0.005"/>
-  <testcase name="chamar senha em atendimento lanca 409()" classname="SenhaServiceTest" time="0.002"/>
-  <testcase name="chamar senha aguardando transiciona para EM_ATENDIMENTO()" classname="SenhaServiceTest" time="0.005"/>
-  <testcase name="criar senha em fila inexistente lanca 404()" classname="SenhaServiceTest" time="0.003"/>
+  <testcase name="chamar senha em atendimento lanca 409()" classname="SenhaServiceTest" time="0.001"/>
+  <testcase name="chamar senha aguardando transiciona para EM_ATENDIMENTO()" classname="SenhaServiceTest" time="0.004"/>
+  <testcase name="criar senha em fila inexistente lanca 404()" classname="SenhaServiceTest" time="0.002"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

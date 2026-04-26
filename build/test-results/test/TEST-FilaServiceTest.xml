@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="FilaServiceTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-04-17T00:41:37.755Z" hostname="GUI1K" time="0.123">
+<testsuite name="FilaServiceTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-04-26T01:52:20.431Z" hostname="GUI1K" time="0.104">
   <properties/>
-  <testcase name="listar retorna resposta paginada()" classname="FilaServiceTest" time="0.04"/>
-  <testcase name="buscarPorId retorna fila existente()" classname="FilaServiceTest" time="0.035"/>
+  <testcase name="listar retorna resposta paginada()" classname="FilaServiceTest" time="0.032"/>
+  <testcase name="buscarPorId retorna fila existente()" classname="FilaServiceTest" time="0.027"/>
   <testcase name="contagemSenhas retorna contagem de aguardando()" classname="FilaServiceTest" time="0.013"/>
   <testcase name="buscarPorId inexistente lanca 404()" classname="FilaServiceTest" time="0.002"/>
-  <testcase name="deletar fila existente retorna true()" classname="FilaServiceTest" time="0.005"/>
+  <testcase name="deletar fila existente retorna true()" classname="FilaServiceTest" time="0.004"/>
   <testcase name="criar fila com tipo atendimento invalido lanca 400()" classname="FilaServiceTest" time="0.004"/>
   <testcase name="criar fila presencial com configuracao QR Code()" classname="FilaServiceTest" time="0.015"/>
-  <testcase name="criar fila online sem QR Code config()" classname="FilaServiceTest" time="0.004"/>
+  <testcase name="criar fila online sem QR Code config()" classname="FilaServiceTest" time="0.003"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

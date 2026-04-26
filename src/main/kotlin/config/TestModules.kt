@@ -11,6 +11,7 @@ val testAppModule = module {
     single<SenhaRepository> { InMemorySenhaRepository() }
     single<QrCodeRepository> { InMemoryQrCodeRepository() }
     single<AuditoriaRepository> { InMemoryAuditoriaRepository() }
+    single<LandingPageRepository> { InMemoryLandingPageRepository() }
     single<ExampleRepository> { InMemoryExampleRepository() }
 
     single { FileStorageService() }
@@ -23,6 +24,8 @@ val testAppModule = module {
     single { InstituicaoService(get(), get()) }
     single { FilaService(get(), get(), get(), get()) }
     single { SenhaService(get(), get(), get(), get(), get()) }
+    single { QrCodeService(get(), get(), get(), get()) }
+    single { LandingPageService(get()) }
     single { PerfilService(get()) }
     single { ExampleService(get()) }
 }
@@ -134,6 +137,7 @@ private class InMemoryInstituicaoRepository : InstituicaoRepository {
             descricao = updates["descricao"] as? String ?: atual.descricao,
             ativo = updates["ativo"] as? Boolean ?: atual.ativo,
             status = updates["status"] as? StatusInstituicao ?: atual.status,
+            contratoUrl = updates["contratoUrl"] as? String ?: atual.contratoUrl,
             motivoRejeicao = updates["motivoRejeicao"] as? String ?: atual.motivoRejeicao,
             aprovadoPor = updates.getOrDefault("aprovadoPor", atual.aprovadoPor) as String?,
             aprovadoEm = updates.getOrDefault("aprovadoEm", atual.aprovadoEm) as Instant?,
@@ -344,6 +348,18 @@ private class InMemoryAuditoriaRepository : AuditoriaRepository {
     override fun insert(auditoria: Auditoria): Auditoria {
         auditorias[auditoria.id!!] = auditoria
         return auditoria
+    }
+}
+
+private class InMemoryLandingPageRepository : LandingPageRepository {
+    private var landingPage: LandingPage? = null
+
+    override fun findDefault(): LandingPage? = landingPage
+
+    override fun upsertDefault(landingPage: LandingPage): LandingPage {
+        val normalized = landingPage.copy(key = LandingPage.DEFAULT_KEY)
+        this.landingPage = normalized
+        return normalized
     }
 }
 
